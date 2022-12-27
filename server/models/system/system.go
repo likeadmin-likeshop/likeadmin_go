@@ -44,9 +44,20 @@ type SystemAuthMenu struct {
 
 //SystemAuthPerm 系统角色菜单实体
 type SystemAuthPerm struct {
-	ID     uint `gorm:"primarykey;comment:'主键'"`
-	RoleId uint `gorm:"not null;default:0;comment:'角色ID'"`
-	MenuId uint `gorm:"not null;default:0;comment:'菜单ID'"`
+	ID     string `gorm:"primarykey;comment:'主键'"`
+	RoleId uint   `gorm:"not null;default:0;comment:'角色ID'"`
+	MenuId uint   `gorm:"not null;default:0;comment:'菜单ID'"`
+}
+
+//SystemAuthRole 系统角色实体
+type SystemAuthRole struct {
+	ID         uint   `gorm:"primarykey;comment:'主键'"`
+	Name       string `gorm:"not null;default:'';comment:'角色名称''"`
+	Remark     string `gorm:"not null;default:'';comment:'备注信息'"`
+	IsDisable  uint8  `gorm:"not null;default:0;comment:'是否禁用: 0=否, 1=是'"`
+	Sort       uint16 `gorm:"not null;default:0;comment:'角色排序'"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
+	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:更新时间"`
 }
 
 //SystemLogLogin 系统登录日志实体

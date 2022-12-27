@@ -14,6 +14,24 @@ var SystemAuthPermService = systemAuthPermService{}
 //systemAuthPermService 系统权限服务实现类
 type systemAuthPermService struct{}
 
+//SelectMenuIdsByRoleId 根据角色ID获取菜单ID
+func (permSrv systemAuthPermService) SelectMenuIdsByRoleId(roleId uint) (menuIds []uint) {
+	var role system.SystemAuthRole
+	err := core.DB.Where("id = ? AND is_disable = ?", roleId, 0).Limit(1).First(&role).Error
+	if err != nil {
+		return []uint{}
+	}
+	var perms []system.SystemAuthPerm
+	err = core.DB.Where("role_id = ?", role.ID).Find(&perms).Error
+	if err != nil {
+		return []uint{}
+	}
+	for _, perm := range perms {
+		menuIds = append(menuIds, perm.MenuId)
+	}
+	return
+}
+
 //CacheRoleMenusByRoleId 缓存角色菜单
 func (permSrv systemAuthPermService) CacheRoleMenusByRoleId(roleId uint) (err error) {
 	var perms []system.SystemAuthPerm

@@ -1,8 +1,11 @@
 package system
 
 import (
+	"github.com/gin-gonic/gin"
+	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/models/system"
+	"likeadmin/utils"
 )
 
 var SystemAuthMenuService = systemAuthMenuService{}
@@ -10,8 +13,25 @@ var SystemAuthMenuService = systemAuthMenuService{}
 //systemAuthMenuService 系统菜单服务实现类
 type systemAuthMenuService struct{}
 
-func (menuSrv systemAuthMenuService) SelectMenuByRoleId(menus []system.SystemAuthMenu) {
-	// TODO:
+//SelectMenuByRoleId 根据角色ID获取菜单
+func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId uint) (mapList []interface{}) {
+	adminId := config.AdminConfig.GetAdminId(c)
+	menuIds := SystemAuthPermService.SelectMenuIdsByRoleId(roleId)
+	if len(menuIds) == 0 {
+		menuIds = []uint{0}
+	}
+	chain := core.DB.Where("menu_type in ? AND is_disable = ?", []string{"M", "C"}, 0)
+	if adminId != config.AdminConfig.SuperAdminId {
+		chain = chain.Where("id in ?", menuIds)
+	}
+	var menus []system.SystemAuthMenu
+	err := chain.Order("menu_sort desc, id").Find(&menus).Error
+	if err != nil {
+		return
+	}
+	mapList = utils.ArrayUtil.ListToTree(
+		utils.ConvertUtil.StructsToMaps(menus), "id", "pid", "children")
+	return
 }
 
 //List 菜单列表

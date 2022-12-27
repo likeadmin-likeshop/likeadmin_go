@@ -1,5 +1,7 @@
 package config
 
+import "github.com/gin-gonic/gin"
+
 //AdminConfig 后台公共配置
 var AdminConfig = adminConfig{
 	// 管理缓存键
@@ -33,6 +35,7 @@ var AdminConfig = adminConfig{
 	},
 
 	// 请求临时数据
+	SuperAdminId:   1,
 	ReqAdminIdKey:  "admin_id",
 	ReqRoleIdKey:   "role",
 	ReqUsernameKey: "username",
@@ -46,8 +49,29 @@ type adminConfig struct {
 	BackstageTokenSet  string
 	NotLoginUri        []string
 	NotAuthUri         []string
+	SuperAdminId       uint
 	ReqAdminIdKey      string
 	ReqRoleIdKey       string
 	ReqUsernameKey     string
 	ReqNicknameKey     string
+}
+
+func (cnf adminConfig) GetAdminId(c *gin.Context) uint {
+	adminId, _ := c.Get(cnf.ReqAdminIdKey)
+	return adminId.(uint)
+}
+
+func (cnf adminConfig) GetRoleId(c *gin.Context) string {
+	roleId, _ := c.Get(cnf.ReqRoleIdKey)
+	return roleId.(string)
+}
+
+func (cnf adminConfig) GetUsername(c *gin.Context) string {
+	username, _ := c.Get(cnf.ReqUsernameKey)
+	return username.(string)
+}
+
+func (cnf adminConfig) GetNickname(c *gin.Context) string {
+	nickname, _ := c.Get(cnf.ReqNicknameKey)
+	return nickname.(string)
 }

@@ -5,6 +5,7 @@ import (
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/admin/service/system"
+	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
 	"likeadmin/utils"
@@ -15,6 +16,7 @@ var Group = core.Group("/system")
 func init() {
 	Group.AddPOST("/login", login)
 	Group.AddPOST("/logout", logout)
+	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
 }
 
@@ -52,6 +54,12 @@ func logout(c *gin.Context) {
 //		Lists:    menuResps,
 //	})
 //}
+
+//menuRoute 菜单路由
+func menuRoute(c *gin.Context) {
+	adminId := config.AdminConfig.GetAdminId(c)
+	response.OkWithData(c, system.SystemAuthMenuService.SelectMenuByRoleId(c, adminId))
+}
 
 //menuList 菜单列表
 func menuList(c *gin.Context) {
