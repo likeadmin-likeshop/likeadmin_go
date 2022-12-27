@@ -2,8 +2,10 @@ package system
 
 import (
 	"github.com/gin-gonic/gin"
+	"likeadmin/admin/schemas/resp"
 	"likeadmin/config"
 	"likeadmin/core"
+	"likeadmin/core/response"
 	"likeadmin/models/system"
 	"likeadmin/utils"
 )
@@ -29,8 +31,10 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 	if err != nil {
 		return
 	}
+	var menuResps []resp.SystemAuthMenuResp
+	response.Copy(c, &menuResps, menus)
 	mapList = utils.ArrayUtil.ListToTree(
-		utils.ConvertUtil.StructsToMaps(menus), "id", "pid", "children")
+		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
 	return
 }
 
