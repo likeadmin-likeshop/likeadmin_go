@@ -11,6 +11,7 @@ var Config = loadConfig(".")
 //envConfig 环境配置
 type envConfig struct {
 	GinMode                string `mapstructure:"GIN_MODE"`         // gin运行模式
+	ServerPort             int    `mapstructure:"SERVER_PORT"`      // 服务运行端口
 	UploadDirectory        string `mapstructure:"UPLOAD_DIRECTORY"` // 上传文件路径
 	RedisUrl               string `mapstructure:"REDIS_URL"`        // Redis源配置
 	RedisPoolSize          int    // Redis连接池大小
@@ -37,7 +38,8 @@ func loadConfig(path string) envConfig {
 	}
 	viper.AutomaticEnv()
 	config := envConfig{
-		GinMode: "debug",
+		GinMode:    "debug",
+		ServerPort: 8000,
 		// 上传文件路径
 		UploadDirectory: "/tmp/uploads/likeadmin-python/",
 		// Redis源配置

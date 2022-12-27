@@ -8,6 +8,7 @@ import (
 	"likeadmin/core/response"
 	"likeadmin/middleware"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -33,7 +34,7 @@ func main() {
 
 	// 运行服务
 	s := &http.Server{
-		Addr:           ":8000",
+		Addr:           ":" + strconv.Itoa(config.Config.ServerPort),
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
