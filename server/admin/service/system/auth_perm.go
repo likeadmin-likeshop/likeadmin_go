@@ -61,3 +61,28 @@ func (permSrv systemAuthPermService) CacheRoleMenusByRoleId(roleId uint) (err er
 	utils.RedisUtil.HSet(config.AdminConfig.BackstageRolesKey, strconv.Itoa(int(roleId)), strings.Join(menuArray, ","), 0)
 	return
 }
+
+//BatchSaveByMenuIds 批量写入角色菜单
+func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds string) {
+	if menuIds == "" {
+		return
+	}
+	var perms []system.SystemAuthPerm
+	for _, menuIdStr := range strings.Split(menuIds, ",") {
+		menuId, _ := strconv.Atoi(menuIdStr)
+		perms = append(perms, system.SystemAuthPerm{ID: utils.ToolsUtil.MakeUuid(), RoleId: roleId, MenuId: uint(menuId)})
+	}
+	core.DB.Create(&perms)
+}
+
+//BatchDeleteByRoleId 批量删除角色菜单(根据角色ID)
+func (permSrv systemAuthPermService) BatchDeleteByRoleId(roleId uint) (err error) {
+	err = core.DB.Delete(&system.SystemAuthPerm{}, "role_id = ?", roleId).Error
+	return
+}
+
+//BatchDeleteByMenuId 批量删除角色菜单(根据菜单ID)
+func (permSrv systemAuthPermService) BatchDeleteByMenuId(menuId uint) (err error) {
+	err = core.DB.Delete(&system.SystemAuthPerm{}, "menu_id = ?", menuId).Error
+	return
+}
