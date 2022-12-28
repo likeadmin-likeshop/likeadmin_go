@@ -8,6 +8,7 @@ import (
 	"math/rand"
 	"reflect"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -34,7 +35,7 @@ func (tu toolsUtil) RandomString(length int) string {
 
 //MakeUuid 制作UUID
 func (tu toolsUtil) MakeUuid() string {
-	return uuid.New().String()
+	return strings.ReplaceAll(uuid.New().String(), "-", "")
 }
 
 //MakeMd5 制作MD5
