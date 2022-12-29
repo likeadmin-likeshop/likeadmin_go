@@ -23,6 +23,8 @@ func main() {
 	// 初始化gin
 	gin.SetMode(config.Config.GinMode)
 	router := gin.New()
+	// 设置静态路径
+	router.Static(config.Config.PublicPrefix, config.Config.UploadDirectory)
 	// 设置中间件
 	router.Use(gin.Logger(), middleware.ErrorRecover(), middleware.TokenAuth())
 	// 特殊异常处理

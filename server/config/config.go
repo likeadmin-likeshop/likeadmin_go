@@ -4,14 +4,17 @@ import (
 	"flag"
 	"github.com/spf13/viper"
 	"log"
+	"strconv"
 )
 
 var Config = loadConfig(".")
 
 //envConfig 环境配置
 type envConfig struct {
-	GinMode                string `mapstructure:"GIN_MODE"`         // gin运行模式
-	ServerPort             int    `mapstructure:"SERVER_PORT"`      // 服务运行端口
+	GinMode                string `mapstructure:"GIN_MODE"`    // gin运行模式
+	PublicUrl              string `mapstructure:"PUBLIC_URL"`  // 对外发布的Url
+	ServerPort             int    `mapstructure:"SERVER_PORT"` // 服务运行端口
+	PublicPrefix           string // 资源访问前缀
 	UploadDirectory        string `mapstructure:"UPLOAD_DIRECTORY"` // 上传文件路径
 	RedisUrl               string `mapstructure:"REDIS_URL"`        // Redis源配置
 	RedisPoolSize          int    // Redis连接池大小
@@ -38,10 +41,13 @@ func loadConfig(path string) envConfig {
 	}
 	viper.AutomaticEnv()
 	config := envConfig{
-		GinMode:    "debug",
+		GinMode: "debug",
+		// 服务运行端口
 		ServerPort: 8000,
+		// 资源访问前缀
+		PublicPrefix: "/api/uploads",
 		// 上传文件路径
-		UploadDirectory: "/tmp/uploads/likeadmin-python/",
+		UploadDirectory: "/tmp/uploads/likeadmin-go/",
 		// Redis源配置
 		RedisUrl:      "redis://localhost:6379",
 		RedisPoolSize: 100,
@@ -65,6 +71,10 @@ func loadConfig(path string) envConfig {
 	err = viper.Unmarshal(&config)
 	if err != nil {
 		log.Fatal("loadConfig Unmarshal err:", err)
+	}
+	// PublicUrl未设置设置默认值
+	if config.PublicUrl == "" {
+		config.PublicUrl = "http://127.0.0.1:" + strconv.Itoa(config.ServerPort)
 	}
 	return config
 }

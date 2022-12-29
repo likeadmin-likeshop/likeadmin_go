@@ -61,7 +61,7 @@ func (adminSrv systemAuthAdminService) Self(adminId uint) (res resp.SystemAuthAd
 	var admin resp.SystemAuthAdminSelfOneResp
 	response.Copy(&admin, sysAdmin)
 	admin.Dept = strconv.Itoa(int(sysAdmin.DeptId))
-	// TODO: avatar to_absolute_url
+	admin.Avatar = utils.UrlUtil.ToAbsoluteUrl(sysAdmin.Avatar)
 	return resp.SystemAuthAdminSelfResp{User: admin, Permissions: auths}
 }
 
