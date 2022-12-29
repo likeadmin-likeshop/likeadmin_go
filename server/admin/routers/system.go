@@ -17,6 +17,7 @@ var Group = core.Group("/system")
 func init() {
 	Group.AddPOST("/login", login)
 	Group.AddPOST("/logout", logout)
+	Group.AddGET("/admin/self", adminSelf)
 	Group.AddGET("/role/list", roleList)
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
@@ -36,6 +37,12 @@ func logout(c *gin.Context) {
 	utils.VerifyUtil.VerifyHeader(c, &logoutReq)
 	system.SystemLoginService.Logout(&logoutReq)
 	response.Ok(c)
+}
+
+//adminSelf 管理员信息
+func adminSelf(c *gin.Context) {
+	adminId := config.AdminConfig.GetAdminId(c)
+	response.OkWithData(c, system.SystemAuthAdminService.Self(adminId))
 }
 
 //roleList 角色列表
