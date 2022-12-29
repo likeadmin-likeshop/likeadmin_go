@@ -7,6 +7,7 @@ import (
 	"likeadmin/admin/service/system"
 	"likeadmin/config"
 	"likeadmin/core"
+	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/utils"
 )
@@ -16,6 +17,7 @@ var Group = core.Group("/system")
 func init() {
 	Group.AddPOST("/login", login)
 	Group.AddPOST("/logout", logout)
+	Group.AddGET("/role/list", roleList)
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
 }
@@ -23,10 +25,7 @@ func init() {
 //login 登录系统
 func login(c *gin.Context) {
 	var loginReq req.SystemLoginReq
-	if err := c.ShouldBindJSON(&loginReq); err != nil {
-		response.FailWithData(c, response.ParamsValidError, err.Error())
-		return
-	}
+	utils.VerifyUtil.VerifyJSON(c, &loginReq)
 	resp := system.SystemLoginService.Login(c, &loginReq)
 	response.OkWithData(c, resp)
 }
@@ -34,26 +33,17 @@ func login(c *gin.Context) {
 //logout 登录退出
 func logout(c *gin.Context) {
 	var logoutReq req.SystemLogoutReq
-	if err := c.ShouldBindHeader(&logoutReq); err != nil {
-		response.FailWithData(c, response.ParamsValidError, err.Error())
-		return
-	}
+	utils.VerifyUtil.VerifyHeader(c, &logoutReq)
 	system.SystemLoginService.Logout(&logoutReq)
 	response.Ok(c)
 }
 
-//func menuList(c *gin.Context) {
-//	var menus []system.SystemAuthMenu
-//	result := core.DB.Find(&menus)
-//	var menuResps []resp.SystemAuthMenuResp
-//	response.Copy(c, &menuResps, &menus)
-//	response.OkWithData(c, response.PageResp{
-//		Count:    result.RowsAffected,
-//		PageNo:   1,
-//		PageSize: 20,
-//		Lists:    menuResps,
-//	})
-//}
+//roleList 角色列表
+func roleList(c *gin.Context) {
+	var page request.PageReq
+	utils.VerifyUtil.VerifyQuery(c, &page)
+	response.OkWithData(c, system.SystemAuthRoleService.List(page))
+}
 
 //menuRoute 菜单路由
 func menuRoute(c *gin.Context) {
@@ -64,7 +54,7 @@ func menuRoute(c *gin.Context) {
 //menuList 菜单列表
 func menuList(c *gin.Context) {
 	var menuResps []resp.SystemAuthMenuResp
-	response.Copy(c, &menuResps, system.SystemAuthMenuService.List())
+	response.Copy(&menuResps, system.SystemAuthMenuService.List())
 	menuTree := utils.ArrayUtil.ListToTree(
 		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
 	response.OkWithData(c, menuTree)

@@ -29,10 +29,11 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 	var menus []system.SystemAuthMenu
 	err := chain.Order("menu_sort desc, id").Find(&menus).Error
 	if err != nil {
-		return
+		core.Logger.Errorf("SelectMenuByRoleId Find err: err=[%+v]", err)
+		panic(response.SystemError)
 	}
 	var menuResps []resp.SystemAuthMenuResp
-	response.Copy(c, &menuResps, menus)
+	response.Copy(&menuResps, menus)
 	mapList = utils.ArrayUtil.ListToTree(
 		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
 	return
@@ -40,7 +41,11 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 
 //List 菜单列表
 func (menuSrv systemAuthMenuService) List() (menus []system.SystemAuthMenu) {
-	core.DB.Order("menu_sort desc, id").Find(&menus)
+	err := core.DB.Order("menu_sort desc, id").Find(&menus).Error
+	if err != nil {
+		core.Logger.Errorf("List Find err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
 	return
 }
 
