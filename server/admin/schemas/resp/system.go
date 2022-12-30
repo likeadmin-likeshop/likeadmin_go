@@ -7,6 +7,24 @@ type SystemLoginResp struct {
 	Token string `json:"token"`
 }
 
+//SystemAuthAdminResp 管理员返回信息
+type SystemAuthAdminResp struct {
+	ID            uint        `json:"id" structs:"id"`                       // 主键
+	Username      string      `json:"username" structs:"username"`           // 账号
+	Nickname      string      `json:"nickname" structs:"nickname"`           // 昵称
+	Avatar        string      `json:"avatar" structs:"avatar"`               // 头像
+	Role          string      `json:"role" structs:"role"`                   // 角色
+	DeptId        uint        `json:"deptId" structs:"deptId"`               // 部门ID
+	PostId        uint        `json:"postId" structs:"postId"`               // 岗位ID
+	Dept          string      `json:"dept" structs:"dept"`                   // 部门
+	IsMultipoint  uint8       `json:"isMultipoint" structs:"isMultipoint"`   // 多端登录: [0=否, 1=是]
+	IsDisable     uint8       `json:"isDisable" structs:"isDisable"`         // 是否禁用: [0=否, 1=是]
+	LastLoginIp   string      `json:"lastLoginIp" structs:"lastLoginIp"`     // 最后登录IP
+	LastLoginTime core.TsTime `json:"lastLoginTime" structs:"lastLoginTime"` // 最后登录时间
+	CreateTime    core.TsTime `json:"createTime" structs:"createTime"`       // 创建时间
+	UpdateTime    core.TsTime `json:"updateTime" structs:"updateTime"`       // 更新时间
+}
+
 //SystemAuthAdminSelfOneResp 当前管理员返回部分信息
 type SystemAuthAdminSelfOneResp struct {
 	ID            uint        `json:"id" structs:"id"`                       // 主键

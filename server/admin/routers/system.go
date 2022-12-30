@@ -18,6 +18,7 @@ func init() {
 	Group.AddPOST("/login", login)
 	Group.AddPOST("/logout", logout)
 	Group.AddGET("/admin/self", adminSelf)
+	Group.AddGET("/admin/list", adminList)
 	Group.AddGET("/role/list", roleList)
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
@@ -43,6 +44,15 @@ func logout(c *gin.Context) {
 func adminSelf(c *gin.Context) {
 	adminId := config.AdminConfig.GetAdminId(c)
 	response.OkWithData(c, system.SystemAuthAdminService.Self(adminId))
+}
+
+//adminList 管理员列表
+func adminList(c *gin.Context) {
+	var page request.PageReq
+	var listReq req.SystemAuthAdminListReq
+	utils.VerifyUtil.VerifyQuery(c, &page)
+	utils.VerifyUtil.VerifyQuery(c, &listReq)
+	response.OkWithData(c, system.SystemAuthAdminService.List(page, listReq))
 }
 
 //roleList 角色列表

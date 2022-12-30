@@ -61,3 +61,9 @@ func initMysql() *gorm.DB {
 	sqlDB.SetConnMaxLifetime(time.Duration(config.Config.DbConnMaxLifetimeHours) * time.Hour)
 	return db
 }
+
+func DBTableName(model interface{}) string {
+	stmt := &gorm.Statement{DB: DB}
+	stmt.Parse(model)
+	return stmt.Schema.Table
+}

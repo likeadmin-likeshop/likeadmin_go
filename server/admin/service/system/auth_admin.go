@@ -2,9 +2,12 @@ package system
 
 import (
 	"encoding/json"
+	"fmt"
+	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/config"
 	"likeadmin/core"
+	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/models/system"
 	"likeadmin/utils"
@@ -63,6 +66,60 @@ func (adminSrv systemAuthAdminService) Self(adminId uint) (res resp.SystemAuthAd
 	admin.Dept = strconv.Itoa(int(sysAdmin.DeptId))
 	admin.Avatar = utils.UrlUtil.ToAbsoluteUrl(sysAdmin.Avatar)
 	return resp.SystemAuthAdminSelfResp{User: admin, Permissions: auths}
+}
+
+//List 管理员列表
+func (adminSrv systemAuthAdminService) List(page request.PageReq, listReq req.SystemAuthAdminListReq) response.PageResp {
+	// 分页信息
+	var res response.PageResp
+	response.Copy(&res, page)
+	limit := page.PageSize
+	offset := page.PageSize * (page.PageNo - 1)
+	// 查询
+	admin := system.SystemAuthAdmin{}
+	adminTbName := core.DBTableName(&admin)
+	roleTbName := core.DBTableName(&system.SystemAuthRole{})
+	deptTbName := core.DBTableName(&system.SystemAuthDept{})
+	adminModel := core.DB.Model(&admin).Joins(
+		fmt.Sprintf("LEFT JOIN %s ON %s.role = %s.id", roleTbName, adminTbName, roleTbName)).Joins(
+		fmt.Sprintf("LEFT JOIN %s ON %s.dept_id = %s.id", deptTbName, adminTbName, deptTbName)).Select(
+		fmt.Sprintf("%s.*, %s.name as dept, %s.name as role", adminTbName, deptTbName, roleTbName))
+	// 条件
+	if listReq.Username != "" {
+		adminModel = adminModel.Where("username like ?", "%"+listReq.Username+"%")
+	}
+	if listReq.Nickname != "" {
+		adminModel = adminModel.Where("nickname like ?", "%"+listReq.Nickname+"%")
+	}
+	if listReq.Role >= 0 {
+		adminModel = adminModel.Where("role = ?", listReq.Role)
+	}
+	// 总数
+	var count int64
+	err := adminModel.Count(&count).Error
+	if err != nil {
+		core.Logger.Errorf("List Count err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	// 数据
+	var adminResp []resp.SystemAuthAdminResp
+	err = adminModel.Limit(limit).Offset(offset).Order("id desc, sort desc").Find(&adminResp).Error
+	if err != nil {
+		core.Logger.Errorf("List Find err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	for i := 0; i < len(adminResp); i++ {
+		adminResp[i].Avatar = utils.UrlUtil.ToAbsoluteUrl(adminResp[i].Avatar)
+		if adminResp[i].ID == 1 {
+			adminResp[i].Role = "系统管理员"
+		}
+	}
+	return response.PageResp{
+		PageNo:   page.PageNo,
+		PageSize: page.PageSize,
+		Count:    count,
+		Lists:    adminResp,
+	}
 }
 
 //CacheAdminUserByUid 缓存管理员
