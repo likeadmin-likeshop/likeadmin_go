@@ -2,7 +2,9 @@ package system
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/config"
@@ -120,6 +122,21 @@ func (adminSrv systemAuthAdminService) List(page request.PageReq, listReq req.Sy
 		Count:    count,
 		Lists:    adminResp,
 	}
+}
+
+//Detail 管理员详细
+func (adminSrv systemAuthAdminService) Detail(id uint) (res resp.SystemAuthAdminResp) {
+	var sysAdmin system.SystemAuthAdmin
+	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&sysAdmin).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("账号已不存在！"))
+	}
+	response.Copy(&res, sysAdmin)
+	res.Avatar = utils.UrlUtil.ToAbsoluteUrl(res.Avatar)
+	if res.Dept == "" {
+		res.Dept = strconv.Itoa(int(res.DeptId))
+	}
+	return
 }
 
 //CacheAdminUserByUid 缓存管理员

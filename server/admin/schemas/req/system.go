@@ -17,3 +17,8 @@ type SystemAuthAdminListReq struct {
 	Nickname string `form:"nickname"`        // 昵称
 	Role     int    `form:"role,default=-1"` // 角色ID
 }
+
+//SystemAuthAdminDetailReq 管理员详情参数
+type SystemAuthAdminDetailReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}
