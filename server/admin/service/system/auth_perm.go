@@ -3,6 +3,7 @@ package system
 import (
 	"likeadmin/config"
 	"likeadmin/core"
+	"likeadmin/core/response"
 	"likeadmin/models/system"
 	"likeadmin/utils"
 	"strconv"
@@ -72,7 +73,11 @@ func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds str
 		menuId, _ := strconv.Atoi(menuIdStr)
 		perms = append(perms, system.SystemAuthPerm{ID: utils.ToolsUtil.MakeUuid(), RoleId: roleId, MenuId: uint(menuId)})
 	}
-	core.DB.Create(&perms)
+	err := core.DB.Create(&perms).Error
+	if err != nil {
+		core.Logger.Errorf("BatchSaveByMenuIds Create err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
 }
 
 //BatchDeleteByRoleId 批量删除角色菜单(根据角色ID)

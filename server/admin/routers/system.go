@@ -20,6 +20,7 @@ func init() {
 	Group.AddGET("/admin/self", adminSelf)
 	Group.AddGET("/admin/list", adminList)
 	Group.AddGET("/admin/detail", adminDetail)
+	Group.AddPOST("/admin/add", adminAdd)
 	Group.AddGET("/role/list", roleList)
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
@@ -61,6 +62,14 @@ func adminDetail(c *gin.Context) {
 	var detailReq req.SystemAuthAdminDetailReq
 	utils.VerifyUtil.VerifyQuery(c, &detailReq)
 	response.OkWithData(c, system.SystemAuthAdminService.Detail(detailReq.ID))
+}
+
+//adminAdd 管理员新增
+func adminAdd(c *gin.Context) {
+	var addReq req.SystemAuthAdminAddReq
+	utils.VerifyUtil.VerifyJSON(c, &addReq)
+	system.SystemAuthAdminService.Add(addReq)
+	response.Ok(c)
 }
 
 //roleList 角色列表

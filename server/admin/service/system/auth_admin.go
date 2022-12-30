@@ -130,6 +130,9 @@ func (adminSrv systemAuthAdminService) Detail(id uint) (res resp.SystemAuthAdmin
 	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&sysAdmin).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("账号已不存在！"))
+	} else if err != nil {
+		core.Logger.Errorf("Detail First err: err=[%+v]", err)
+		panic(response.SystemError)
 	}
 	response.Copy(&res, sysAdmin)
 	res.Avatar = utils.UrlUtil.ToAbsoluteUrl(res.Avatar)
@@ -137,6 +140,51 @@ func (adminSrv systemAuthAdminService) Detail(id uint) (res resp.SystemAuthAdmin
 		res.Dept = strconv.Itoa(int(res.DeptId))
 	}
 	return
+}
+
+//Add 管理员新增
+func (adminSrv systemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) {
+	var sysAdmin system.SystemAuthAdmin
+	// 检查username
+	err := core.DB.Where("username = ? AND is_delete = ?", addReq.Username, 0).Limit(1).Find(&sysAdmin).Error
+	if err != nil {
+		core.Logger.Errorf("Add Find by username err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	if sysAdmin.ID > 0 {
+		panic(response.AssertArgumentError.Make("账号已存在换一个吧！"))
+	}
+	// 检查nickname
+	err = core.DB.Where("nickname = ? AND is_delete = ?", addReq.Nickname, 0).Limit(1).Find(&sysAdmin).Error
+	if err != nil {
+		core.Logger.Errorf("Add Find by nickname err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	if sysAdmin.ID > 0 {
+		panic(response.AssertArgumentError.Make("昵称已存在换一个吧！"))
+	}
+	roleResp := SystemAuthRoleService.Detail(addReq.Role)
+	if roleResp.IsDisable > 0 {
+		panic(response.AssertArgumentError.Make("当前角色已被禁用!"))
+	}
+	passwdLen := len(addReq.Password)
+	if !(passwdLen >= 6 && passwdLen <= 20) {
+		panic(response.Failed.Make("密码必须在6~20位"))
+	}
+	salt := utils.ToolsUtil.RandomString(5)
+	response.Copy(&sysAdmin, addReq)
+	sysAdmin.Role = strconv.Itoa(int(addReq.Role))
+	sysAdmin.Salt = salt
+	sysAdmin.Password = utils.ToolsUtil.MakeMd5(strings.Trim(addReq.Password, " ") + salt)
+	if addReq.Avatar == "" {
+		addReq.Avatar = "/api/static/backend_avatar.png"
+	}
+	sysAdmin.Avatar = utils.UrlUtil.ToRelativeUrl(addReq.Avatar)
+	err = core.DB.Create(&sysAdmin).Error
+	if err != nil {
+		core.Logger.Errorf("Add Create err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
 }
 
 //CacheAdminUserByUid 缓存管理员

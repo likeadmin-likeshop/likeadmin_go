@@ -89,13 +89,17 @@ func (loginSrv systemLoginService) Logout(req *req.SystemLogoutReq) {
 }
 
 //RecordLoginLog 记录登录日志
-func (loginSrv systemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, err string) {
+func (loginSrv systemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) {
 	ua := core.UAParser.Parse(c.GetHeader("user-agent"))
 	var status uint8
-	if err == "" {
+	if errStr == "" {
 		status = 1
 	}
-	core.DB.Create(&system.SystemLogLogin{
+	err := core.DB.Create(&system.SystemLogLogin{
 		AdminId: adminId, Username: username, Ip: c.ClientIP(), Os: ua.Os.Family,
-		Browser: ua.UserAgent.Family, Status: status})
+		Browser: ua.UserAgent.Family, Status: status}).Error
+	if err != nil {
+		core.Logger.Errorf("RecordLoginLog Create err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
 }
