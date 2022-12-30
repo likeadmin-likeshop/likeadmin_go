@@ -21,6 +21,8 @@ func init() {
 	Group.AddGET("/admin/list", adminList)
 	Group.AddGET("/admin/detail", adminDetail)
 	Group.AddPOST("/admin/add", adminAdd)
+	Group.AddPOST("/admin/del", adminDel)
+	Group.AddPOST("/admin/disable", adminDisable)
 	Group.AddGET("/role/list", roleList)
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
@@ -69,6 +71,22 @@ func adminAdd(c *gin.Context) {
 	var addReq req.SystemAuthAdminAddReq
 	utils.VerifyUtil.VerifyJSON(c, &addReq)
 	system.SystemAuthAdminService.Add(addReq)
+	response.Ok(c)
+}
+
+//adminDel 管理员删除
+func adminDel(c *gin.Context) {
+	var delReq req.SystemAuthAdminDelReq
+	utils.VerifyUtil.VerifyJSON(c, &delReq)
+	system.SystemAuthAdminService.Del(c, delReq.ID)
+	response.Ok(c)
+}
+
+//adminDisable 管理员状态切换
+func adminDisable(c *gin.Context) {
+	var disableReq req.SystemAuthAdminDisableReq
+	utils.VerifyUtil.VerifyJSON(c, &disableReq)
+	system.SystemAuthAdminService.Disable(c, disableReq.ID)
 	response.Ok(c)
 }
 

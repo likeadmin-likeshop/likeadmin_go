@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
@@ -15,6 +16,7 @@ import (
 	"likeadmin/utils"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var SystemAuthAdminService = systemAuthAdminService{}
@@ -183,6 +185,54 @@ func (adminSrv systemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) {
 	err = core.DB.Create(&sysAdmin).Error
 	if err != nil {
 		core.Logger.Errorf("Add Create err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+}
+
+//Del 管理员删除
+func (adminSrv systemAuthAdminService) Del(c *gin.Context, id uint) {
+	var admin system.SystemAuthAdmin
+	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&admin).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("账号已不存在!"))
+	} else if err != nil {
+		core.Logger.Errorf("Del First err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	if id == 1 {
+		panic(response.AssertArgumentError.Make("系统管理员不允许删除!"))
+	}
+	if id == config.AdminConfig.GetAdminId(c) {
+		panic(response.AssertArgumentError.Make("不能删除自己!"))
+	}
+	err = core.DB.Model(&admin).Updates(system.SystemAuthAdmin{IsDelete: 1, DeleteTime: time.Now().Unix()}).Error
+	if err != nil {
+		core.Logger.Errorf("Del Updates err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+}
+
+//Disable 管理员状态切换
+func (adminSrv systemAuthAdminService) Disable(c *gin.Context, id uint) {
+	var admin system.SystemAuthAdmin
+	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).Find(&admin).Error
+	if err != nil {
+		core.Logger.Errorf("Disable Find err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	if admin.ID == 0 {
+		panic(response.AssertArgumentError.Make("账号已不存在!"))
+	}
+	if id == config.AdminConfig.GetAdminId(c) {
+		panic(response.AssertArgumentError.Make("不能禁用自己!"))
+	}
+	var isDisable uint8
+	if admin.IsDisable == 0 {
+		isDisable = 1
+	}
+	err = core.DB.Model(&admin).Updates(system.SystemAuthAdmin{IsDisable: isDisable, UpdateTime: time.Now().Unix()}).Error
+	if err != nil {
+		core.Logger.Errorf("Disable Updates err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
 }

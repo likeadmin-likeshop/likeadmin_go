@@ -47,9 +47,16 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 	}
 	defer func() {
 		if r := recover(); r != nil {
-			core.Logger.Errorf("stacktrace from panic: %+v\n%s", r, string(debug.Stack()))
-			loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.Failed.Msg())
-			panic(response.Failed)
+			switch r.(type) {
+			// 自定义类型
+			case response.RespType:
+				panic(r)
+			// 其他类型
+			default:
+				core.Logger.Errorf("stacktrace from panic: %+v\n%s", r, string(debug.Stack()))
+				loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.Failed.Msg())
+				panic(response.Failed)
+			}
 		}
 	}()
 	token := utils.ToolsUtil.MakeToken()
@@ -75,8 +82,13 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 	SystemAuthAdminService.CacheAdminUserByUid(sysAdmin.ID)
 
 	// 更新登录信息
-	core.DB.Model(&sysAdmin).Updates(
-		system.SystemAuthAdmin{LastLoginIp: c.ClientIP(), LastLoginTime: time.Now().Unix()})
+	err = core.DB.Model(&sysAdmin).Updates(
+		system.SystemAuthAdmin{LastLoginIp: c.ClientIP(), LastLoginTime: time.Now().Unix()}).Error
+	if err != nil {
+		core.Logger.Errorf("Login Updates err: err=[%+v]", err)
+		loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.SystemError.Msg())
+		panic(response.SystemError)
+	}
 	// 记录登录日志
 	loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, "")
 	// 返回登录信息

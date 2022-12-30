@@ -36,3 +36,13 @@ type SystemAuthAdminAddReq struct {
 	IsDisable    uint8  `form:"isDisable" binding:"oneof=0 1"`            // 是否禁用: [0=否, 1=是]
 	IsMultipoint uint8  `form:"isMultipoint" binding:"oneof=0 1"`         // 多端登录: [0=否, 1=是]
 }
+
+//SystemAuthAdminDelReq 管理员删除参数
+type SystemAuthAdminDelReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}
+
+//SystemAuthAdminDisableReq 管理员状态切换参数
+type SystemAuthAdminDisableReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}
