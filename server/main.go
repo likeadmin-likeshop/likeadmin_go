@@ -26,7 +26,7 @@ func main() {
 	// 设置静态路径
 	router.Static(config.Config.PublicPrefix, config.Config.UploadDirectory)
 	// 设置中间件
-	router.Use(gin.Logger(), middleware.ErrorRecover(), middleware.TokenAuth())
+	router.Use(gin.Logger(), middleware.Cors(), middleware.ErrorRecover(), middleware.TokenAuth())
 	// 特殊异常处理
 	router.NoMethod(response.NoMethod)
 	router.NoRoute(response.NoRoute)
