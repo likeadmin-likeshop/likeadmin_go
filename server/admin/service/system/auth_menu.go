@@ -40,13 +40,17 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 }
 
 //List 菜单列表
-func (menuSrv systemAuthMenuService) List() (menus []system.SystemAuthMenu) {
+func (menuSrv systemAuthMenuService) List() []interface{} {
+	var menus []system.SystemAuthMenu
 	err := core.DB.Order("menu_sort desc, id").Find(&menus).Error
 	if err != nil {
 		core.Logger.Errorf("List Find err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
-	return
+	var menuResps []resp.SystemAuthMenuResp
+	response.Copy(&menuResps, menus)
+	return utils.ArrayUtil.ListToTree(
+		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
 }
 
 func (menuSrv systemAuthMenuService) Detail(menus []system.SystemAuthMenu) {

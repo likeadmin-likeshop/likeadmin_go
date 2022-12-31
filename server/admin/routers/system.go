@@ -3,7 +3,6 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"likeadmin/admin/schemas/req"
-	"likeadmin/admin/schemas/resp"
 	"likeadmin/admin/service/system"
 	"likeadmin/config"
 	"likeadmin/core"
@@ -105,9 +104,5 @@ func menuRoute(c *gin.Context) {
 
 //menuList 菜单列表
 func menuList(c *gin.Context) {
-	var menuResps []resp.SystemAuthMenuResp
-	response.Copy(&menuResps, system.SystemAuthMenuService.List())
-	menuTree := utils.ArrayUtil.ListToTree(
-		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
-	response.OkWithData(c, menuTree)
+	response.OkWithData(c, system.SystemAuthMenuService.List())
 }
