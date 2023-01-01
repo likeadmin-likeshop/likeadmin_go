@@ -85,7 +85,6 @@ func adminEdit(c *gin.Context) {
 
 //adminUpInfo 管理员更新
 func adminUpInfo(c *gin.Context) {
-	// TODO: 管理员更新
 	var updateReq req.SystemAuthAdminUpdateReq
 	utils.VerifyUtil.VerifyJSON(c, &updateReq)
 	system.SystemAuthAdminService.Update(c, updateReq, config.AdminConfig.GetAdminId(c))

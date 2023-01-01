@@ -45,7 +45,7 @@ type SystemAuthAdminEditReq struct {
 	Username     string `form:"username" binding:"required,min=2,max=20"` // 账号
 	Nickname     string `form:"nickname" binding:"required,min=2,max=30"` // 昵称
 	Password     string `form:"password" binding:"required"`              // 密码
-	Avatar       string `form:"avatar" binding:"required"`                // 头像
+	Avatar       string `form:"avatar"`                                   // 头像
 	Role         uint   `form:"role" binding:"required,gt=0"`             // 角色
 	Sort         int    `form:"sort" binding:"required,gte=0"`            // 排序
 	IsDisable    uint8  `form:"isDisable" binding:"oneof=0 1"`            // 是否禁用: [0=否, 1=是]
@@ -55,7 +55,7 @@ type SystemAuthAdminEditReq struct {
 //SystemAuthAdminUpdateReq 管理员更新参数
 type SystemAuthAdminUpdateReq struct {
 	Nickname     string `form:"nickname" binding:"required,min=2,max=30"`     // 昵称
-	Avatar       string `form:"avatar" binding:"required"`                    // 头像
+	Avatar       string `form:"avatar"`                                       // 头像
 	Password     string `form:"password" binding:"required"`                  // 密码
 	CurrPassword string `form:"currPassword" binding:"required,min=6,max=32"` // 密码
 }

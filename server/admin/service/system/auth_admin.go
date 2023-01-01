@@ -252,7 +252,6 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 		panic(response.SystemError)
 	}
 	adminSrv.CacheAdminUserByUid(editReq.ID)
-	// TODO: 待验证
 	// 如果更改自己的密码,则删除旧缓存
 	adminId := config.AdminConfig.GetAdminId(c)
 	if editReq.Password != "" && editReq.ID == adminId {
@@ -274,7 +273,61 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 
 //Update 管理员更新
 func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.SystemAuthAdminUpdateReq, adminId uint) {
-	// TODO: 管理员更新
+	// 检查id
+	var admin system.SystemAuthAdmin
+	err := core.DB.Where("id = ? AND is_delete = ?", adminId, 0).Limit(1).First(&admin).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("账号不存在了!"))
+	} else if err != nil {
+		core.Logger.Errorf("Update First err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	// 更新管理员信息
+	adminMap := structs.Map(updateReq)
+	delete(adminMap, "CurrPassword")
+	avatar := "/api/static/backend_avatar.png"
+	if updateReq.Avatar != "" {
+		avatar = updateReq.Avatar
+	}
+	adminMap["Avatar"] = utils.UrlUtil.ToRelativeUrl(avatar)
+	delete(adminMap, "aaa")
+	if updateReq.Password != "" {
+		currPass := utils.ToolsUtil.MakeMd5(updateReq.CurrPassword + admin.Salt)
+		if currPass != admin.Password {
+			panic(response.Failed.Make("当前密码不正确!"))
+		}
+		passwdLen := len(updateReq.Password)
+		if !(passwdLen >= 6 && passwdLen <= 20) {
+			panic(response.Failed.Make("密码必须在6~20位"))
+		}
+		salt := utils.ToolsUtil.RandomString(5)
+		adminMap["Salt"] = salt
+		adminMap["Password"] = utils.ToolsUtil.MakeMd5(strings.Trim(updateReq.Password, " ") + salt)
+	} else {
+		delete(adminMap, "Password")
+	}
+	err = core.DB.Model(&admin).Updates(adminMap).Error
+	if err != nil {
+		core.Logger.Errorf("Update Updates err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	adminSrv.CacheAdminUserByUid(adminId)
+	// 如果更改自己的密码,则删除旧缓存
+	if updateReq.Password != "" {
+		token := c.Request.Header.Get("token")
+		utils.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
+		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.Itoa(int(adminId))
+		ts := utils.RedisUtil.SGet(adminSetKey)
+		if len(ts) > 0 {
+			var tokenKeys []string
+			for _, t := range ts {
+				tokenKeys = append(tokenKeys, config.AdminConfig.BackstageTokenKey+t)
+			}
+			utils.RedisUtil.Del(tokenKeys...)
+		}
+		utils.RedisUtil.Del(adminSetKey)
+		utils.RedisUtil.SSet(adminSetKey, token)
+	}
 }
 
 //Del 管理员删除
