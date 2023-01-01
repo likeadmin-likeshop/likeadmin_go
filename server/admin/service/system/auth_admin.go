@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
@@ -187,6 +188,93 @@ func (adminSrv systemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) {
 		core.Logger.Errorf("Add Create err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
+}
+
+//Edit 管理员编辑
+func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAuthAdminEditReq) {
+	// 检查id
+	err := core.DB.Where("id = ? AND is_delete = ?", editReq.ID, 0).Limit(1).First(&system.SystemAuthAdmin{}).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("账号不存在了!"))
+	} else if err != nil {
+		core.Logger.Errorf("Edit First err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	// 检查username
+	var admin system.SystemAuthAdmin
+	err = core.DB.Where("username = ? AND is_delete = ? AND id != ?", editReq.Username, 0, editReq.ID).Find(&admin).Error
+	if err != nil {
+		core.Logger.Errorf("Edit Find by username err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	if admin.ID > 0 {
+		panic(response.AssertArgumentError.Make("账号已存在换一个吧！"))
+	}
+	// 检查nickname
+	err = core.DB.Where("nickname = ? AND is_delete = ? AND id != ?", editReq.Nickname, 0, editReq.ID).Find(&admin).Error
+	if err != nil {
+		core.Logger.Errorf("Edit Find by nickname err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	if admin.ID > 0 {
+		panic(response.AssertArgumentError.Make("昵称已存在换一个吧！"))
+	}
+	// 检查role
+	if editReq.Role > 0 && editReq.ID != 1 {
+		SystemAuthRoleService.Detail(editReq.Role)
+	}
+	// 更新管理员信息
+	adminMap := structs.Map(editReq)
+	delete(adminMap, "ID")
+	adminMap["Avatar"] = utils.UrlUtil.ToRelativeUrl(editReq.Avatar)
+	role := editReq.Role
+	if editReq.ID == 1 {
+		role = 0
+	}
+	adminMap["Role"] = strconv.Itoa(int(role))
+	if editReq.ID == 1 {
+		delete(adminMap, "Username")
+	}
+	if editReq.Password != "" {
+		passwdLen := len(editReq.Password)
+		if !(passwdLen >= 6 && passwdLen <= 20) {
+			panic(response.Failed.Make("密码必须在6~20位"))
+		}
+		salt := utils.ToolsUtil.RandomString(5)
+		adminMap["Salt"] = salt
+		adminMap["Password"] = utils.ToolsUtil.MakeMd5(strings.Trim(editReq.Password, "") + salt)
+	} else {
+		delete(adminMap, "Password")
+	}
+	err = core.DB.Model(&admin).Where("id = ?", editReq.ID).Updates(adminMap).Error
+	if err != nil {
+		core.Logger.Errorf("Edit Updates err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	adminSrv.CacheAdminUserByUid(editReq.ID)
+	// TODO: 待验证
+	// 如果更改自己的密码,则删除旧缓存
+	adminId := config.AdminConfig.GetAdminId(c)
+	if editReq.Password != "" && editReq.ID == adminId {
+		token := c.Request.Header.Get("token")
+		utils.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
+		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.Itoa(int(adminId))
+		ts := utils.RedisUtil.SGet(adminSetKey)
+		if len(ts) > 0 {
+			var tokenKeys []string
+			for _, t := range ts {
+				tokenKeys = append(tokenKeys, config.AdminConfig.BackstageTokenKey+t)
+			}
+			utils.RedisUtil.Del(tokenKeys...)
+		}
+		utils.RedisUtil.Del(adminSetKey)
+		utils.RedisUtil.SSet(adminSetKey, token)
+	}
+}
+
+//Update 管理员更新
+func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.SystemAuthAdminUpdateReq, adminId uint) {
+	// TODO: 管理员更新
 }
 
 //Del 管理员删除

@@ -20,6 +20,8 @@ func init() {
 	Group.AddGET("/admin/list", adminList)
 	Group.AddGET("/admin/detail", adminDetail)
 	Group.AddPOST("/admin/add", adminAdd)
+	Group.AddPOST("/admin/edit", adminEdit)
+	Group.AddPOST("/admin/upInfo", adminUpInfo)
 	Group.AddPOST("/admin/del", adminDel)
 	Group.AddPOST("/admin/disable", adminDisable)
 	Group.AddGET("/role/list", roleList)
@@ -70,6 +72,23 @@ func adminAdd(c *gin.Context) {
 	var addReq req.SystemAuthAdminAddReq
 	utils.VerifyUtil.VerifyJSON(c, &addReq)
 	system.SystemAuthAdminService.Add(addReq)
+	response.Ok(c)
+}
+
+//adminEdit 管理员编辑
+func adminEdit(c *gin.Context) {
+	var editReq req.SystemAuthAdminEditReq
+	utils.VerifyUtil.VerifyJSON(c, &editReq)
+	system.SystemAuthAdminService.Edit(c, editReq)
+	response.Ok(c)
+}
+
+//adminUpInfo 管理员更新
+func adminUpInfo(c *gin.Context) {
+	// TODO: 管理员更新
+	var updateReq req.SystemAuthAdminUpdateReq
+	utils.VerifyUtil.VerifyJSON(c, &updateReq)
+	system.SystemAuthAdminService.Update(c, updateReq, config.AdminConfig.GetAdminId(c))
 	response.Ok(c)
 }
 
