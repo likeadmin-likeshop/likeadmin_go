@@ -2,12 +2,15 @@ package system
 
 import (
 	"errors"
+	"github.com/fatih/structs"
 	"gorm.io/gorm"
+	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/core"
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/models/system"
+	"strings"
 )
 
 var SystemAuthRoleService = systemAuthRoleService{}
@@ -81,4 +84,71 @@ func (roleSrv systemAuthRoleService) getMemberCnt(roleId uint) (count int64) {
 	core.DB.Model(&system.SystemAuthAdmin{}).Where(
 		"role = ? AND is_delete = ?", roleId, 0).Count(&count)
 	return
+}
+
+//Add 新增角色
+func (roleSrv systemAuthRoleService) Add(addReq req.SystemAuthRoleAddReq) {
+	var role system.SystemAuthRole
+	core.DB.Where("name = ?", strings.Trim(addReq.Name, " ")).Limit(1).First(&role)
+	if role.ID > 0 {
+		panic(response.AssertArgumentError.Make("角色名称已存在!"))
+	}
+	response.Copy(&role, addReq)
+	role.Name = strings.Trim(addReq.Name, " ")
+	// 事务
+	err := core.DB.Transaction(func(tx *gorm.DB) error {
+		txErr := tx.Create(&role).Error
+		if txErr != nil {
+			core.Logger.Errorf("Add Create err: txErr=[%+v]", txErr)
+			return txErr
+		}
+		SystemAuthPermService.BatchSaveByMenuIds(role.ID, addReq.MenuIds, tx)
+		return nil
+	})
+	if err != nil {
+		core.Logger.Errorf("Add Transaction err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+}
+
+//Edit 编辑角色
+func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
+	err := core.DB.Where("id = ?", editReq.ID).Limit(1).First(&system.SystemAuthRole{}).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("角色已不存在!"))
+	} else if err != nil {
+		core.Logger.Errorf("Edit First err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	var role system.SystemAuthRole
+	core.DB.Where("id != ? AND name = ?", editReq.ID, strings.Trim(editReq.Name, " ")).Limit(1).First(&role)
+	if role.ID > 0 {
+		panic(response.AssertArgumentError.Make("角色名称已存在!"))
+	}
+	role.ID = editReq.ID
+	roleMap := structs.Map(editReq)
+	delete(roleMap, "ID")
+	delete(roleMap, "MenuIds")
+	roleMap["Name"] = strings.Trim(editReq.Name, " ")
+	// 事务
+	err = core.DB.Transaction(func(tx *gorm.DB) error {
+		txErr := tx.Model(&role).Updates(roleMap).Error
+		if txErr != nil {
+			core.Logger.Errorf("Edit Updates err: txErr=[%+v]", txErr)
+			return txErr
+		}
+		SystemAuthPermService.BatchDeleteByRoleId(editReq.ID, tx)
+		SystemAuthPermService.BatchSaveByMenuIds(editReq.ID, editReq.MenuIds, tx)
+		SystemAuthPermService.CacheRoleMenusByRoleId(editReq.ID)
+		return nil
+	})
+	if err != nil {
+		core.Logger.Errorf("Edit Transaction err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+}
+
+//Del 删除角色
+func (roleSrv systemAuthRoleService) Del(id uint) {
+	// TODO: 删除角色
 }

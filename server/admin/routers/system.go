@@ -28,6 +28,8 @@ func init() {
 	Group.AddGET("/role/all", roleAll)
 	Group.AddGET("/role/list", roleList, middleware.RecordLog("角色列表"))
 	Group.AddGET("/role/detail", roleDetail, middleware.RecordLog("角色详情"))
+	Group.AddPOST("/role/add", roleAdd, middleware.RecordLog("角色新增"))
+	Group.AddPOST("/role/edit", roleEdit, middleware.RecordLog("角色编辑"))
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
 }
@@ -127,6 +129,22 @@ func roleDetail(c *gin.Context) {
 	var detailReq req.SystemAuthRoleDetailReq
 	utils.VerifyUtil.VerifyQuery(c, &detailReq)
 	response.OkWithData(c, system.SystemAuthRoleService.Detail(detailReq.ID))
+}
+
+//roleAdd 新增角色
+func roleAdd(c *gin.Context) {
+	var addReq req.SystemAuthRoleAddReq
+	utils.VerifyUtil.VerifyJSON(c, &addReq)
+	system.SystemAuthRoleService.Add(addReq)
+	response.Ok(c)
+}
+
+//roleEdit 编辑角色
+func roleEdit(c *gin.Context) {
+	var editReq req.SystemAuthRoleEditReq
+	utils.VerifyUtil.VerifyJSON(c, &editReq)
+	system.SystemAuthRoleService.Edit(editReq)
+	response.Ok(c)
 }
 
 //menuRoute 菜单路由

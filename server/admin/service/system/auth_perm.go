@@ -65,19 +65,22 @@ func (permSrv systemAuthPermService) CacheRoleMenusByRoleId(roleId uint) (err er
 }
 
 //BatchSaveByMenuIds 批量写入角色菜单
-func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds string) {
+func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds string, db *gorm.DB) {
 	if menuIds == "" {
 		return
 	}
-	err := core.DB.Transaction(func(tx *gorm.DB) error {
+	if db == nil {
+		db = core.DB
+	}
+	err := db.Transaction(func(tx *gorm.DB) error {
 		var perms []system.SystemAuthPerm
 		for _, menuIdStr := range strings.Split(menuIds, ",") {
 			menuId, _ := strconv.Atoi(menuIdStr)
 			perms = append(perms, system.SystemAuthPerm{ID: utils.ToolsUtil.MakeUuid(), RoleId: roleId, MenuId: uint(menuId)})
 		}
-		txErr := core.DB.Create(&perms).Error
+		txErr := tx.Create(&perms).Error
 		if txErr != nil {
-			core.Logger.Errorf("BatchSaveByMenuIds Create txErr: txErr=[%+v]", txErr)
+			core.Logger.Errorf("BatchSaveByMenuIds Create err: txErr=[%+v]", txErr)
 			return txErr
 		}
 		return nil
@@ -89,13 +92,24 @@ func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds str
 }
 
 //BatchDeleteByRoleId 批量删除角色菜单(根据角色ID)
-func (permSrv systemAuthPermService) BatchDeleteByRoleId(roleId uint) (err error) {
-	err = core.DB.Delete(&system.SystemAuthPerm{}, "role_id = ?", roleId).Error
+func (permSrv systemAuthPermService) BatchDeleteByRoleId(roleId uint, db *gorm.DB) {
+	if db == nil {
+		db = core.DB
+	}
+	err := db.Delete(&system.SystemAuthPerm{}, "role_id = ?", roleId).Error
+	if err != nil {
+		core.Logger.Errorf("BatchDeleteByRoleId Delete err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
 	return
 }
 
 //BatchDeleteByMenuId 批量删除角色菜单(根据菜单ID)
-func (permSrv systemAuthPermService) BatchDeleteByMenuId(menuId uint) (err error) {
-	err = core.DB.Delete(&system.SystemAuthPerm{}, "menu_id = ?", menuId).Error
+func (permSrv systemAuthPermService) BatchDeleteByMenuId(menuId uint) {
+	err := core.DB.Delete(&system.SystemAuthPerm{}, "menu_id = ?", menuId).Error
+	if err != nil {
+		core.Logger.Errorf("BatchDeleteByMenuId Delete err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
 	return
 }
