@@ -47,6 +47,14 @@ type SystemAuthAdminSelfResp struct {
 	Permissions []string                   `json:"permissions" structs:"permissions"` // 权限集合: [[*]=>所有权限, ['article:add']=>部分权限]
 }
 
+//SystemAuthRoleSimpleResp 系统角色返回简单信息
+type SystemAuthRoleSimpleResp struct {
+	ID         uint        `json:"id" structs:"id"`                 // 主键
+	Name       string      `json:"name" structs:"name"`             // 角色名称
+	CreateTime core.TsTime `json:"createTime" structs:"createTime"` // 创建时间
+	UpdateTime core.TsTime `json:"updateTime" structs:"updateTime"` // 更新时间
+}
+
 //SystemAuthRoleResp 系统角色返回信息
 type SystemAuthRoleResp struct {
 	ID         uint        `json:"id" structs:"id"`                 // 主键

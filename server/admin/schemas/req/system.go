@@ -69,3 +69,8 @@ type SystemAuthAdminDelReq struct {
 type SystemAuthAdminDisableReq struct {
 	ID uint `form:"id" binding:"required,gt=0"` // 主键
 }
+
+//SystemAuthRoleDetailReq 角色详情参数
+type SystemAuthRoleDetailReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}

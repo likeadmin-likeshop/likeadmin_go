@@ -25,7 +25,9 @@ func init() {
 	Group.AddPOST("/admin/upInfo", adminUpInfo, middleware.RecordLog("管理员更新"))
 	Group.AddPOST("/admin/del", adminDel, middleware.RecordLog("管理员删除"))
 	Group.AddPOST("/admin/disable", adminDisable, middleware.RecordLog("管理员状态切换"))
+	Group.AddGET("/role/all", roleAll)
 	Group.AddGET("/role/list", roleList, middleware.RecordLog("角色列表"))
+	Group.AddGET("/role/detail", roleDetail, middleware.RecordLog("角色详情"))
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
 }
@@ -108,11 +110,23 @@ func adminDisable(c *gin.Context) {
 	response.Ok(c)
 }
 
+//roleAll 角色所有
+func roleAll(c *gin.Context) {
+	response.OkWithData(c, system.SystemAuthRoleService.All())
+}
+
 //roleList 角色列表
 func roleList(c *gin.Context) {
 	var page request.PageReq
 	utils.VerifyUtil.VerifyQuery(c, &page)
 	response.OkWithData(c, system.SystemAuthRoleService.List(page))
+}
+
+//roleDetail 角色详情
+func roleDetail(c *gin.Context) {
+	var detailReq req.SystemAuthRoleDetailReq
+	utils.VerifyUtil.VerifyQuery(c, &detailReq)
+	response.OkWithData(c, system.SystemAuthRoleService.Detail(detailReq.ID))
 }
 
 //menuRoute 菜单路由

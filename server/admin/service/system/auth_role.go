@@ -15,6 +15,18 @@ var SystemAuthRoleService = systemAuthRoleService{}
 //systemAuthRoleService 系统角色服务实现类
 type systemAuthRoleService struct{}
 
+//All 角色所有
+func (roleSrv systemAuthRoleService) All() (res []resp.SystemAuthRoleSimpleResp) {
+	var roles []system.SystemAuthRole
+	err := core.DB.Order("sort desc, id desc").Find(&roles).Error
+	if err != nil {
+		core.Logger.Errorf("All Find err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	response.Copy(&res, roles)
+	return
+}
+
 //List 根据角色ID获取菜单ID
 func (roleSrv systemAuthRoleService) List(page request.PageReq) response.PageResp {
 	var res response.PageResp
