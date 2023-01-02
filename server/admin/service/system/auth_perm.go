@@ -1,6 +1,7 @@
 package system
 
 import (
+	"gorm.io/gorm"
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
@@ -68,14 +69,21 @@ func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds str
 	if menuIds == "" {
 		return
 	}
-	var perms []system.SystemAuthPerm
-	for _, menuIdStr := range strings.Split(menuIds, ",") {
-		menuId, _ := strconv.Atoi(menuIdStr)
-		perms = append(perms, system.SystemAuthPerm{ID: utils.ToolsUtil.MakeUuid(), RoleId: roleId, MenuId: uint(menuId)})
-	}
-	err := core.DB.Create(&perms).Error
+	err := core.DB.Transaction(func(tx *gorm.DB) error {
+		var perms []system.SystemAuthPerm
+		for _, menuIdStr := range strings.Split(menuIds, ",") {
+			menuId, _ := strconv.Atoi(menuIdStr)
+			perms = append(perms, system.SystemAuthPerm{ID: utils.ToolsUtil.MakeUuid(), RoleId: roleId, MenuId: uint(menuId)})
+		}
+		txErr := core.DB.Create(&perms).Error
+		if txErr != nil {
+			core.Logger.Errorf("BatchSaveByMenuIds Create txErr: txErr=[%+v]", txErr)
+			return txErr
+		}
+		return nil
+	})
 	if err != nil {
-		core.Logger.Errorf("BatchSaveByMenuIds Create err: err=[%+v]", err)
+		core.Logger.Errorf("BatchSaveByMenuIds Transaction err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
 }
