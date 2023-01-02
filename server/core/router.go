@@ -6,9 +6,10 @@ import (
 )
 
 type routerBase struct {
-	method  string
-	path    string
-	handler gin.HandlerFunc
+	method      string
+	path        string
+	handler     gin.HandlerFunc
+	middlewares []gin.HandlerFunc
 }
 
 type groupBase struct {
@@ -31,42 +32,48 @@ func RegisterGroup(rg *gin.RouterGroup, group *groupBase, useFunc func(g *gin.Ro
 		useFunc(r)
 	}
 	for _, item := range group.routerMap {
-		r.Handle(item.method, item.path, item.handler)
+		var handlers []gin.HandlerFunc
+		if item.middlewares != nil {
+			handlers = item.middlewares
+		}
+		handlers = append(handlers, item.handler)
+		r.Handle(item.method, item.path, handlers...)
 	}
 }
 
 //AddHandle registers a new request handle
-func (group *groupBase) AddHandle(httpMethod, relativePath string, handler gin.HandlerFunc) *groupBase {
-	group.routerMap[relativePath] = routerBase{method: httpMethod, path: relativePath, handler: handler}
+func (group *groupBase) AddHandle(httpMethod, relativePath string, handler gin.HandlerFunc, middlewares []gin.HandlerFunc) *groupBase {
+	group.routerMap[relativePath] = routerBase{
+		method: httpMethod, path: relativePath, handler: handler, middlewares: middlewares}
 	return group
 }
 
 // AddPOST is a shortcut for router.AddHandle("POST", path, handle).
-func (group *groupBase) AddPOST(relativePath string, handler gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodPost, relativePath, handler)
+func (group *groupBase) AddPOST(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
+	group.AddHandle(http.MethodPost, relativePath, handler, middlewares)
 	return group
 }
 
 // AddGET is a shortcut for router.AddHandle("GET", path, handle).
-func (group *groupBase) AddGET(relativePath string, handler gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodGet, relativePath, handler)
+func (group *groupBase) AddGET(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
+	group.AddHandle(http.MethodGet, relativePath, handler, middlewares)
 	return group
 }
 
 // AddDELETE is a shortcut for router.AddHandle("DELETE", path, handle).
-func (group *groupBase) AddDELETE(relativePath string, handler gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodDelete, relativePath, handler)
+func (group *groupBase) AddDELETE(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
+	group.AddHandle(http.MethodDelete, relativePath, handler, middlewares)
 	return group
 }
 
 // AddPATCH is a shortcut for router.AddHandle("PATCH", path, handle).
-func (group *groupBase) AddPATCH(relativePath string, handler gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodPatch, relativePath, handler)
+func (group *groupBase) AddPATCH(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
+	group.AddHandle(http.MethodPatch, relativePath, handler, middlewares)
 	return group
 }
 
 // AddPUT is a shortcut for router.AddHandle("PUT", path, handle).
-func (group *groupBase) AddPUT(relativePath string, handler gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodPut, relativePath, handler)
+func (group *groupBase) AddPUT(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
+	group.AddHandle(http.MethodPut, relativePath, handler, middlewares)
 	return group
 }

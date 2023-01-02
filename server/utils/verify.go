@@ -2,6 +2,7 @@ package utils
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gin-gonic/gin/binding"
 	"likeadmin/core/response"
 )
 
@@ -11,7 +12,7 @@ var VerifyUtil = verifyUtil{}
 type verifyUtil struct{}
 
 func (vu verifyUtil) VerifyJSON(c *gin.Context, obj any) {
-	if err := c.ShouldBindJSON(obj); err != nil {
+	if err := c.ShouldBindBodyWith(obj, binding.JSON); err != nil {
 		panic(response.ParamsValidError.MakeData(err.Error()))
 		return
 	}

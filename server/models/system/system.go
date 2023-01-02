@@ -86,3 +86,21 @@ type SystemLogLogin struct {
 	Status     uint8  `gorm:"not null;default:0;comment:'操作状态: 1=成功, 0=失败'"`
 	CreateTime int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
 }
+
+//SystemLogOperate 系统操作日志实体
+type SystemLogOperate struct {
+	ID         uint   `gorm:"primarykey;comment:'主键'"`
+	AdminId    uint   `gorm:"not null;default:0;comment:'操作人ID'"`
+	Type       string `gorm:"not null;default:'';comment:'请求类型: GET/POST/PUT'"`
+	Title      string `gorm:"default:'';comment:'操作标题'"`
+	Ip         string `gorm:"not null;default:'';comment:'请求IP'"`
+	Url        string `gorm:"not null;default:'';comment:'请求接口'"`
+	Method     string `gorm:"not null;default:'';comment:'请求方法'"`
+	Args       string `gorm:"comment:'请求参数'"`
+	Error      string `gorm:"comment:'错误信息'"`
+	Status     uint8  `gorm:"not null;default:0;comment:'执行状态: 1=成功, 2=失败'"`
+	StartTime  int64  `gorm:"not null;default:0;comment:开始时间"`
+	EndTime    int64  `gorm:"not null;default:0;comment:结束时间"`
+	TaskTime   int64  `gorm:"not null;default:0;comment:执行耗时"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
+}

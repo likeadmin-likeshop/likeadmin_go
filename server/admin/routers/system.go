@@ -8,6 +8,7 @@ import (
 	"likeadmin/core"
 	"likeadmin/core/request"
 	"likeadmin/core/response"
+	"likeadmin/middleware"
 	"likeadmin/utils"
 )
 
@@ -19,12 +20,12 @@ func init() {
 	Group.AddGET("/admin/self", adminSelf)
 	Group.AddGET("/admin/list", adminList)
 	Group.AddGET("/admin/detail", adminDetail)
-	Group.AddPOST("/admin/add", adminAdd)
-	Group.AddPOST("/admin/edit", adminEdit)
-	Group.AddPOST("/admin/upInfo", adminUpInfo)
-	Group.AddPOST("/admin/del", adminDel)
-	Group.AddPOST("/admin/disable", adminDisable)
-	Group.AddGET("/role/list", roleList)
+	Group.AddPOST("/admin/add", adminAdd, middleware.RecordLog("管理员新增"))
+	Group.AddPOST("/admin/edit", adminEdit, middleware.RecordLog("管理员编辑"))
+	Group.AddPOST("/admin/upInfo", adminUpInfo, middleware.RecordLog("管理员更新"))
+	Group.AddPOST("/admin/del", adminDel, middleware.RecordLog("管理员删除"))
+	Group.AddPOST("/admin/disable", adminDisable, middleware.RecordLog("管理员状态切换"))
+	Group.AddGET("/role/list", roleList, middleware.RecordLog("角色列表"))
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
 }
