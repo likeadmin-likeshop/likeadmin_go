@@ -149,21 +149,23 @@ func (adminSrv systemAuthAdminService) Detail(id uint) (res resp.SystemAuthAdmin
 func (adminSrv systemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) {
 	var sysAdmin system.SystemAuthAdmin
 	// 检查username
-	err := core.DB.Where("username = ? AND is_delete = ?", addReq.Username, 0).Limit(1).Find(&sysAdmin).Error
+	r := core.DB.Where("username = ? AND is_delete = ?", addReq.Username, 0).Limit(1).Find(&sysAdmin)
+	err := r.Error
 	if err != nil {
 		core.Logger.Errorf("Add Find by username err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
-	if sysAdmin.ID > 0 {
+	if r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("账号已存在换一个吧！"))
 	}
 	// 检查nickname
-	err = core.DB.Where("nickname = ? AND is_delete = ?", addReq.Nickname, 0).Limit(1).Find(&sysAdmin).Error
+	r = core.DB.Where("nickname = ? AND is_delete = ?", addReq.Nickname, 0).Limit(1).Find(&sysAdmin)
+	err = r.Error
 	if err != nil {
 		core.Logger.Errorf("Add Find by nickname err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
-	if sysAdmin.ID > 0 {
+	if r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("昵称已存在换一个吧！"))
 	}
 	roleResp := SystemAuthRoleService.Detail(addReq.Role)
@@ -202,21 +204,23 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 	}
 	// 检查username
 	var admin system.SystemAuthAdmin
-	err = core.DB.Where("username = ? AND is_delete = ? AND id != ?", editReq.Username, 0, editReq.ID).Find(&admin).Error
+	r := core.DB.Where("username = ? AND is_delete = ? AND id != ?", editReq.Username, 0, editReq.ID).Find(&admin)
+	err = r.Error
 	if err != nil {
 		core.Logger.Errorf("Edit Find by username err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
-	if admin.ID > 0 {
+	if r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("账号已存在换一个吧！"))
 	}
 	// 检查nickname
-	err = core.DB.Where("nickname = ? AND is_delete = ? AND id != ?", editReq.Nickname, 0, editReq.ID).Find(&admin).Error
+	r = core.DB.Where("nickname = ? AND is_delete = ? AND id != ?", editReq.Nickname, 0, editReq.ID).Find(&admin)
+	err = r.Error
 	if err != nil {
 		core.Logger.Errorf("Edit Find by nickname err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
-	if admin.ID > 0 {
+	if r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("昵称已存在换一个吧！"))
 	}
 	// 检查role

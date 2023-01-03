@@ -30,6 +30,7 @@ func init() {
 	Group.AddGET("/role/detail", roleDetail, middleware.RecordLog("角色详情"))
 	Group.AddPOST("/role/add", roleAdd, middleware.RecordLog("角色新增"))
 	Group.AddPOST("/role/edit", roleEdit, middleware.RecordLog("角色编辑"))
+	Group.AddPOST("/role/del", roleDel, middleware.RecordLog("角色删除"))
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
 }
@@ -144,6 +145,14 @@ func roleEdit(c *gin.Context) {
 	var editReq req.SystemAuthRoleEditReq
 	utils.VerifyUtil.VerifyJSON(c, &editReq)
 	system.SystemAuthRoleService.Edit(editReq)
+	response.Ok(c)
+}
+
+//roleDel 删除角色
+func roleDel(c *gin.Context) {
+	var delReq req.SystemAuthRoleDelReq
+	utils.VerifyUtil.VerifyJSON(c, &delReq)
+	system.SystemAuthRoleService.Del(delReq.ID)
 	response.Ok(c)
 }
 

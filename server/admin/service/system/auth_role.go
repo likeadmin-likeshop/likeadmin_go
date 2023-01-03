@@ -6,10 +6,13 @@ import (
 	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
+	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/models/system"
+	"likeadmin/utils"
+	"strconv"
 	"strings"
 )
 
@@ -89,8 +92,8 @@ func (roleSrv systemAuthRoleService) getMemberCnt(roleId uint) (count int64) {
 //Add 新增角色
 func (roleSrv systemAuthRoleService) Add(addReq req.SystemAuthRoleAddReq) {
 	var role system.SystemAuthRole
-	core.DB.Where("name = ?", strings.Trim(addReq.Name, " ")).Limit(1).First(&role)
-	if role.ID > 0 {
+	r := core.DB.Where("name = ?", strings.Trim(addReq.Name, " ")).Limit(1).First(&role)
+	if r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("角色名称已存在!"))
 	}
 	response.Copy(&role, addReq)
@@ -121,8 +124,8 @@ func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 		panic(response.SystemError)
 	}
 	var role system.SystemAuthRole
-	core.DB.Where("id != ? AND name = ?", editReq.ID, strings.Trim(editReq.Name, " ")).Limit(1).First(&role)
-	if role.ID > 0 {
+	r := core.DB.Where("id != ? AND name = ?", editReq.ID, strings.Trim(editReq.Name, " ")).Limit(1).First(&role)
+	if r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("角色名称已存在!"))
 	}
 	role.ID = editReq.ID
@@ -151,4 +154,30 @@ func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 //Del 删除角色
 func (roleSrv systemAuthRoleService) Del(id uint) {
 	// TODO: 删除角色
+	err := core.DB.Where("id = ?", id).Limit(1).First(&system.SystemAuthRole{}).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("角色已不存在!"))
+	} else if err != nil {
+		core.Logger.Errorf("Del First err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	r := core.DB.Where("role = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{})
+	if r.RowsAffected > 0 {
+		panic(response.AssertArgumentError.Make("角色已被管理员使用,请先移除!"))
+	}
+	// 事务
+	err = core.DB.Transaction(func(tx *gorm.DB) error {
+		txErr := tx.Delete(&system.SystemAuthRole{}, "id = ?", id).Error
+		if txErr != nil {
+			core.Logger.Errorf("Del Delete err: txErr=[%+v]", txErr)
+			return txErr
+		}
+		SystemAuthPermService.BatchDeleteByRoleId(id, tx)
+		utils.RedisUtil.HDel(config.AdminConfig.BackstageRolesKey, strconv.Itoa(int(id)))
+		return nil
+	})
+	if err != nil {
+		core.Logger.Errorf("Edit Transaction err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
 }
