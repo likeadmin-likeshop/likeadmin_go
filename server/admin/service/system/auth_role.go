@@ -153,7 +153,6 @@ func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 
 //Del 删除角色
 func (roleSrv systemAuthRoleService) Del(id uint) {
-	// TODO: 删除角色
 	err := core.DB.Where("id = ?", id).Limit(1).First(&system.SystemAuthRole{}).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("角色已不存在!"))
