@@ -1,7 +1,9 @@
 package system
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/config"
 	"likeadmin/core"
@@ -53,18 +55,27 @@ func (menuSrv systemAuthMenuService) List() []interface{} {
 		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
 }
 
-func (menuSrv systemAuthMenuService) Detail(menus []system.SystemAuthMenu) {
-	// TODO:
+func (menuSrv systemAuthMenuService) Detail(id uint) (res resp.SystemAuthMenuResp) {
+	var menu system.SystemAuthMenu
+	err := core.DB.Where("id = ?", id).Limit(1).First(&menu).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("菜单已不存在!"))
+	} else if err != nil {
+		core.Logger.Errorf("Detail Find err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	response.Copy(&res, menu)
+	return
 }
 
 func (menuSrv systemAuthMenuService) Add(menus []system.SystemAuthMenu) {
-	// TODO:
+	// TODO: Add
 }
 
 func (menuSrv systemAuthMenuService) Edit(menus []system.SystemAuthMenu) {
-	// TODO:
+	// TODO: Edit
 }
 
 func (menuSrv systemAuthMenuService) Delete(menus []system.SystemAuthMenu) {
-	// TODO:
+	// TODO: Delete
 }

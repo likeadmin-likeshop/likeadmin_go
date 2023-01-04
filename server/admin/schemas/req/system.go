@@ -98,3 +98,8 @@ type SystemAuthRoleEditReq struct {
 type SystemAuthRoleDelReq struct {
 	ID uint `form:"id" binding:"required,gt=0"` // 主键
 }
+
+//SystemAuthMenuDetailReq 菜单详情参数
+type SystemAuthMenuDetailReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}

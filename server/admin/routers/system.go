@@ -33,6 +33,7 @@ func init() {
 	Group.AddPOST("/role/del", roleDel, middleware.RecordLog("角色删除"))
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
+	Group.AddGET("/menu/detail", menuDetail)
 }
 
 //login 登录系统
@@ -165,4 +166,11 @@ func menuRoute(c *gin.Context) {
 //menuList 菜单列表
 func menuList(c *gin.Context) {
 	response.OkWithData(c, system.SystemAuthMenuService.List())
+}
+
+//menuDetail 菜单详情
+func menuDetail(c *gin.Context) {
+	var detailReq req.SystemAuthMenuDetailReq
+	utils.VerifyUtil.VerifyQuery(c, &detailReq)
+	response.OkWithData(c, system.SystemAuthMenuService.Detail(detailReq.ID))
 }
