@@ -34,6 +34,7 @@ func init() {
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
 	Group.AddGET("/menu/detail", menuDetail)
+	Group.AddPOST("/menu/del", menuDel)
 }
 
 //login 登录系统
@@ -173,4 +174,12 @@ func menuDetail(c *gin.Context) {
 	var detailReq req.SystemAuthMenuDetailReq
 	utils.VerifyUtil.VerifyQuery(c, &detailReq)
 	response.OkWithData(c, system.SystemAuthMenuService.Detail(detailReq.ID))
+}
+
+//menuDel 删除菜单
+func menuDel(c *gin.Context) {
+	var delReq req.SystemAuthMenuDelReq
+	utils.VerifyUtil.VerifyJSON(c, &delReq)
+	system.SystemAuthMenuService.Del(delReq.ID)
+	response.Ok(c)
 }

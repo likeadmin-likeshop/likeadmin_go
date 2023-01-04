@@ -103,3 +103,8 @@ type SystemAuthRoleDelReq struct {
 type SystemAuthMenuDetailReq struct {
 	ID uint `form:"id" binding:"required,gt=0"` // 主键
 }
+
+//SystemAuthMenuDelReq 删除菜单参数
+type SystemAuthMenuDelReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}

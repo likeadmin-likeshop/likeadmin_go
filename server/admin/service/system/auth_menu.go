@@ -55,13 +55,14 @@ func (menuSrv systemAuthMenuService) List() []interface{} {
 		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
 }
 
+//Detail 菜单详情
 func (menuSrv systemAuthMenuService) Detail(id uint) (res resp.SystemAuthMenuResp) {
 	var menu system.SystemAuthMenu
 	err := core.DB.Where("id = ?", id).Limit(1).First(&menu).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("菜单已不存在!"))
 	} else if err != nil {
-		core.Logger.Errorf("Detail Find err: err=[%+v]", err)
+		core.Logger.Errorf("Detail First err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
 	response.Copy(&res, menu)
@@ -76,6 +77,28 @@ func (menuSrv systemAuthMenuService) Edit(menus []system.SystemAuthMenu) {
 	// TODO: Edit
 }
 
-func (menuSrv systemAuthMenuService) Delete(menus []system.SystemAuthMenu) {
-	// TODO: Delete
+//Del 删除菜单
+func (menuSrv systemAuthMenuService) Del(id uint) {
+	var menu system.SystemAuthMenu
+	err := core.DB.Where("id = ?", id).Limit(1).First(&menu).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("菜单已不存在!"))
+	} else if err != nil {
+		core.Logger.Errorf("Delete First err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	r := core.DB.Where("pid = ?", id).Limit(1).Find(&system.SystemAuthMenu{})
+	err = r.Error
+	if err != nil {
+		core.Logger.Errorf("Delete Find by pid err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	if r.RowsAffected > 0 {
+		panic(response.AssertArgumentError.Make("请先删除子菜单再操作！"))
+	}
+	err = core.DB.Delete(&menu).Error
+	if err != nil {
+		core.Logger.Errorf("Delete Delete err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
 }
