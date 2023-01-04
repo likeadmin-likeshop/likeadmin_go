@@ -36,7 +36,11 @@ func TokenAuth() gin.HandlerFunc {
 		// Token是否过期
 		token = config.AdminConfig.BackstageTokenKey + token
 		existCnt := utils.RedisUtil.Exists(token)
-		if existCnt == 0 {
+		if existCnt < 0 {
+			response.Fail(c, response.SystemError)
+			c.Abort()
+			return
+		} else if existCnt == 0 {
 			response.Fail(c, response.TokenInvalid)
 			c.Abort()
 			return
