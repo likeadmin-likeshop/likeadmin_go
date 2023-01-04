@@ -87,7 +87,7 @@ func (ru redisUtil) HGet(key string, field string) string {
 func (ru redisUtil) HExists(key string, field string) bool {
 	res, err := core.Redis.HExists(context.Background(), config.Config.RedisPrefix+key, field).Result()
 	if err != nil {
-		core.Logger.Errorf("redisUtil.HGet err: err=[%+v]", err)
+		core.Logger.Errorf("redisUtil.HExists err: err=[%+v]", err)
 		return false
 	}
 	return res
@@ -97,7 +97,7 @@ func (ru redisUtil) HExists(key string, field string) bool {
 func (ru redisUtil) HDel(key string, fields ...string) bool {
 	err := core.Redis.HDel(context.Background(), config.Config.RedisPrefix+key, fields...).Err()
 	if err != nil {
-		core.Logger.Errorf("redisUtil.HGet err: err=[%+v]", err)
+		core.Logger.Errorf("redisUtil.HDel err: err=[%+v]", err)
 		return false
 	}
 	return true
@@ -108,7 +108,7 @@ func (ru redisUtil) Exists(keys ...string) int64 {
 	fullKeys := ru.toFullKeys(keys)
 	cnt, err := core.Redis.Exists(context.Background(), fullKeys...).Result()
 	if err != nil {
-		core.Logger.Errorf("redisUtil.Expire err: err=[%+v]", err)
+		core.Logger.Errorf("redisUtil.Exists err: err=[%+v]", err)
 		return -1
 	}
 	return cnt

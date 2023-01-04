@@ -176,7 +176,7 @@ func (roleSrv systemAuthRoleService) Del(id uint) {
 		return nil
 	})
 	if err != nil {
-		core.Logger.Errorf("Edit Transaction err: err=[%+v]", err)
+		core.Logger.Errorf("Del Transaction err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
 }
