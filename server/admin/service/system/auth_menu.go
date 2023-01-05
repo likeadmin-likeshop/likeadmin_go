@@ -2,8 +2,10 @@ package system
 
 import (
 	"errors"
+	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
+	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/config"
 	"likeadmin/core"
@@ -29,8 +31,7 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 		chain = chain.Where("id in ?", menuIds)
 	}
 	var menus []system.SystemAuthMenu
-	err := chain.Order("menu_sort desc, id").Find(&menus).Error
-	if err != nil {
+	if err := chain.Order("menu_sort desc, id").Find(&menus).Error; err != nil {
 		core.Logger.Errorf("SelectMenuByRoleId Find err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -44,8 +45,7 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 //List 菜单列表
 func (menuSrv systemAuthMenuService) List() []interface{} {
 	var menus []system.SystemAuthMenu
-	err := core.DB.Order("menu_sort desc, id").Find(&menus).Error
-	if err != nil {
+	if err := core.DB.Order("menu_sort desc, id").Find(&menus).Error; err != nil {
 		core.Logger.Errorf("List Find err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -69,12 +69,31 @@ func (menuSrv systemAuthMenuService) Detail(id uint) (res resp.SystemAuthMenuRes
 	return
 }
 
-func (menuSrv systemAuthMenuService) Add(menus []system.SystemAuthMenu) {
-	// TODO: Add
+func (menuSrv systemAuthMenuService) Add(addReq req.SystemAuthMenuAddReq) {
+	var menu system.SystemAuthMenu
+	response.Copy(&menu, addReq)
+	if err := core.DB.Create(&menu).Error; err != nil {
+		core.Logger.Errorf("Add Create err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	utils.RedisUtil.Del(config.AdminConfig.BackstageRolesKey)
 }
 
-func (menuSrv systemAuthMenuService) Edit(menus []system.SystemAuthMenu) {
-	// TODO: Edit
+func (menuSrv systemAuthMenuService) Edit(editReq req.SystemAuthMenuEditReq) {
+	var menu system.SystemAuthMenu
+	err := core.DB.Where("id = ?", editReq.ID).Limit(1).Find(&menu).Error
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		panic(response.AssertArgumentError.Make("菜单已不存在!"))
+	} else if err != nil {
+		core.Logger.Errorf("Edit Find err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	response.Copy(&menu, editReq)
+	if err = core.DB.Model(&menu).Updates(structs.Map(menu)).Error; err != nil {
+		core.Logger.Errorf("Edit Updates err: err=[%+v]", err)
+		panic(response.SystemError)
+	}
+	utils.RedisUtil.Del(config.AdminConfig.BackstageRolesKey)
 }
 
 //Del 删除菜单
@@ -96,8 +115,7 @@ func (menuSrv systemAuthMenuService) Del(id uint) {
 	if r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("请先删除子菜单再操作！"))
 	}
-	err = core.DB.Delete(&menu).Error
-	if err != nil {
+	if err = core.DB.Delete(&menu).Error; err != nil {
 		core.Logger.Errorf("Delete Delete err: err=[%+v]", err)
 		panic(response.SystemError)
 	}

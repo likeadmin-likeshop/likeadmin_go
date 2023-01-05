@@ -96,8 +96,7 @@ func (permSrv systemAuthPermService) BatchDeleteByRoleId(roleId uint, db *gorm.D
 	if db == nil {
 		db = core.DB
 	}
-	err := db.Delete(&system.SystemAuthPerm{}, "role_id = ?", roleId).Error
-	if err != nil {
+	if err := db.Delete(&system.SystemAuthPerm{}, "role_id = ?", roleId).Error; err != nil {
 		core.Logger.Errorf("BatchDeleteByRoleId Delete err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -106,8 +105,7 @@ func (permSrv systemAuthPermService) BatchDeleteByRoleId(roleId uint, db *gorm.D
 
 //BatchDeleteByMenuId 批量删除角色菜单(根据菜单ID)
 func (permSrv systemAuthPermService) BatchDeleteByMenuId(menuId uint) {
-	err := core.DB.Delete(&system.SystemAuthPerm{}, "menu_id = ?", menuId).Error
-	if err != nil {
+	if err := core.DB.Delete(&system.SystemAuthPerm{}, "menu_id = ?", menuId).Error; err != nil {
 		core.Logger.Errorf("BatchDeleteByMenuId Delete err: err=[%+v]", err)
 		panic(response.SystemError)
 	}

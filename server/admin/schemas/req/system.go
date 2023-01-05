@@ -104,6 +104,41 @@ type SystemAuthMenuDetailReq struct {
 	ID uint `form:"id" binding:"required,gt=0"` // 主键
 }
 
+//SystemAuthMenuAddReq 新增菜单参数
+type SystemAuthMenuAddReq struct {
+	Pid       uint   `form:"pid" binding:"required,gt=0"`              // 上级菜单
+	MenuType  string `form:"menuType" binding:"oneof=M C A"`           // 权限类型: [M=目录, C=菜单, A=按钮]
+	MenuName  string `form:"menuName" binding:"required,min=1,max=30"` // 菜单名称
+	MenuIcon  string `form:"menuIcon" binding:"max=100"`               // 菜单图标
+	MenuSort  int    `form:"menuSort" binding:"required,gte=0"`        // 菜单排序
+	Perms     string `form:"perms" binding:"max=100"`                  // 权限标识
+	Paths     string `form:"paths" binding:"max=200"`                  // 路由地址
+	Component string `form:"component" binding:"max=200"`              // 前端组件
+	Selected  string `form:"selected" binding:"max=200"`               // 选中路径
+	Params    string `form:"params" binding:"max=200"`                 // 路由参数
+	IsCache   uint8  `form:"isCache" binding:"oneof=0 1"`              // 是否缓存: [0=否, 1=是]
+	IsShow    uint8  `form:"isShow" binding:"oneof=0 1"`               // 是否显示: [0=否, 1=是]
+	IsDisable uint8  `form:"isDisable" binding:"oneof=0 1"`            // 是否禁用: [0=否, 1=是]
+}
+
+//SystemAuthMenuEditReq 编辑菜单参数
+type SystemAuthMenuEditReq struct {
+	ID        uint   `form:"id" binding:"required,gt=0"`               // 主键
+	Pid       uint   `form:"pid" binding:"required,gt=0"`              // 上级菜单
+	MenuType  string `form:"menuType" binding:"oneof=M C A"`           // 权限类型: [M=目录, C=菜单, A=按钮]
+	MenuName  string `form:"menuName" binding:"required,min=1,max=30"` // 菜单名称
+	MenuIcon  string `form:"menuIcon" binding:"max=100"`               // 菜单图标
+	MenuSort  int    `form:"menuSort" binding:"required,gte=0"`        // 菜单排序
+	Perms     string `form:"perms" binding:"max=100"`                  // 权限标识
+	Paths     string `form:"paths" binding:"max=200"`                  // 路由地址
+	Component string `form:"component" binding:"max=200"`              // 前端组件
+	Selected  string `form:"selected" binding:"max=200"`               // 选中路径
+	Params    string `form:"params" binding:"max=200"`                 // 路由参数
+	IsCache   uint8  `form:"isCache" binding:"oneof=0 1"`              // 是否缓存: [0=否, 1=是]
+	IsShow    uint8  `form:"isShow" binding:"oneof=0 1"`               // 是否显示: [0=否, 1=是]
+	IsDisable uint8  `form:"isDisable" binding:"oneof=0 1"`            // 是否禁用: [0=否, 1=是]
+}
+
 //SystemAuthMenuDelReq 删除菜单参数
 type SystemAuthMenuDelReq struct {
 	ID uint `form:"id" binding:"required,gt=0"` // 主键

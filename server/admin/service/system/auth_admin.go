@@ -35,8 +35,7 @@ func (adminSrv systemAuthAdminService) FindByUsername(username string) (admin sy
 func (adminSrv systemAuthAdminService) Self(adminId uint) (res resp.SystemAuthAdminSelfResp) {
 	// 管理员信息
 	var sysAdmin system.SystemAuthAdmin
-	err := core.DB.Where("id = ? AND is_delete = ?", adminId, 0).Limit(1).First(&sysAdmin).Error
-	if err != nil {
+	if err := core.DB.Where("id = ? AND is_delete = ?", adminId, 0).Limit(1).First(&sysAdmin).Error; err != nil {
 		core.Logger.Errorf("Self First err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -47,7 +46,7 @@ func (adminSrv systemAuthAdminService) Self(adminId uint) (res resp.SystemAuthAd
 		menuIds := SystemAuthPermService.SelectMenuIdsByRoleId(uint(roleId))
 		if len(menuIds) > 0 {
 			var menus []system.SystemAuthMenu
-			err = core.DB.Where(
+			err := core.DB.Where(
 				"id in ? AND is_disable = ? AND menu_type in ?", menuIds, 0, []string{"C", "A"}).Order(
 				"menu_sort, id").Find(&menus).Error
 			if err != nil {
@@ -101,15 +100,13 @@ func (adminSrv systemAuthAdminService) List(page request.PageReq, listReq req.Sy
 	}
 	// 总数
 	var count int64
-	err := adminModel.Count(&count).Error
-	if err != nil {
+	if err := adminModel.Count(&count).Error; err != nil {
 		core.Logger.Errorf("List Count err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
 	// 数据
 	var adminResp []resp.SystemAuthAdminResp
-	err = adminModel.Limit(limit).Offset(offset).Order("id desc, sort desc").Find(&adminResp).Error
-	if err != nil {
+	if err := adminModel.Limit(limit).Offset(offset).Order("id desc, sort desc").Find(&adminResp).Error; err != nil {
 		core.Logger.Errorf("List Find err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -185,8 +182,7 @@ func (adminSrv systemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) {
 		addReq.Avatar = "/api/static/backend_avatar.png"
 	}
 	sysAdmin.Avatar = utils.UrlUtil.ToRelativeUrl(addReq.Avatar)
-	err = core.DB.Create(&sysAdmin).Error
-	if err != nil {
+	if err = core.DB.Create(&sysAdmin).Error; err != nil {
 		core.Logger.Errorf("Add Create err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -250,8 +246,7 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 	} else {
 		delete(adminMap, "Password")
 	}
-	err = core.DB.Model(&admin).Where("id = ?", editReq.ID).Updates(adminMap).Error
-	if err != nil {
+	if err = core.DB.Model(&admin).Where("id = ?", editReq.ID).Updates(adminMap).Error; err != nil {
 		core.Logger.Errorf("Edit Updates err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -310,8 +305,7 @@ func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.Syst
 	} else {
 		delete(adminMap, "Password")
 	}
-	err = core.DB.Model(&admin).Updates(adminMap).Error
-	if err != nil {
+	if err = core.DB.Model(&admin).Updates(adminMap).Error; err != nil {
 		core.Logger.Errorf("Update Updates err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -350,8 +344,7 @@ func (adminSrv systemAuthAdminService) Del(c *gin.Context, id uint) {
 	if id == config.AdminConfig.GetAdminId(c) {
 		panic(response.AssertArgumentError.Make("不能删除自己!"))
 	}
-	err = core.DB.Model(&admin).Updates(system.SystemAuthAdmin{IsDelete: 1, DeleteTime: time.Now().Unix()}).Error
-	if err != nil {
+	if err = core.DB.Model(&admin).Updates(system.SystemAuthAdmin{IsDelete: 1, DeleteTime: time.Now().Unix()}).Error; err != nil {
 		core.Logger.Errorf("Del Updates err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -360,8 +353,7 @@ func (adminSrv systemAuthAdminService) Del(c *gin.Context, id uint) {
 //Disable 管理员状态切换
 func (adminSrv systemAuthAdminService) Disable(c *gin.Context, id uint) {
 	var admin system.SystemAuthAdmin
-	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).Find(&admin).Error
-	if err != nil {
+	if err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).Find(&admin).Error; err != nil {
 		core.Logger.Errorf("Disable Find err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -375,8 +367,7 @@ func (adminSrv systemAuthAdminService) Disable(c *gin.Context, id uint) {
 	if admin.IsDisable == 0 {
 		isDisable = 1
 	}
-	err = core.DB.Model(&admin).Updates(system.SystemAuthAdmin{IsDisable: isDisable, UpdateTime: time.Now().Unix()}).Error
-	if err != nil {
+	if err := core.DB.Model(&admin).Updates(system.SystemAuthAdmin{IsDisable: isDisable, UpdateTime: time.Now().Unix()}).Error; err != nil {
 		core.Logger.Errorf("Disable Updates err: err=[%+v]", err)
 		panic(response.SystemError)
 	}

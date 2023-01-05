@@ -34,6 +34,8 @@ func init() {
 	Group.AddGET("/menu/route", menuRoute)
 	Group.AddGET("/menu/list", menuList)
 	Group.AddGET("/menu/detail", menuDetail)
+	Group.AddPOST("/menu/add", menuAdd)
+	Group.AddPOST("/menu/edit", menuEdit)
 	Group.AddPOST("/menu/del", menuDel)
 }
 
@@ -174,6 +176,22 @@ func menuDetail(c *gin.Context) {
 	var detailReq req.SystemAuthMenuDetailReq
 	utils.VerifyUtil.VerifyQuery(c, &detailReq)
 	response.OkWithData(c, system.SystemAuthMenuService.Detail(detailReq.ID))
+}
+
+//menuAdd 新增菜单
+func menuAdd(c *gin.Context) {
+	var addReq req.SystemAuthMenuAddReq
+	utils.VerifyUtil.VerifyJSON(c, &addReq)
+	system.SystemAuthMenuService.Add(addReq)
+	response.Ok(c)
+}
+
+//menuEdit 编辑菜单
+func menuEdit(c *gin.Context) {
+	var editReq req.SystemAuthMenuEditReq
+	utils.VerifyUtil.VerifyJSON(c, &editReq)
+	system.SystemAuthMenuService.Edit(editReq)
+	response.Ok(c)
 }
 
 //menuDel 删除菜单

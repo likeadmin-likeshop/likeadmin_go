@@ -24,8 +24,7 @@ type systemAuthRoleService struct{}
 //All 角色所有
 func (roleSrv systemAuthRoleService) All() (res []resp.SystemAuthRoleSimpleResp) {
 	var roles []system.SystemAuthRole
-	err := core.DB.Order("sort desc, id desc").Find(&roles).Error
-	if err != nil {
+	if err := core.DB.Order("sort desc, id desc").Find(&roles).Error; err != nil {
 		core.Logger.Errorf("All Find err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -41,14 +40,12 @@ func (roleSrv systemAuthRoleService) List(page request.PageReq) response.PageRes
 	offset := page.PageSize * (page.PageNo - 1)
 	roleModel := core.DB.Model(&system.SystemAuthRole{})
 	var count int64
-	err := roleModel.Count(&count).Error
-	if err != nil {
+	if err := roleModel.Count(&count).Error; err != nil {
 		core.Logger.Errorf("List Count err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
 	var roles []system.SystemAuthRole
-	err = roleModel.Limit(limit).Offset(offset).Order("sort desc, id desc").Find(&roles).Error
-	if err != nil {
+	if err := roleModel.Limit(limit).Offset(offset).Order("sort desc, id desc").Find(&roles).Error; err != nil {
 		core.Logger.Errorf("List Find err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
@@ -92,8 +89,7 @@ func (roleSrv systemAuthRoleService) getMemberCnt(roleId uint) (count int64) {
 //Add 新增角色
 func (roleSrv systemAuthRoleService) Add(addReq req.SystemAuthRoleAddReq) {
 	var role system.SystemAuthRole
-	r := core.DB.Where("name = ?", strings.Trim(addReq.Name, " ")).Limit(1).First(&role)
-	if r.RowsAffected > 0 {
+	if r := core.DB.Where("name = ?", strings.Trim(addReq.Name, " ")).Limit(1).First(&role); r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("角色名称已存在!"))
 	}
 	response.Copy(&role, addReq)
@@ -124,8 +120,7 @@ func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 		panic(response.SystemError)
 	}
 	var role system.SystemAuthRole
-	r := core.DB.Where("id != ? AND name = ?", editReq.ID, strings.Trim(editReq.Name, " ")).Limit(1).First(&role)
-	if r.RowsAffected > 0 {
+	if r := core.DB.Where("id != ? AND name = ?", editReq.ID, strings.Trim(editReq.Name, " ")).Limit(1).First(&role); r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("角色名称已存在!"))
 	}
 	role.ID = editReq.ID
@@ -160,8 +155,7 @@ func (roleSrv systemAuthRoleService) Del(id uint) {
 		core.Logger.Errorf("Del First err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
-	r := core.DB.Where("role = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{})
-	if r.RowsAffected > 0 {
+	if r := core.DB.Where("role = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{}); r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("角色已被管理员使用,请先移除!"))
 	}
 	// 事务
