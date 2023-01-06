@@ -5,8 +5,8 @@ import (
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
-	"likeadmin/models/system"
-	"likeadmin/utils"
+	"likeadmin/model/system"
+	"likeadmin/util"
 	"strconv"
 	"strings"
 )
@@ -60,7 +60,7 @@ func (permSrv systemAuthPermService) CacheRoleMenusByRoleId(roleId uint) (err er
 			menuArray = append(menuArray, strings.Trim(menu.Perms, ""))
 		}
 	}
-	utils.RedisUtil.HSet(config.AdminConfig.BackstageRolesKey, strconv.Itoa(int(roleId)), strings.Join(menuArray, ","), 0)
+	util.RedisUtil.HSet(config.AdminConfig.BackstageRolesKey, strconv.Itoa(int(roleId)), strings.Join(menuArray, ","), 0)
 	return
 }
 
@@ -76,7 +76,7 @@ func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds str
 		var perms []system.SystemAuthPerm
 		for _, menuIdStr := range strings.Split(menuIds, ",") {
 			menuId, _ := strconv.Atoi(menuIdStr)
-			perms = append(perms, system.SystemAuthPerm{ID: utils.ToolsUtil.MakeUuid(), RoleId: roleId, MenuId: uint(menuId)})
+			perms = append(perms, system.SystemAuthPerm{ID: util.ToolsUtil.MakeUuid(), RoleId: roleId, MenuId: uint(menuId)})
 		}
 		txErr := tx.Create(&perms).Error
 		if txErr != nil {

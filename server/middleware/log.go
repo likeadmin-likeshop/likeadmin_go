@@ -8,7 +8,7 @@ import (
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
-	"likeadmin/models/system"
+	"likeadmin/model/system"
 	"net/url"
 	"strings"
 	"time"

@@ -16,10 +16,10 @@ type SystemAuthAdmin struct {
 	IsDisable     uint8  `gorm:"not null;default:0;comment:'是否禁用: 0=否, 1=是'"`
 	IsDelete      uint8  `gorm:"not null;default:0;comment:'是否删除: [0=否, 1=是]'"`
 	LastLoginIp   string `gorm:"not null;default:'';comment:'最后登录IP'"`
-	LastLoginTime int64  `gorm:"not null;default:0;comment:最后登录时间"`
-	CreateTime    int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
-	UpdateTime    int64  `gorm:"autoUpdateTime;not null;comment:更新时间"`
-	DeleteTime    int64  `gorm:"not null;default:0;comment:删除时间"`
+	LastLoginTime int64  `gorm:"not null;default:0;comment:'最后登录时间'"`
+	CreateTime    int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
+	UpdateTime    int64  `gorm:"autoUpdateTime;not null;comment:'更新时间'"`
+	DeleteTime    int64  `gorm:"not null;default:0;comment:'删除时间'"`
 }
 
 //SystemAuthMenu 系统菜单实体
@@ -38,8 +38,8 @@ type SystemAuthMenu struct {
 	IsCache    uint8  `gorm:"not null;default:0;comment:'是否缓存: 0=否, 1=是''"`
 	IsShow     uint8  `gorm:"not null;default:1;comment:'是否显示: 0=否, 1=是'"`
 	IsDisable  uint8  `gorm:"not null;default:0;comment:'是否禁用: 0=否, 1=是'"`
-	CreateTime int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
-	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:更新时间"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
+	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:'更新时间'"`
 }
 
 //SystemAuthPerm 系统角色菜单实体
@@ -56,8 +56,8 @@ type SystemAuthRole struct {
 	Remark     string `gorm:"not null;default:'';comment:'备注信息'"`
 	IsDisable  uint8  `gorm:"not null;default:0;comment:'是否禁用: 0=否, 1=是'"`
 	Sort       uint16 `gorm:"not null;default:0;comment:'角色排序'"`
-	CreateTime int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
-	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:更新时间"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
+	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:'更新时间'"`
 }
 
 //SystemAuthDept 系统部门实体
@@ -70,9 +70,9 @@ type SystemAuthDept struct {
 	Sort       uint16 `gorm:"not null;default:0;comment:'排序编号'"`
 	IsStop     uint8  `gorm:"not null;default:0;comment:'是否停用: 0=否, 1=是'"`
 	IsDelete   uint8  `gorm:"not null;default:0;comment:'是否删除: 0=否, 1=是'"`
-	CreateTime int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
-	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:更新时间"`
-	DeleteTime int64  `gorm:"not null;default:0;comment:删除时间"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
+	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:'更新时间'"`
+	DeleteTime int64  `gorm:"not null;default:0;comment:'删除时间'"`
 }
 
 //SystemLogLogin 系统登录日志实体
@@ -84,7 +84,7 @@ type SystemLogLogin struct {
 	Os         string `gorm:"not null;default:'';comment:'操作系统'"`
 	Browser    string `gorm:"not null;default:'';comment:'浏览器'"`
 	Status     uint8  `gorm:"not null;default:0;comment:'操作状态: 1=成功, 0=失败'"`
-	CreateTime int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
 }
 
 //SystemLogOperate 系统操作日志实体
@@ -99,8 +99,8 @@ type SystemLogOperate struct {
 	Args       string `gorm:"comment:'请求参数'"`
 	Error      string `gorm:"comment:'错误信息'"`
 	Status     uint8  `gorm:"not null;default:0;comment:'执行状态: 1=成功, 2=失败'"`
-	StartTime  int64  `gorm:"not null;default:0;comment:开始时间"`
-	EndTime    int64  `gorm:"not null;default:0;comment:结束时间"`
-	TaskTime   int64  `gorm:"not null;default:0;comment:执行耗时"`
-	CreateTime int64  `gorm:"autoCreateTime;not null;comment:创建时间"`
+	StartTime  int64  `gorm:"not null;default:0;comment:'开始时间'"`
+	EndTime    int64  `gorm:"not null;default:0;comment:'结束时间'"`
+	TaskTime   int64  `gorm:"not null;default:0;comment:'执行耗时'"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
 }

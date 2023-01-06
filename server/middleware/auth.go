@@ -7,8 +7,8 @@ import (
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
-	sysModel "likeadmin/models/system"
-	"likeadmin/utils"
+	sysModel "likeadmin/model/system"
+	"likeadmin/util"
 	"strconv"
 	"strings"
 )
@@ -20,7 +20,7 @@ func TokenAuth() gin.HandlerFunc {
 		auths := strings.ReplaceAll(strings.Replace(c.Request.URL.Path, "/api/", "", 1), "/", ":")
 
 		// 免登录接口
-		if utils.ToolsUtil.Contains(config.AdminConfig.NotLoginUri, auths) {
+		if util.ToolsUtil.Contains(config.AdminConfig.NotLoginUri, auths) {
 			c.Next()
 			return
 		}
@@ -35,7 +35,7 @@ func TokenAuth() gin.HandlerFunc {
 
 		// Token是否过期
 		token = config.AdminConfig.BackstageTokenKey + token
-		existCnt := utils.RedisUtil.Exists(token)
+		existCnt := util.RedisUtil.Exists(token)
 		if existCnt < 0 {
 			response.Fail(c, response.SystemError)
 			c.Abort()
@@ -47,7 +47,7 @@ func TokenAuth() gin.HandlerFunc {
 		}
 
 		// 用户信息缓存
-		uidStr := utils.RedisUtil.Get(token)
+		uidStr := util.RedisUtil.Get(token)
 		var uid uint
 		if uidStr != "" {
 			i, err := strconv.Atoi(uidStr)
@@ -59,7 +59,7 @@ func TokenAuth() gin.HandlerFunc {
 			}
 			uid = uint(i)
 		}
-		if !utils.RedisUtil.HExists(config.AdminConfig.BackstageManageKey, uidStr) {
+		if !util.RedisUtil.HExists(config.AdminConfig.BackstageManageKey, uidStr) {
 			err := system.SystemAuthAdminService.CacheAdminUserByUid(uid)
 			if err != nil {
 				core.Logger.Errorf("TokenAuth CacheAdminUserByUid err: err=[%+v]", err)
@@ -71,7 +71,7 @@ func TokenAuth() gin.HandlerFunc {
 
 		// 校验用户被删除
 		var mapping sysModel.SystemAuthAdmin
-		err := json.Unmarshal([]byte(utils.RedisUtil.HGet(config.AdminConfig.BackstageManageKey, uidStr)), &mapping)
+		err := json.Unmarshal([]byte(util.RedisUtil.HGet(config.AdminConfig.BackstageManageKey, uidStr)), &mapping)
 		if err != nil {
 			core.Logger.Errorf("TokenAuth Unmarshal err: err=[%+v]", err)
 			response.Fail(c, response.SystemError)
@@ -79,8 +79,8 @@ func TokenAuth() gin.HandlerFunc {
 			return
 		}
 		if mapping.IsDelete == 1 {
-			utils.RedisUtil.Del(token)
-			utils.RedisUtil.HDel(config.AdminConfig.BackstageManageKey + uidStr)
+			util.RedisUtil.Del(token)
+			util.RedisUtil.HDel(config.AdminConfig.BackstageManageKey + uidStr)
 			response.Fail(c, response.TokenInvalid)
 			c.Abort()
 			return
@@ -94,8 +94,8 @@ func TokenAuth() gin.HandlerFunc {
 		}
 
 		// 令牌剩余30分钟自动续签
-		if utils.RedisUtil.TTL(token) < 1800 {
-			utils.RedisUtil.Expire(token, 7200)
+		if util.RedisUtil.TTL(token) < 1800 {
+			util.RedisUtil.Expire(token, 7200)
 		}
 
 		// 单次请求信息保存
@@ -105,14 +105,14 @@ func TokenAuth() gin.HandlerFunc {
 		c.Set(config.AdminConfig.ReqNicknameKey, mapping.Nickname)
 
 		// 免权限验证接口
-		if utils.ToolsUtil.Contains(config.AdminConfig.NotAuthUri, auths) || uid == 1 {
+		if util.ToolsUtil.Contains(config.AdminConfig.NotAuthUri, auths) || uid == 1 {
 			c.Next()
 			return
 		}
 
 		// 校验角色权限是否存在
 		roleId := mapping.Role
-		if utils.RedisUtil.HExists(config.AdminConfig.BackstageRolesKey, roleId) {
+		if util.RedisUtil.HExists(config.AdminConfig.BackstageRolesKey, roleId) {
 			i, err := strconv.Atoi(roleId)
 			if err != nil {
 				core.Logger.Errorf("TokenAuth Atoi roleId err: err=[%+v]", err)
@@ -130,8 +130,8 @@ func TokenAuth() gin.HandlerFunc {
 		}
 
 		// 验证是否有权限操作
-		menus := utils.RedisUtil.HGet(config.AdminConfig.BackstageRolesKey, roleId)
-		if !(menus != "" && utils.ToolsUtil.Contains(strings.Split(menus, ","), auths)) {
+		menus := util.RedisUtil.HGet(config.AdminConfig.BackstageRolesKey, roleId)
+		if !(menus != "" && util.ToolsUtil.Contains(strings.Split(menus, ","), auths)) {
 			response.Fail(c, response.NoPermission)
 			c.Abort()
 			return

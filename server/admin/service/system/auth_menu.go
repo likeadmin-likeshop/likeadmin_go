@@ -10,8 +10,8 @@ import (
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
-	"likeadmin/models/system"
-	"likeadmin/utils"
+	"likeadmin/model/system"
+	"likeadmin/util"
 )
 
 var SystemAuthMenuService = systemAuthMenuService{}
@@ -37,8 +37,8 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 	}
 	var menuResps []resp.SystemAuthMenuResp
 	response.Copy(&menuResps, menus)
-	mapList = utils.ArrayUtil.ListToTree(
-		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
+	mapList = util.ArrayUtil.ListToTree(
+		util.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
 	return
 }
 
@@ -51,8 +51,8 @@ func (menuSrv systemAuthMenuService) List() []interface{} {
 	}
 	var menuResps []resp.SystemAuthMenuResp
 	response.Copy(&menuResps, menus)
-	return utils.ArrayUtil.ListToTree(
-		utils.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
+	return util.ArrayUtil.ListToTree(
+		util.ConvertUtil.StructsToMaps(menuResps), "id", "pid", "children")
 }
 
 //Detail 菜单详情
@@ -76,7 +76,7 @@ func (menuSrv systemAuthMenuService) Add(addReq req.SystemAuthMenuAddReq) {
 		core.Logger.Errorf("Add Create err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
-	utils.RedisUtil.Del(config.AdminConfig.BackstageRolesKey)
+	util.RedisUtil.Del(config.AdminConfig.BackstageRolesKey)
 }
 
 func (menuSrv systemAuthMenuService) Edit(editReq req.SystemAuthMenuEditReq) {
@@ -93,7 +93,7 @@ func (menuSrv systemAuthMenuService) Edit(editReq req.SystemAuthMenuEditReq) {
 		core.Logger.Errorf("Edit Updates err: err=[%+v]", err)
 		panic(response.SystemError)
 	}
-	utils.RedisUtil.Del(config.AdminConfig.BackstageRolesKey)
+	util.RedisUtil.Del(config.AdminConfig.BackstageRolesKey)
 }
 
 //Del 删除菜单

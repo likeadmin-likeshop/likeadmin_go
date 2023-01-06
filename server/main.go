@@ -32,7 +32,7 @@ func main() {
 	router.NoRoute(response.NoRoute)
 	// 配置路由
 	group := router.Group("/api")
-	core.RegisterGroup(group, routers.Group, nil)
+	core.RegisterGroup(group, routers.SystemGroup, nil)
 
 	// 运行服务
 	s := &http.Server{

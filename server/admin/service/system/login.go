@@ -9,8 +9,8 @@ import (
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
-	"likeadmin/models/system"
-	"likeadmin/utils"
+	"likeadmin/model/system"
+	"likeadmin/util"
 	"runtime/debug"
 	"strconv"
 	"time"
@@ -40,7 +40,7 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 		loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.LoginDisableError.Msg())
 		panic(response.LoginDisableError)
 	}
-	md5Pwd := utils.ToolsUtil.MakeMd5(req.Password + sysAdmin.Salt)
+	md5Pwd := util.ToolsUtil.MakeMd5(req.Password + sysAdmin.Salt)
 	if sysAdmin.Password != md5Pwd {
 		loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.LoginAccountError.Msg())
 		panic(response.LoginAccountError)
@@ -59,26 +59,26 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 			}
 		}
 	}()
-	token := utils.ToolsUtil.MakeToken()
+	token := util.ToolsUtil.MakeToken()
 	adminIdStr := strconv.Itoa(int(sysAdmin.ID))
 
 	//非多处登录
 	if sysAdmin.IsMultipoint == 0 {
 		sysAdminSetKey := config.AdminConfig.BackstageTokenSet + adminIdStr
-		ts := utils.RedisUtil.SGet(sysAdminSetKey)
+		ts := util.RedisUtil.SGet(sysAdminSetKey)
 		if len(ts) > 0 {
 			var keys []string
 			for _, t := range ts {
 				keys = append(keys, t)
 			}
-			utils.RedisUtil.Del(keys...)
+			util.RedisUtil.Del(keys...)
 		}
-		utils.RedisUtil.Del(sysAdminSetKey)
-		utils.RedisUtil.SSet(sysAdminSetKey, token)
+		util.RedisUtil.Del(sysAdminSetKey)
+		util.RedisUtil.SSet(sysAdminSetKey, token)
 	}
 
 	// 缓存登录信息
-	utils.RedisUtil.Set(config.AdminConfig.BackstageTokenKey+token, adminIdStr, 7200)
+	util.RedisUtil.Set(config.AdminConfig.BackstageTokenKey+token, adminIdStr, 7200)
 	SystemAuthAdminService.CacheAdminUserByUid(sysAdmin.ID)
 
 	// 更新登录信息
@@ -97,7 +97,7 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 
 //Logout 退出
 func (loginSrv systemLoginService) Logout(req *req.SystemLogoutReq) {
-	utils.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + req.Token)
+	util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + req.Token)
 }
 
 //RecordLoginLog 记录登录日志

@@ -9,40 +9,41 @@ import (
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/middleware"
-	"likeadmin/utils"
+	"likeadmin/util"
 )
 
-var Group = core.Group("/system")
+var SystemGroup = core.Group("/system")
 
 func init() {
-	Group.AddPOST("/login", login)
-	Group.AddPOST("/logout", logout)
-	Group.AddGET("/admin/self", adminSelf)
-	Group.AddGET("/admin/list", adminList)
-	Group.AddGET("/admin/detail", adminDetail)
-	Group.AddPOST("/admin/add", adminAdd, middleware.RecordLog("管理员新增"))
-	Group.AddPOST("/admin/edit", adminEdit, middleware.RecordLog("管理员编辑"))
-	Group.AddPOST("/admin/upInfo", adminUpInfo, middleware.RecordLog("管理员更新"))
-	Group.AddPOST("/admin/del", adminDel, middleware.RecordLog("管理员删除"))
-	Group.AddPOST("/admin/disable", adminDisable, middleware.RecordLog("管理员状态切换"))
-	Group.AddGET("/role/all", roleAll)
-	Group.AddGET("/role/list", roleList, middleware.RecordLog("角色列表"))
-	Group.AddGET("/role/detail", roleDetail, middleware.RecordLog("角色详情"))
-	Group.AddPOST("/role/add", roleAdd, middleware.RecordLog("角色新增"))
-	Group.AddPOST("/role/edit", roleEdit, middleware.RecordLog("角色编辑"))
-	Group.AddPOST("/role/del", roleDel, middleware.RecordLog("角色删除"))
-	Group.AddGET("/menu/route", menuRoute)
-	Group.AddGET("/menu/list", menuList)
-	Group.AddGET("/menu/detail", menuDetail)
-	Group.AddPOST("/menu/add", menuAdd)
-	Group.AddPOST("/menu/edit", menuEdit)
-	Group.AddPOST("/menu/del", menuDel)
+	group := SystemGroup
+	group.AddPOST("/login", login)
+	group.AddPOST("/logout", logout)
+	group.AddGET("/admin/self", adminSelf)
+	group.AddGET("/admin/list", adminList)
+	group.AddGET("/admin/detail", adminDetail)
+	group.AddPOST("/admin/add", adminAdd, middleware.RecordLog("管理员新增"))
+	group.AddPOST("/admin/edit", adminEdit, middleware.RecordLog("管理员编辑"))
+	group.AddPOST("/admin/upInfo", adminUpInfo, middleware.RecordLog("管理员更新"))
+	group.AddPOST("/admin/del", adminDel, middleware.RecordLog("管理员删除"))
+	group.AddPOST("/admin/disable", adminDisable, middleware.RecordLog("管理员状态切换"))
+	group.AddGET("/role/all", roleAll)
+	group.AddGET("/role/list", roleList, middleware.RecordLog("角色列表"))
+	group.AddGET("/role/detail", roleDetail, middleware.RecordLog("角色详情"))
+	group.AddPOST("/role/add", roleAdd, middleware.RecordLog("角色新增"))
+	group.AddPOST("/role/edit", roleEdit, middleware.RecordLog("角色编辑"))
+	group.AddPOST("/role/del", roleDel, middleware.RecordLog("角色删除"))
+	group.AddGET("/menu/route", menuRoute)
+	group.AddGET("/menu/list", menuList)
+	group.AddGET("/menu/detail", menuDetail)
+	group.AddPOST("/menu/add", menuAdd)
+	group.AddPOST("/menu/edit", menuEdit)
+	group.AddPOST("/menu/del", menuDel)
 }
 
 //login 登录系统
 func login(c *gin.Context) {
 	var loginReq req.SystemLoginReq
-	utils.VerifyUtil.VerifyJSON(c, &loginReq)
+	util.VerifyUtil.VerifyJSON(c, &loginReq)
 	resp := system.SystemLoginService.Login(c, &loginReq)
 	response.OkWithData(c, resp)
 }
@@ -50,7 +51,7 @@ func login(c *gin.Context) {
 //logout 登录退出
 func logout(c *gin.Context) {
 	var logoutReq req.SystemLogoutReq
-	utils.VerifyUtil.VerifyHeader(c, &logoutReq)
+	util.VerifyUtil.VerifyHeader(c, &logoutReq)
 	system.SystemLoginService.Logout(&logoutReq)
 	response.Ok(c)
 }
@@ -65,22 +66,22 @@ func adminSelf(c *gin.Context) {
 func adminList(c *gin.Context) {
 	var page request.PageReq
 	var listReq req.SystemAuthAdminListReq
-	utils.VerifyUtil.VerifyQuery(c, &page)
-	utils.VerifyUtil.VerifyQuery(c, &listReq)
+	util.VerifyUtil.VerifyQuery(c, &page)
+	util.VerifyUtil.VerifyQuery(c, &listReq)
 	response.OkWithData(c, system.SystemAuthAdminService.List(page, listReq))
 }
 
 //adminDetail 管理员详细
 func adminDetail(c *gin.Context) {
 	var detailReq req.SystemAuthAdminDetailReq
-	utils.VerifyUtil.VerifyQuery(c, &detailReq)
+	util.VerifyUtil.VerifyQuery(c, &detailReq)
 	response.OkWithData(c, system.SystemAuthAdminService.Detail(detailReq.ID))
 }
 
 //adminAdd 管理员新增
 func adminAdd(c *gin.Context) {
 	var addReq req.SystemAuthAdminAddReq
-	utils.VerifyUtil.VerifyJSON(c, &addReq)
+	util.VerifyUtil.VerifyJSON(c, &addReq)
 	system.SystemAuthAdminService.Add(addReq)
 	response.Ok(c)
 }
@@ -88,7 +89,7 @@ func adminAdd(c *gin.Context) {
 //adminEdit 管理员编辑
 func adminEdit(c *gin.Context) {
 	var editReq req.SystemAuthAdminEditReq
-	utils.VerifyUtil.VerifyJSON(c, &editReq)
+	util.VerifyUtil.VerifyJSON(c, &editReq)
 	system.SystemAuthAdminService.Edit(c, editReq)
 	response.Ok(c)
 }
@@ -96,7 +97,7 @@ func adminEdit(c *gin.Context) {
 //adminUpInfo 管理员更新
 func adminUpInfo(c *gin.Context) {
 	var updateReq req.SystemAuthAdminUpdateReq
-	utils.VerifyUtil.VerifyJSON(c, &updateReq)
+	util.VerifyUtil.VerifyJSON(c, &updateReq)
 	system.SystemAuthAdminService.Update(c, updateReq, config.AdminConfig.GetAdminId(c))
 	response.Ok(c)
 }
@@ -104,7 +105,7 @@ func adminUpInfo(c *gin.Context) {
 //adminDel 管理员删除
 func adminDel(c *gin.Context) {
 	var delReq req.SystemAuthAdminDelReq
-	utils.VerifyUtil.VerifyJSON(c, &delReq)
+	util.VerifyUtil.VerifyJSON(c, &delReq)
 	system.SystemAuthAdminService.Del(c, delReq.ID)
 	response.Ok(c)
 }
@@ -112,7 +113,7 @@ func adminDel(c *gin.Context) {
 //adminDisable 管理员状态切换
 func adminDisable(c *gin.Context) {
 	var disableReq req.SystemAuthAdminDisableReq
-	utils.VerifyUtil.VerifyJSON(c, &disableReq)
+	util.VerifyUtil.VerifyJSON(c, &disableReq)
 	system.SystemAuthAdminService.Disable(c, disableReq.ID)
 	response.Ok(c)
 }
@@ -125,21 +126,21 @@ func roleAll(c *gin.Context) {
 //roleList 角色列表
 func roleList(c *gin.Context) {
 	var page request.PageReq
-	utils.VerifyUtil.VerifyQuery(c, &page)
+	util.VerifyUtil.VerifyQuery(c, &page)
 	response.OkWithData(c, system.SystemAuthRoleService.List(page))
 }
 
 //roleDetail 角色详情
 func roleDetail(c *gin.Context) {
 	var detailReq req.SystemAuthRoleDetailReq
-	utils.VerifyUtil.VerifyQuery(c, &detailReq)
+	util.VerifyUtil.VerifyQuery(c, &detailReq)
 	response.OkWithData(c, system.SystemAuthRoleService.Detail(detailReq.ID))
 }
 
 //roleAdd 新增角色
 func roleAdd(c *gin.Context) {
 	var addReq req.SystemAuthRoleAddReq
-	utils.VerifyUtil.VerifyJSON(c, &addReq)
+	util.VerifyUtil.VerifyJSON(c, &addReq)
 	system.SystemAuthRoleService.Add(addReq)
 	response.Ok(c)
 }
@@ -147,7 +148,7 @@ func roleAdd(c *gin.Context) {
 //roleEdit 编辑角色
 func roleEdit(c *gin.Context) {
 	var editReq req.SystemAuthRoleEditReq
-	utils.VerifyUtil.VerifyJSON(c, &editReq)
+	util.VerifyUtil.VerifyJSON(c, &editReq)
 	system.SystemAuthRoleService.Edit(editReq)
 	response.Ok(c)
 }
@@ -155,7 +156,7 @@ func roleEdit(c *gin.Context) {
 //roleDel 删除角色
 func roleDel(c *gin.Context) {
 	var delReq req.SystemAuthRoleDelReq
-	utils.VerifyUtil.VerifyJSON(c, &delReq)
+	util.VerifyUtil.VerifyJSON(c, &delReq)
 	system.SystemAuthRoleService.Del(delReq.ID)
 	response.Ok(c)
 }
@@ -174,14 +175,14 @@ func menuList(c *gin.Context) {
 //menuDetail 菜单详情
 func menuDetail(c *gin.Context) {
 	var detailReq req.SystemAuthMenuDetailReq
-	utils.VerifyUtil.VerifyQuery(c, &detailReq)
+	util.VerifyUtil.VerifyQuery(c, &detailReq)
 	response.OkWithData(c, system.SystemAuthMenuService.Detail(detailReq.ID))
 }
 
 //menuAdd 新增菜单
 func menuAdd(c *gin.Context) {
 	var addReq req.SystemAuthMenuAddReq
-	utils.VerifyUtil.VerifyJSON(c, &addReq)
+	util.VerifyUtil.VerifyJSON(c, &addReq)
 	system.SystemAuthMenuService.Add(addReq)
 	response.Ok(c)
 }
@@ -189,7 +190,7 @@ func menuAdd(c *gin.Context) {
 //menuEdit 编辑菜单
 func menuEdit(c *gin.Context) {
 	var editReq req.SystemAuthMenuEditReq
-	utils.VerifyUtil.VerifyJSON(c, &editReq)
+	util.VerifyUtil.VerifyJSON(c, &editReq)
 	system.SystemAuthMenuService.Edit(editReq)
 	response.Ok(c)
 }
@@ -197,7 +198,7 @@ func menuEdit(c *gin.Context) {
 //menuDel 删除菜单
 func menuDel(c *gin.Context) {
 	var delReq req.SystemAuthMenuDelReq
-	utils.VerifyUtil.VerifyJSON(c, &delReq)
+	util.VerifyUtil.VerifyJSON(c, &delReq)
 	system.SystemAuthMenuService.Del(delReq.ID)
 	response.Ok(c)
 }

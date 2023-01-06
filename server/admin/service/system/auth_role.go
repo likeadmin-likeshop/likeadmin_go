@@ -10,8 +10,8 @@ import (
 	"likeadmin/core"
 	"likeadmin/core/request"
 	"likeadmin/core/response"
-	"likeadmin/models/system"
-	"likeadmin/utils"
+	"likeadmin/model/system"
+	"likeadmin/util"
 	"strconv"
 	"strings"
 )
@@ -166,7 +166,7 @@ func (roleSrv systemAuthRoleService) Del(id uint) {
 			return txErr
 		}
 		SystemAuthPermService.BatchDeleteByRoleId(id, tx)
-		utils.RedisUtil.HDel(config.AdminConfig.BackstageRolesKey, strconv.Itoa(int(id)))
+		util.RedisUtil.HDel(config.AdminConfig.BackstageRolesKey, strconv.Itoa(int(id)))
 		return nil
 	})
 	if err != nil {

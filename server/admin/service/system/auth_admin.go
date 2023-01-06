@@ -13,8 +13,8 @@ import (
 	"likeadmin/core"
 	"likeadmin/core/request"
 	"likeadmin/core/response"
-	"likeadmin/models/system"
-	"likeadmin/utils"
+	"likeadmin/model/system"
+	"likeadmin/util"
 	"strconv"
 	"strings"
 	"time"
@@ -68,7 +68,7 @@ func (adminSrv systemAuthAdminService) Self(adminId uint) (res resp.SystemAuthAd
 	var admin resp.SystemAuthAdminSelfOneResp
 	response.Copy(&admin, sysAdmin)
 	admin.Dept = strconv.Itoa(int(sysAdmin.DeptId))
-	admin.Avatar = utils.UrlUtil.ToAbsoluteUrl(sysAdmin.Avatar)
+	admin.Avatar = util.UrlUtil.ToAbsoluteUrl(sysAdmin.Avatar)
 	return resp.SystemAuthAdminSelfResp{User: admin, Permissions: auths}
 }
 
@@ -111,7 +111,7 @@ func (adminSrv systemAuthAdminService) List(page request.PageReq, listReq req.Sy
 		panic(response.SystemError)
 	}
 	for i := 0; i < len(adminResp); i++ {
-		adminResp[i].Avatar = utils.UrlUtil.ToAbsoluteUrl(adminResp[i].Avatar)
+		adminResp[i].Avatar = util.UrlUtil.ToAbsoluteUrl(adminResp[i].Avatar)
 		if adminResp[i].ID == 1 {
 			adminResp[i].Role = "系统管理员"
 		}
@@ -135,7 +135,7 @@ func (adminSrv systemAuthAdminService) Detail(id uint) (res resp.SystemAuthAdmin
 		panic(response.SystemError)
 	}
 	response.Copy(&res, sysAdmin)
-	res.Avatar = utils.UrlUtil.ToAbsoluteUrl(res.Avatar)
+	res.Avatar = util.UrlUtil.ToAbsoluteUrl(res.Avatar)
 	if res.Dept == "" {
 		res.Dept = strconv.Itoa(int(res.DeptId))
 	}
@@ -173,15 +173,15 @@ func (adminSrv systemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) {
 	if !(passwdLen >= 6 && passwdLen <= 20) {
 		panic(response.Failed.Make("密码必须在6~20位"))
 	}
-	salt := utils.ToolsUtil.RandomString(5)
+	salt := util.ToolsUtil.RandomString(5)
 	response.Copy(&sysAdmin, addReq)
 	sysAdmin.Role = strconv.Itoa(int(addReq.Role))
 	sysAdmin.Salt = salt
-	sysAdmin.Password = utils.ToolsUtil.MakeMd5(strings.Trim(addReq.Password, " ") + salt)
+	sysAdmin.Password = util.ToolsUtil.MakeMd5(strings.Trim(addReq.Password, " ") + salt)
 	if addReq.Avatar == "" {
 		addReq.Avatar = "/api/static/backend_avatar.png"
 	}
-	sysAdmin.Avatar = utils.UrlUtil.ToRelativeUrl(addReq.Avatar)
+	sysAdmin.Avatar = util.UrlUtil.ToRelativeUrl(addReq.Avatar)
 	if err = core.DB.Create(&sysAdmin).Error; err != nil {
 		core.Logger.Errorf("Add Create err: err=[%+v]", err)
 		panic(response.SystemError)
@@ -226,7 +226,7 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 	// 更新管理员信息
 	adminMap := structs.Map(editReq)
 	delete(adminMap, "ID")
-	adminMap["Avatar"] = utils.UrlUtil.ToRelativeUrl(editReq.Avatar)
+	adminMap["Avatar"] = util.UrlUtil.ToRelativeUrl(editReq.Avatar)
 	role := editReq.Role
 	if editReq.ID == 1 {
 		role = 0
@@ -240,9 +240,9 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 		if !(passwdLen >= 6 && passwdLen <= 20) {
 			panic(response.Failed.Make("密码必须在6~20位"))
 		}
-		salt := utils.ToolsUtil.RandomString(5)
+		salt := util.ToolsUtil.RandomString(5)
 		adminMap["Salt"] = salt
-		adminMap["Password"] = utils.ToolsUtil.MakeMd5(strings.Trim(editReq.Password, "") + salt)
+		adminMap["Password"] = util.ToolsUtil.MakeMd5(strings.Trim(editReq.Password, "") + salt)
 	} else {
 		delete(adminMap, "Password")
 	}
@@ -255,18 +255,18 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 	adminId := config.AdminConfig.GetAdminId(c)
 	if editReq.Password != "" && editReq.ID == adminId {
 		token := c.Request.Header.Get("token")
-		utils.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
+		util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
 		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.Itoa(int(adminId))
-		ts := utils.RedisUtil.SGet(adminSetKey)
+		ts := util.RedisUtil.SGet(adminSetKey)
 		if len(ts) > 0 {
 			var tokenKeys []string
 			for _, t := range ts {
 				tokenKeys = append(tokenKeys, config.AdminConfig.BackstageTokenKey+t)
 			}
-			utils.RedisUtil.Del(tokenKeys...)
+			util.RedisUtil.Del(tokenKeys...)
 		}
-		utils.RedisUtil.Del(adminSetKey)
-		utils.RedisUtil.SSet(adminSetKey, token)
+		util.RedisUtil.Del(adminSetKey)
+		util.RedisUtil.SSet(adminSetKey, token)
 	}
 }
 
@@ -288,10 +288,10 @@ func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.Syst
 	if updateReq.Avatar != "" {
 		avatar = updateReq.Avatar
 	}
-	adminMap["Avatar"] = utils.UrlUtil.ToRelativeUrl(avatar)
+	adminMap["Avatar"] = util.UrlUtil.ToRelativeUrl(avatar)
 	delete(adminMap, "aaa")
 	if updateReq.Password != "" {
-		currPass := utils.ToolsUtil.MakeMd5(updateReq.CurrPassword + admin.Salt)
+		currPass := util.ToolsUtil.MakeMd5(updateReq.CurrPassword + admin.Salt)
 		if currPass != admin.Password {
 			panic(response.Failed.Make("当前密码不正确!"))
 		}
@@ -299,9 +299,9 @@ func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.Syst
 		if !(passwdLen >= 6 && passwdLen <= 20) {
 			panic(response.Failed.Make("密码必须在6~20位"))
 		}
-		salt := utils.ToolsUtil.RandomString(5)
+		salt := util.ToolsUtil.RandomString(5)
 		adminMap["Salt"] = salt
-		adminMap["Password"] = utils.ToolsUtil.MakeMd5(strings.Trim(updateReq.Password, " ") + salt)
+		adminMap["Password"] = util.ToolsUtil.MakeMd5(strings.Trim(updateReq.Password, " ") + salt)
 	} else {
 		delete(adminMap, "Password")
 	}
@@ -313,18 +313,18 @@ func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.Syst
 	// 如果更改自己的密码,则删除旧缓存
 	if updateReq.Password != "" {
 		token := c.Request.Header.Get("token")
-		utils.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
+		util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
 		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.Itoa(int(adminId))
-		ts := utils.RedisUtil.SGet(adminSetKey)
+		ts := util.RedisUtil.SGet(adminSetKey)
 		if len(ts) > 0 {
 			var tokenKeys []string
 			for _, t := range ts {
 				tokenKeys = append(tokenKeys, config.AdminConfig.BackstageTokenKey+t)
 			}
-			utils.RedisUtil.Del(tokenKeys...)
+			util.RedisUtil.Del(tokenKeys...)
 		}
-		utils.RedisUtil.Del(adminSetKey)
-		utils.RedisUtil.SSet(adminSetKey, token)
+		util.RedisUtil.Del(adminSetKey)
+		util.RedisUtil.SSet(adminSetKey, token)
 	}
 }
 
@@ -384,6 +384,6 @@ func (adminSrv systemAuthAdminService) CacheAdminUserByUid(id uint) (err error) 
 	if err != nil {
 		return
 	}
-	utils.RedisUtil.HSet(config.AdminConfig.BackstageManageKey, strconv.Itoa(int(admin.ID)), string(b), 0)
+	util.RedisUtil.HSet(config.AdminConfig.BackstageManageKey, strconv.Itoa(int(admin.ID)), string(b), 0)
 	return nil
 }
