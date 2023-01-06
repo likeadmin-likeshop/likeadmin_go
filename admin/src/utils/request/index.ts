@@ -21,7 +21,7 @@ const axiosHooks: AxiosHooks = {
         // 添加token
         if (withToken) {
             const token = getToken()
-            headers['like-admin'] = token
+            headers.token = token
         }
         // POST请求下如果无data，则将params视为data
         if (

@@ -28,14 +28,13 @@
                 <el-form-item label="名称" prop="nickname">
                     <el-input v-model="formData.nickname" placeholder="请输入名称" clearable />
                 </el-form-item>
-                <el-form-item label="归属部门" prop="deptIds">
+                <el-form-item label="归属部门" prop="deptId">
                     <el-tree-select
                         class="flex-1"
-                        v-model="formData.deptIds"
+                        v-model="formData.deptId"
                         :data="optionsData.dept"
                         clearable
                         node-key="id"
-                        multiple
                         :props="{
                             value: 'id',
                             label: 'name',
@@ -48,12 +47,11 @@
                         placeholder="请选择上级部门"
                     />
                 </el-form-item>
-                <el-form-item label="岗位" prop="postIds">
+                <el-form-item label="岗位" prop="postId">
                     <el-select
                         class="flex-1"
                         clearable
-                        multiple
-                        v-model="formData.postIds"
+                        v-model="formData.postId"
                         placeholder="请选择岗位"
                     >
                         <el-option
@@ -65,11 +63,10 @@
                     </el-select>
                 </el-form-item>
 
-                <el-form-item label="角色" prop="roleIds">
+                <el-form-item label="角色" prop="role">
                     <el-select
-                        v-model="formData.roleIds"
+                        v-model="formData.role"
                         :disabled="isRoot"
-                        multiple
                         class="flex-1"
                         clearable
                         placeholder="请选择角色"
@@ -79,7 +76,7 @@
                             v-for="(item, index) in optionsData.role"
                             :key="index"
                             :label="item.name"
-                            :value="item.id"
+                            :value="String(item.id)"
                         />
                     </el-select>
                 </el-form-item>
@@ -138,21 +135,23 @@ const popupTitle = computed(() => {
 })
 
 const formData = reactive({
-    id: 0,
+    id: '',
     username: '',
     nickname: '',
-    deptIds: [],
-    postIds: [],
-    roleIds: [],
+    deptId: '',
+    postId: '',
+    role: '',
     avatar: '',
     password: '',
     passwordConfirm: '',
     isDisable: 0,
-    isMultipoint: 1
+    isMultipoint: 1,
+    //服务端为必传参数，先给默认值
+    sort:'1'
 })
 
 const isRoot = computed(() => {
-    return formData.id == 1
+    return formData.role == '0'
 })
 
 const passwordConfirmValidator = (rule: object, value: string, callback: any) => {
@@ -177,11 +176,24 @@ const formRules = reactive({
             trigger: ['blur']
         }
     ],
-    roleIds: [
+    role: [
         {
-            type: 'array',
             required: true,
             message: '请选择角色',
+            trigger: ['blur']
+        }
+    ],
+    deptId:[
+    {
+            required: true,
+            message: '请输入名称',
+            trigger: ['blur']
+        }
+    ],
+    postId:[
+    {
+            required: true,
+            message: '请输入名称',
             trigger: ['blur']
         }
     ],
@@ -235,13 +247,6 @@ const open = (type = 'add') => {
 }
 
 const setFormData = async (row: any) => {
-    formRules.password = []
-    formRules.passwordConfirm = [
-        {
-            validator: passwordConfirmValidator,
-            trigger: 'blur'
-        }
-    ]
     const data = await adminDetail({
         id: row.id
     })
@@ -250,7 +255,16 @@ const setFormData = async (row: any) => {
             //@ts-ignore
             formData[key] = data[key]
         }
+        Number(formData.deptId) == 0 && (formData.deptId = '')
+        Number(formData.postId) == 0 && (formData.postId = '')
     }
+    formRules.password = []
+    formRules.passwordConfirm = [
+        {
+            validator: passwordConfirmValidator,
+            trigger: 'blur'
+        }
+    ]
 }
 
 const handleClose = () => {

@@ -84,9 +84,7 @@ const handleDelete = (index: number) => {
 
 // 设置备案信息
 const handleSubmit = async () => {
-    await setCopyright({
-        list: formData.value
-    })
+    await setCopyright(formData.value)
     feedback.msgSuccess('操作成功')
     getData()
 }

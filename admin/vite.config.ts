@@ -13,7 +13,7 @@ import vueSetupExtend from 'vite-plugin-vue-setup-extend'
 export default defineConfig({
     // base: '/admin/',
     server: {
-        host: '0.0.0.0'
+        host: '0.0.0.0',
     },
     plugins: [
         vue(),
