@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"likeadmin/admin/service/system"
 	"likeadmin/config"
@@ -71,7 +70,7 @@ func TokenAuth() gin.HandlerFunc {
 
 		// 校验用户被删除
 		var mapping sysModel.SystemAuthAdmin
-		err := json.Unmarshal([]byte(util.RedisUtil.HGet(config.AdminConfig.BackstageManageKey, uidStr)), &mapping)
+		err := util.ToolsUtil.JsonToObj(util.RedisUtil.HGet(config.AdminConfig.BackstageManageKey, uidStr), &mapping)
 		if err != nil {
 			core.Logger.Errorf("TokenAuth Unmarshal err: err=[%+v]", err)
 			response.Fail(c, response.SystemError)

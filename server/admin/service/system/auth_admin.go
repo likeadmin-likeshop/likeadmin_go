@@ -1,7 +1,6 @@
 package system
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/fatih/structs"
@@ -380,10 +379,10 @@ func (adminSrv systemAuthAdminService) CacheAdminUserByUid(id uint) (err error) 
 	if err != nil {
 		return
 	}
-	b, err := json.Marshal(admin)
+	str, err := util.ToolsUtil.ObjToJson(&admin)
 	if err != nil {
 		return
 	}
-	util.RedisUtil.HSet(config.AdminConfig.BackstageManageKey, strconv.Itoa(int(admin.ID)), string(b), 0)
+	util.RedisUtil.HSet(config.AdminConfig.BackstageManageKey, strconv.Itoa(int(admin.ID)), str, 0)
 	return nil
 }

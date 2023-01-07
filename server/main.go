@@ -12,14 +12,8 @@ import (
 	"time"
 )
 
-func main() {
-	// 刷新日志缓冲
-	defer core.Logger.Sync()
-	// 程序结束前关闭数据库连接
-	if core.DB != nil {
-		db, _ := core.DB.DB()
-		defer db.Close()
-	}
+//initRouter 初始化router
+func initRouter() *gin.Engine {
 	// 初始化gin
 	gin.SetMode(config.Config.GinMode)
 	router := gin.New()
@@ -30,17 +24,36 @@ func main() {
 	// 特殊异常处理
 	router.NoMethod(response.NoMethod)
 	router.NoRoute(response.NoRoute)
-	// 配置路由
+	// 注册路由
 	group := router.Group("/api")
+	core.RegisterGroup(group, routers.CommonGroup, nil)
 	core.RegisterGroup(group, routers.SystemGroup, nil)
+	return router
+}
 
-	// 运行服务
-	s := &http.Server{
+//initServer 初始化server
+func initServer(router *gin.Engine) *http.Server {
+	return &http.Server{
 		Addr:           ":" + strconv.Itoa(config.Config.ServerPort),
 		Handler:        router,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+}
+
+func main() {
+	// 刷新日志缓冲
+	defer core.Logger.Sync()
+	// 程序结束前关闭数据库连接
+	if core.DB != nil {
+		db, _ := core.DB.DB()
+		defer db.Close()
+	}
+	// 初始化router
+	router := initRouter()
+	// 初始化server
+	s := initServer(router)
+	// 运行服务
 	s.ListenAndServe().Error()
 }

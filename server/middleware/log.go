@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -9,6 +8,7 @@ import (
 	"likeadmin/core"
 	"likeadmin/core/response"
 	"likeadmin/model/system"
+	"likeadmin/util"
 	"net/url"
 	"strings"
 	"time"
@@ -55,12 +55,12 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 				var formParams map[string]interface{}
 				err := c.ShouldBindBodyWith(&formParams, binding.JSON)
 				if err == nil {
-					jsonStr, err := json.Marshal(formParams)
+					val, err := util.ToolsUtil.ObjToJson(&formParams)
 					if err != nil {
 						core.Logger.Errorf("RecordLog POST Marshal err: err=[%+v]", err)
 						panic(response.SystemError)
 					}
-					args = string(jsonStr)
+					args = val
 				}
 			}
 		} else if reqMethod == "GET" {

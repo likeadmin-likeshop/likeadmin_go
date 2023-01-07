@@ -3,6 +3,7 @@ package util
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"github.com/google/uuid"
 	"likeadmin/config"
 	"math/rand"
@@ -55,6 +56,9 @@ func (tu toolsUtil) MakeToken() string {
 //Contains 判断src是否包含elem元素
 func (tu toolsUtil) Contains(src interface{}, elem interface{}) bool {
 	srcArr := reflect.ValueOf(src)
+	if srcArr.Kind() == reflect.Ptr {
+		srcArr = srcArr.Elem()
+	}
 	if srcArr.Kind() == reflect.Slice {
 		for i := 0; i < srcArr.Len(); i++ {
 			if srcArr.Index(i).Interface() == elem {
@@ -63,4 +67,19 @@ func (tu toolsUtil) Contains(src interface{}, elem interface{}) bool {
 		}
 	}
 	return false
+}
+
+//JsonToObj JSON转Obj
+func (tu toolsUtil) JsonToObj(jsonStr string, toVal interface{}) (err error) {
+	return json.Unmarshal([]byte(jsonStr), &toVal)
+}
+
+//ObjToJson Obj转JSON
+func (tu toolsUtil) ObjToJson(data interface{}) (res string, err error) {
+	b, err := json.Marshal(data)
+	if err != nil {
+		return res, err
+	}
+	res = string(b)
+	return res, nil
 }

@@ -85,6 +85,7 @@ func Result(c *gin.Context, resp RespType, data interface{}) {
 //Copy 拷贝结构体
 func Copy(toValue interface{}, fromValue interface{}) interface{} {
 	if err := copier.Copy(toValue, fromValue); err != nil {
+		core.Logger.Errorf("Copy err: err=[%+v]", err)
 		panic(SystemError)
 	}
 	return toValue

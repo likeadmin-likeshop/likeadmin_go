@@ -7,6 +7,12 @@ type SystemLoginResp struct {
 	Token string `json:"token"`
 }
 
+//SystemConfigResp 系统配置返回信息
+type SystemConfigResp struct {
+	Name  string `json:"name" structs:"name"`   // 键
+	Value string `json:"value" structs:"value"` // 值
+}
+
 //SystemAuthAdminResp 管理员返回信息
 type SystemAuthAdminResp struct {
 	ID            uint        `json:"id" structs:"id"`                       // 主键

@@ -1,5 +1,15 @@
 package system
 
+//SystemConfig 系统配置实体
+type SystemConfig struct {
+	ID         uint   `gorm:"primarykey;comment:'主键'"`
+	Type       string `gorm:"default:'';comment:'类型''"`
+	Name       string `gorm:"not null;default:'';comment:'键'"`
+	Value      string `gorm:"type:text;not null;default:'';comment:'值'"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
+	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:'更新时间'"`
+}
+
 //SystemAuthAdmin 系统管理员实体
 type SystemAuthAdmin struct {
 	ID            uint   `gorm:"primarykey;comment:'主键'"`
