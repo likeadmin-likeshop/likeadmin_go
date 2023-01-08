@@ -24,10 +24,8 @@ type systemAuthRoleService struct{}
 //All 角色所有
 func (roleSrv systemAuthRoleService) All() (res []resp.SystemAuthRoleSimpleResp) {
 	var roles []system.SystemAuthRole
-	if err := core.DB.Order("sort desc, id desc").Find(&roles).Error; err != nil {
-		core.Logger.Errorf("All Find err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := core.DB.Order("sort desc, id desc").Find(&roles).Error
+	util.CheckUtil.CheckErr(err, "All Find err")
 	response.Copy(&res, roles)
 	return
 }
@@ -40,15 +38,11 @@ func (roleSrv systemAuthRoleService) List(page request.PageReq) response.PageRes
 	offset := page.PageSize * (page.PageNo - 1)
 	roleModel := core.DB.Model(&system.SystemAuthRole{})
 	var count int64
-	if err := roleModel.Count(&count).Error; err != nil {
-		core.Logger.Errorf("List Count err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := roleModel.Count(&count).Error
+	util.CheckUtil.CheckErr(err, "List Count err")
 	var roles []system.SystemAuthRole
-	if err := roleModel.Limit(limit).Offset(offset).Order("sort desc, id desc").Find(&roles).Error; err != nil {
-		core.Logger.Errorf("List Find err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err = roleModel.Limit(limit).Offset(offset).Order("sort desc, id desc").Find(&roles).Error
+	util.CheckUtil.CheckErr(err, "List Find err")
 	var roleResp []resp.SystemAuthRoleResp
 	response.Copy(&roleResp, roles)
 	for i := 0; i < len(roleResp); i++ {
@@ -69,10 +63,8 @@ func (roleSrv systemAuthRoleService) Detail(id uint) (res resp.SystemAuthRoleRes
 	err := core.DB.Where("id = ?", id).Limit(1).First(&role).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("角色已不存在!"))
-	} else if err != nil {
-		core.Logger.Errorf("Detail First err: err=[%+v]", err)
-		panic(response.SystemError)
 	}
+	util.CheckUtil.CheckErr(err, "Detail First err")
 	response.Copy(&res, role)
 	res.Member = roleSrv.getMemberCnt(role.ID)
 	res.Menus = SystemAuthPermService.SelectMenuIdsByRoleId(role.ID)
@@ -104,10 +96,7 @@ func (roleSrv systemAuthRoleService) Add(addReq req.SystemAuthRoleAddReq) {
 		SystemAuthPermService.BatchSaveByMenuIds(role.ID, addReq.MenuIds, tx)
 		return nil
 	})
-	if err != nil {
-		core.Logger.Errorf("Add Transaction err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "Add Transaction err")
 }
 
 //Edit 编辑角色
@@ -115,10 +104,8 @@ func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 	err := core.DB.Where("id = ?", editReq.ID).Limit(1).First(&system.SystemAuthRole{}).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("角色已不存在!"))
-	} else if err != nil {
-		core.Logger.Errorf("Edit First err: err=[%+v]", err)
-		panic(response.SystemError)
 	}
+	util.CheckUtil.CheckErr(err, "Edit First err")
 	var role system.SystemAuthRole
 	if r := core.DB.Where("id != ? AND name = ?", editReq.ID, strings.Trim(editReq.Name, " ")).Limit(1).First(&role); r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("角色名称已存在!"))
@@ -140,10 +127,7 @@ func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 		SystemAuthPermService.CacheRoleMenusByRoleId(editReq.ID)
 		return nil
 	})
-	if err != nil {
-		core.Logger.Errorf("Edit Transaction err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "Edit Transaction err")
 }
 
 //Del 删除角色
@@ -151,10 +135,8 @@ func (roleSrv systemAuthRoleService) Del(id uint) {
 	err := core.DB.Where("id = ?", id).Limit(1).First(&system.SystemAuthRole{}).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("角色已不存在!"))
-	} else if err != nil {
-		core.Logger.Errorf("Del First err: err=[%+v]", err)
-		panic(response.SystemError)
 	}
+	util.CheckUtil.CheckErr(err, "Del First err")
 	if r := core.DB.Where("role = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{}); r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("角色已被管理员使用,请先移除!"))
 	}
@@ -169,8 +151,5 @@ func (roleSrv systemAuthRoleService) Del(id uint) {
 		util.RedisUtil.HDel(config.AdminConfig.BackstageRolesKey, strconv.FormatUint(uint64(id), 10))
 		return nil
 	})
-	if err != nil {
-		core.Logger.Errorf("Del Transaction err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "Del Transaction err")
 }

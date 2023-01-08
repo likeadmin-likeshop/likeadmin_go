@@ -5,6 +5,7 @@ import (
 	"likeadmin/core"
 	"likeadmin/core/response"
 	"likeadmin/model/common"
+	"likeadmin/util"
 )
 
 var AlbumService = albumService{}
@@ -21,9 +22,7 @@ func (albSrv albumService) AlbumAdd(addReq req.CommonAlbumAddReq) uint {
 	//	panic(response.SystemError)
 	//}
 	response.Copy(&alb, addReq)
-	if err := core.DB.Create(&alb).Error; err != nil {
-		core.Logger.Errorf("AlbumAdd Create err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := core.DB.Create(&alb).Error
+	util.CheckUtil.CheckErr(err, "AlbumAdd Create err")
 	return alb.ID
 }

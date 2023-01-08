@@ -6,7 +6,6 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"likeadmin/config"
 	"likeadmin/core"
-	"likeadmin/core/response"
 	"likeadmin/model/system"
 	"likeadmin/util"
 	"net/url"
@@ -56,10 +55,7 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 				err := c.ShouldBindBodyWith(&formParams, binding.JSON)
 				if err == nil {
 					val, err := util.ToolsUtil.ObjToJson(&formParams)
-					if err != nil {
-						core.Logger.Errorf("RecordLog POST Marshal err: err=[%+v]", err)
-						panic(response.SystemError)
-					}
+					util.CheckUtil.CheckErr(err, "RecordLog POST Marshal err")
 					args = val
 				}
 			}
@@ -89,10 +85,7 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 					Url: url, Method: method, Args: args, Error: errStr, Status: status,
 					StartTime: startTime / 1000, EndTime: endTime / 1000, TaskTime: taskTime,
 				}).Error
-				if err != nil {
-					core.Logger.Errorf("RecordLog recover Create err: err=[%+v]", err)
-					panic(response.SystemError)
-				}
+				util.CheckUtil.CheckErr(err, "RecordLog recover Create err")
 				panic(r)
 			}
 		}()
@@ -112,9 +105,6 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 			Url: url, Method: method, Args: args, Error: errStr, Status: status,
 			StartTime: startTime / 1000, EndTime: endTime / 1000, TaskTime: taskTime,
 		}).Error
-		if err != nil {
-			core.Logger.Errorf("RecordLog Create err: err=[%+v]", err)
-			panic(response.SystemError)
-		}
+		util.CheckUtil.CheckErr(err, "RecordLog Create err")
 	}
 }

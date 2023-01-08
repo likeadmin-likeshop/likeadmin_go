@@ -4,7 +4,6 @@ import (
 	"gorm.io/gorm"
 	"likeadmin/config"
 	"likeadmin/core"
-	"likeadmin/core/response"
 	"likeadmin/model/system"
 	"likeadmin/util"
 	"strconv"
@@ -85,10 +84,7 @@ func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds str
 		}
 		return nil
 	})
-	if err != nil {
-		core.Logger.Errorf("BatchSaveByMenuIds Transaction err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "BatchSaveByMenuIds Transaction err")
 }
 
 //BatchDeleteByRoleId 批量删除角色菜单(根据角色ID)
@@ -96,18 +92,14 @@ func (permSrv systemAuthPermService) BatchDeleteByRoleId(roleId uint, db *gorm.D
 	if db == nil {
 		db = core.DB
 	}
-	if err := db.Delete(&system.SystemAuthPerm{}, "role_id = ?", roleId).Error; err != nil {
-		core.Logger.Errorf("BatchDeleteByRoleId Delete err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := db.Delete(&system.SystemAuthPerm{}, "role_id = ?", roleId).Error
+	util.CheckUtil.CheckErr(err, "BatchDeleteByRoleId Delete err")
 	return
 }
 
 //BatchDeleteByMenuId 批量删除角色菜单(根据菜单ID)
 func (permSrv systemAuthPermService) BatchDeleteByMenuId(menuId uint) {
-	if err := core.DB.Delete(&system.SystemAuthPerm{}, "menu_id = ?", menuId).Error; err != nil {
-		core.Logger.Errorf("BatchDeleteByMenuId Delete err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := core.DB.Delete(&system.SystemAuthPerm{}, "menu_id = ?", menuId).Error
+	util.CheckUtil.CheckErr(err, "BatchDeleteByMenuId Delete err")
 	return
 }

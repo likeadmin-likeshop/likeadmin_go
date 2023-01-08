@@ -85,9 +85,8 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 	err = core.DB.Model(&sysAdmin).Updates(
 		system.SystemAuthAdmin{LastLoginIp: c.ClientIP(), LastLoginTime: time.Now().Unix()}).Error
 	if err != nil {
-		core.Logger.Errorf("Login Updates err: err=[%+v]", err)
 		loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.SystemError.Msg())
-		panic(response.SystemError)
+		util.CheckUtil.CheckErr(err, "Login Updates err")
 	}
 	// 记录登录日志
 	loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, "")
@@ -110,8 +109,5 @@ func (loginSrv systemLoginService) RecordLoginLog(c *gin.Context, adminId uint, 
 	err := core.DB.Create(&system.SystemLogLogin{
 		AdminId: adminId, Username: username, Ip: c.ClientIP(), Os: ua.Os.Family,
 		Browser: ua.UserAgent.Family, Status: status}).Error
-	if err != nil {
-		core.Logger.Errorf("RecordLoginLog Create err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "RecordLoginLog Create err")
 }

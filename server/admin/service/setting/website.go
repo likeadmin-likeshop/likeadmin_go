@@ -2,8 +2,6 @@ package setting
 
 import (
 	"likeadmin/admin/schemas/req"
-	"likeadmin/core"
-	"likeadmin/core/response"
 	"likeadmin/util"
 )
 
@@ -15,10 +13,7 @@ type settingWebsiteService struct{}
 //Detail 获取网站信息
 func (wSrv settingWebsiteService) Detail() map[string]string {
 	data, err := util.ConfigUtil.Get("website")
-	if err != nil {
-		core.Logger.Errorf("Detail Get err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "Detail Get err")
 	return map[string]string{
 		"name":     data["name"],
 		"logo":     util.UrlUtil.ToAbsoluteUrl(data["logo"]),
@@ -31,29 +26,17 @@ func (wSrv settingWebsiteService) Detail() map[string]string {
 
 //Save 保存网站信息
 func (wSrv settingWebsiteService) Save(wsReq req.SettingWebsiteReq) {
-	if err := util.ConfigUtil.Set("website", "name", wsReq.Name); err != nil {
-		core.Logger.Errorf("Save Set name err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
-	if err := util.ConfigUtil.Set("website", "logo", util.UrlUtil.ToRelativeUrl(wsReq.Logo)); err != nil {
-		core.Logger.Errorf("Save Set logo err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
-	if err := util.ConfigUtil.Set("website", "favicon", util.UrlUtil.ToRelativeUrl(wsReq.Favicon)); err != nil {
-		core.Logger.Errorf("Save Set favicon err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
-	if err := util.ConfigUtil.Set("website", "backdrop", util.UrlUtil.ToRelativeUrl(wsReq.Backdrop)); err != nil {
-		core.Logger.Errorf("Save Set backdrop err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
-	if err := util.ConfigUtil.Set("website", "shopName", wsReq.ShopName); err != nil {
-		core.Logger.Errorf("Save Set shopName err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
-	if err := util.ConfigUtil.Set("website", "shopLogo", util.UrlUtil.ToRelativeUrl(wsReq.ShopLogo)); err != nil {
-		core.Logger.Errorf("Save Set shopLogo err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := util.ConfigUtil.Set("website", "name", wsReq.Name)
+	util.CheckUtil.CheckErr(err, "Save Set name err")
+	err = util.ConfigUtil.Set("website", "logo", util.UrlUtil.ToRelativeUrl(wsReq.Logo))
+	util.CheckUtil.CheckErr(err, "Save Set logo err")
+	err = util.ConfigUtil.Set("website", "favicon", util.UrlUtil.ToRelativeUrl(wsReq.Favicon))
+	util.CheckUtil.CheckErr(err, "Save Set favicon err")
+	err = util.ConfigUtil.Set("website", "backdrop", util.UrlUtil.ToRelativeUrl(wsReq.Backdrop))
+	util.CheckUtil.CheckErr(err, "Save Set backdrop err")
+	err = util.ConfigUtil.Set("website", "shopName", wsReq.ShopName)
+	util.CheckUtil.CheckErr(err, "Save Set shopName err")
+	err = util.ConfigUtil.Set("website", "shopLogo", util.UrlUtil.ToRelativeUrl(wsReq.ShopLogo))
+	util.CheckUtil.CheckErr(err, "Save Set shopLogo err")
 
 }

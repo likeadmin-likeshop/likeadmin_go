@@ -8,6 +8,7 @@ import (
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/model/system"
+	"likeadmin/util"
 )
 
 var SystemLogsServer = systemLogsServer{}
@@ -55,16 +56,12 @@ func (logSrv systemLogsServer) Operate(page request.PageReq, logReq req.SystemLo
 	}
 	// 总数
 	var count int64
-	if err := logModel.Count(&count).Error; err != nil {
-		core.Logger.Errorf("Operate Count err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := logModel.Count(&count).Error
+	util.CheckUtil.CheckErr(err, "Operate Count err")
 	// 数据
 	var logResp []resp.SystemLogOperateResp
-	if err := logModel.Limit(limit).Offset(offset).Order("id desc").Find(&logResp).Error; err != nil {
-		core.Logger.Errorf("Operate Find err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err = logModel.Limit(limit).Offset(offset).Order("id desc").Find(&logResp).Error
+	util.CheckUtil.CheckErr(err, "Operate Find err")
 	return response.PageResp{
 		PageNo:   page.PageNo,
 		PageSize: page.PageSize,
@@ -97,16 +94,12 @@ func (logSrv systemLogsServer) Login(page request.PageReq, logReq req.SystemLogL
 	}
 	// 总数
 	var count int64
-	if err := logModel.Count(&count).Error; err != nil {
-		core.Logger.Errorf("Login Count err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := logModel.Count(&count).Error
+	util.CheckUtil.CheckErr(err, "Login Count err")
 	// 数据
 	var logResp []resp.SystemLogLoginResp
-	if err := logModel.Limit(limit).Offset(offset).Order("id desc").Find(&logResp).Error; err != nil {
-		core.Logger.Errorf("Login Find err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err = logModel.Limit(limit).Offset(offset).Order("id desc").Find(&logResp).Error
+	util.CheckUtil.CheckErr(err, "Login Find err")
 	return response.PageResp{
 		PageNo:   page.PageNo,
 		PageSize: page.PageSize,

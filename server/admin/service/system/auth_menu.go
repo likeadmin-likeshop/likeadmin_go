@@ -31,10 +31,8 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 		chain = chain.Where("id in ?", menuIds)
 	}
 	var menus []system.SystemAuthMenu
-	if err := chain.Order("menu_sort desc, id").Find(&menus).Error; err != nil {
-		core.Logger.Errorf("SelectMenuByRoleId Find err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := chain.Order("menu_sort desc, id").Find(&menus).Error
+	util.CheckUtil.CheckErr(err, "SelectMenuByRoleId Find err")
 	var menuResps []resp.SystemAuthMenuResp
 	response.Copy(&menuResps, menus)
 	mapList = util.ArrayUtil.ListToTree(
@@ -45,10 +43,8 @@ func (menuSrv systemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId u
 //List 菜单列表
 func (menuSrv systemAuthMenuService) List() []interface{} {
 	var menus []system.SystemAuthMenu
-	if err := core.DB.Order("menu_sort desc, id").Find(&menus).Error; err != nil {
-		core.Logger.Errorf("List Find err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := core.DB.Order("menu_sort desc, id").Find(&menus).Error
+	util.CheckUtil.CheckErr(err, "List Find err")
 	var menuResps []resp.SystemAuthMenuResp
 	response.Copy(&menuResps, menus)
 	return util.ArrayUtil.ListToTree(
@@ -61,10 +57,8 @@ func (menuSrv systemAuthMenuService) Detail(id uint) (res resp.SystemAuthMenuRes
 	err := core.DB.Where("id = ?", id).Limit(1).First(&menu).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("菜单已不存在!"))
-	} else if err != nil {
-		core.Logger.Errorf("Detail First err: err=[%+v]", err)
-		panic(response.SystemError)
 	}
+	util.CheckUtil.CheckErr(err, "Detail First err")
 	response.Copy(&res, menu)
 	return
 }
@@ -72,10 +66,8 @@ func (menuSrv systemAuthMenuService) Detail(id uint) (res resp.SystemAuthMenuRes
 func (menuSrv systemAuthMenuService) Add(addReq req.SystemAuthMenuAddReq) {
 	var menu system.SystemAuthMenu
 	response.Copy(&menu, addReq)
-	if err := core.DB.Create(&menu).Error; err != nil {
-		core.Logger.Errorf("Add Create err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err := core.DB.Create(&menu).Error
+	util.CheckUtil.CheckErr(err, "Add Create err")
 	util.RedisUtil.Del(config.AdminConfig.BackstageRolesKey)
 }
 
@@ -84,15 +76,11 @@ func (menuSrv systemAuthMenuService) Edit(editReq req.SystemAuthMenuEditReq) {
 	err := core.DB.Where("id = ?", editReq.ID).Limit(1).Find(&menu).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("菜单已不存在!"))
-	} else if err != nil {
-		core.Logger.Errorf("Edit Find err: err=[%+v]", err)
-		panic(response.SystemError)
 	}
+	util.CheckUtil.CheckErr(err, "Edit Find err")
 	response.Copy(&menu, editReq)
-	if err = core.DB.Model(&menu).Updates(structs.Map(menu)).Error; err != nil {
-		core.Logger.Errorf("Edit Updates err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err = core.DB.Model(&menu).Updates(structs.Map(menu)).Error
+	util.CheckUtil.CheckErr(err, "Edit Updates err")
 	util.RedisUtil.Del(config.AdminConfig.BackstageRolesKey)
 }
 
@@ -102,21 +90,14 @@ func (menuSrv systemAuthMenuService) Del(id uint) {
 	err := core.DB.Where("id = ?", id).Limit(1).First(&menu).Error
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		panic(response.AssertArgumentError.Make("菜单已不存在!"))
-	} else if err != nil {
-		core.Logger.Errorf("Delete First err: err=[%+v]", err)
-		panic(response.SystemError)
 	}
+	util.CheckUtil.CheckErr(err, "Delete First err")
 	r := core.DB.Where("pid = ?", id).Limit(1).Find(&system.SystemAuthMenu{})
 	err = r.Error
-	if err != nil {
-		core.Logger.Errorf("Delete Find by pid err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "Delete Find by pid err")
 	if r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("请先删除子菜单再操作！"))
 	}
-	if err = core.DB.Delete(&menu).Error; err != nil {
-		core.Logger.Errorf("Delete Delete err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	err = core.DB.Delete(&menu).Error
+	util.CheckUtil.CheckErr(err, "Delete Delete err")
 }

@@ -3,7 +3,6 @@ package common
 import (
 	"likeadmin/config"
 	"likeadmin/core"
-	"likeadmin/core/response"
 	"likeadmin/util"
 	"time"
 )
@@ -17,10 +16,7 @@ type indexService struct{}
 func (iSrv indexService) Console() map[string]interface{} {
 	// 版本信息
 	name, err := util.ConfigUtil.GetVal("website", "name", "LikeAdmin-Go")
-	if err != nil {
-		core.Logger.Errorf("Console Get err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "Console Get err")
 	version := map[string]interface{}{
 		"name":    name,
 		"version": config.Config.Version,
@@ -63,21 +59,13 @@ func (iSrv indexService) Console() map[string]interface{} {
 //Config 公共配置
 func (iSrv indexService) Config() map[string]interface{} {
 	website, err := util.ConfigUtil.Get("website")
-	if err != nil {
-		core.Logger.Errorf("Config Get err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "Config Get err")
 	copyrightStr, err := util.ConfigUtil.GetVal("website", "copyright", "")
-	if err != nil {
-		core.Logger.Errorf("Config GetVal err: err=[%+v]", err)
-		panic(response.SystemError)
-	}
+	util.CheckUtil.CheckErr(err, "Config GetVal err")
 	var copyright []map[string]string
 	if copyrightStr != "" {
-		if err = util.ToolsUtil.JsonToObj(copyrightStr, &copyright); err != nil {
-			core.Logger.Errorf("Config JsonToObj err: err=[%+v]", err)
-			panic(response.SystemError)
-		}
+		err = util.ToolsUtil.JsonToObj(copyrightStr, &copyright)
+		util.CheckUtil.CheckErr(err, "Config JsonToObj err")
 	} else {
 		copyright = []map[string]string{}
 	}
