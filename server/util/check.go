@@ -29,6 +29,7 @@ func (cu checkUtil) CheckErr(err error, template string, args ...interface{}) {
 //CheckErrDBNotRecord 校验数据库记录不存在的错误
 func (cu checkUtil) CheckErrDBNotRecord(err error, msg string) {
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		core.Logger.WithOptions(zap.AddCallerSkip(1)).Infof("CheckErrDBNotRecord err: err=[%+v]", err)
 		panic(response.AssertArgumentError.Make(msg))
 	}
 }

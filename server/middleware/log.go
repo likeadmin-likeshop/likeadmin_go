@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"go.uber.org/zap"
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/model/system"
@@ -86,6 +87,8 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 					StartTime: startTime / 1000, EndTime: endTime / 1000, TaskTime: taskTime,
 				}).Error
 				util.CheckUtil.CheckErr(err, "RecordLog recover Create err")
+				core.Logger.WithOptions(zap.AddCallerSkip(2)).Infof(
+					"RecordLog recover: err=[%+v]", r)
 				panic(r)
 			}
 		}()
