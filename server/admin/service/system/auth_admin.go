@@ -1,11 +1,9 @@
 package system
 
 import (
-	"errors"
 	"fmt"
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/config"
@@ -118,9 +116,7 @@ func (adminSrv systemAuthAdminService) List(page request.PageReq, listReq req.Sy
 func (adminSrv systemAuthAdminService) Detail(id uint) (res resp.SystemAuthAdminResp) {
 	var sysAdmin system.SystemAuthAdmin
 	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&sysAdmin).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("账号已不存在！"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "账号已不存在！")
 	util.CheckUtil.CheckErr(err, "Detail First err")
 	response.Copy(&res, sysAdmin)
 	res.Avatar = util.UrlUtil.ToAbsoluteUrl(res.Avatar)
@@ -172,9 +168,7 @@ func (adminSrv systemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) {
 func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAuthAdminEditReq) {
 	// 检查id
 	err := core.DB.Where("id = ? AND is_delete = ?", editReq.ID, 0).Limit(1).First(&system.SystemAuthAdmin{}).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("账号不存在了!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "账号不存在了!")
 	util.CheckUtil.CheckErr(err, "Edit First err")
 	// 检查username
 	var admin system.SystemAuthAdmin
@@ -245,9 +239,7 @@ func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.Syst
 	// 检查id
 	var admin system.SystemAuthAdmin
 	err := core.DB.Where("id = ? AND is_delete = ?", adminId, 0).Limit(1).First(&admin).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("账号不存在了!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "账号不存在了!")
 	util.CheckUtil.CheckErr(err, "Update First err")
 	// 更新管理员信息
 	adminMap := structs.Map(updateReq)
@@ -298,9 +290,7 @@ func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.Syst
 func (adminSrv systemAuthAdminService) Del(c *gin.Context, id uint) {
 	var admin system.SystemAuthAdmin
 	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&admin).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("账号已不存在!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "账号已不存在!")
 	util.CheckUtil.CheckErr(err, "Del First err")
 	if id == 1 {
 		panic(response.AssertArgumentError.Make("系统管理员不允许删除!"))

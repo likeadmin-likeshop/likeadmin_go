@@ -1,10 +1,8 @@
 package system
 
 import (
-	"errors"
 	"github.com/fatih/structs"
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/config"
@@ -55,9 +53,7 @@ func (menuSrv systemAuthMenuService) List() []interface{} {
 func (menuSrv systemAuthMenuService) Detail(id uint) (res resp.SystemAuthMenuResp) {
 	var menu system.SystemAuthMenu
 	err := core.DB.Where("id = ?", id).Limit(1).First(&menu).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("菜单已不存在!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "菜单已不存在!")
 	util.CheckUtil.CheckErr(err, "Detail First err")
 	response.Copy(&res, menu)
 	return
@@ -74,9 +70,7 @@ func (menuSrv systemAuthMenuService) Add(addReq req.SystemAuthMenuAddReq) {
 func (menuSrv systemAuthMenuService) Edit(editReq req.SystemAuthMenuEditReq) {
 	var menu system.SystemAuthMenu
 	err := core.DB.Where("id = ?", editReq.ID).Limit(1).Find(&menu).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("菜单已不存在!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "菜单已不存在!")
 	util.CheckUtil.CheckErr(err, "Edit Find err")
 	response.Copy(&menu, editReq)
 	err = core.DB.Model(&menu).Updates(structs.Map(menu)).Error
@@ -88,9 +82,7 @@ func (menuSrv systemAuthMenuService) Edit(editReq req.SystemAuthMenuEditReq) {
 func (menuSrv systemAuthMenuService) Del(id uint) {
 	var menu system.SystemAuthMenu
 	err := core.DB.Where("id = ?", id).Limit(1).First(&menu).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("菜单已不存在!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "菜单已不存在!")
 	util.CheckUtil.CheckErr(err, "Delete First err")
 	r := core.DB.Where("pid = ?", id).Limit(1).Find(&system.SystemAuthMenu{})
 	err = r.Error

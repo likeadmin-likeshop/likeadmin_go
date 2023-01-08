@@ -1,7 +1,6 @@
 package system
 
 import (
-	"errors"
 	"github.com/fatih/structs"
 	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
@@ -61,9 +60,7 @@ func (roleSrv systemAuthRoleService) List(page request.PageReq) response.PageRes
 func (roleSrv systemAuthRoleService) Detail(id uint) (res resp.SystemAuthRoleResp) {
 	var role system.SystemAuthRole
 	err := core.DB.Where("id = ?", id).Limit(1).First(&role).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("角色已不存在!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "角色已不存在!")
 	util.CheckUtil.CheckErr(err, "Detail First err")
 	response.Copy(&res, role)
 	res.Member = roleSrv.getMemberCnt(role.ID)
@@ -102,9 +99,7 @@ func (roleSrv systemAuthRoleService) Add(addReq req.SystemAuthRoleAddReq) {
 //Edit 编辑角色
 func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 	err := core.DB.Where("id = ?", editReq.ID).Limit(1).First(&system.SystemAuthRole{}).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("角色已不存在!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "角色已不存在!")
 	util.CheckUtil.CheckErr(err, "Edit First err")
 	var role system.SystemAuthRole
 	if r := core.DB.Where("id != ? AND name = ?", editReq.ID, strings.Trim(editReq.Name, " ")).Limit(1).First(&role); r.RowsAffected > 0 {
@@ -133,9 +128,7 @@ func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 //Del 删除角色
 func (roleSrv systemAuthRoleService) Del(id uint) {
 	err := core.DB.Where("id = ?", id).Limit(1).First(&system.SystemAuthRole{}).Error
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		panic(response.AssertArgumentError.Make("角色已不存在!"))
-	}
+	util.CheckUtil.CheckErrDBNotRecord(err, "角色已不存在!")
 	util.CheckUtil.CheckErr(err, "Del First err")
 	if r := core.DB.Where("role = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{}); r.RowsAffected > 0 {
 		panic(response.AssertArgumentError.Make("角色已被管理员使用,请先移除!"))
