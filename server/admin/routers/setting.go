@@ -17,6 +17,8 @@ func init() {
 	group.AddPOST("/website/save", websiteSave)
 	group.AddGET("/copyright/detail", copyrightDetail)
 	group.AddPOST("/copyright/save", copyrightSave)
+	group.AddGET("/protocol/detail", protocolDetail)
+	group.AddPOST("/protocol/save", protocolSave)
 }
 
 //websiteDetail 获取网站信息
@@ -42,5 +44,18 @@ func copyrightSave(c *gin.Context) {
 	var cReqs []req.SettingCopyrightItemReq
 	util.VerifyUtil.VerifyJSONArray(c, &cReqs)
 	setting.SettingCopyrightService.Save(cReqs)
+	response.Ok(c)
+}
+
+//protocolDetail 获取政策信息
+func protocolDetail(c *gin.Context) {
+	response.OkWithData(c, setting.SettingProtocolService.Detail())
+}
+
+//protocolSave 保存政策信息
+func protocolSave(c *gin.Context) {
+	var pReq req.SettingProtocolReq
+	util.VerifyUtil.VerifyJSON(c, &pReq)
+	setting.SettingProtocolService.Save(pReq)
 	response.Ok(c)
 }

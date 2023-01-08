@@ -7,7 +7,7 @@ import (
 
 var SettingCopyrightService = settingCopyrightService{}
 
-//settingWebsiteService 网站备案服务实现类
+//settingCopyrightService 网站备案服务实现类
 type settingCopyrightService struct{}
 
 //Detail 获取网站备案信息
