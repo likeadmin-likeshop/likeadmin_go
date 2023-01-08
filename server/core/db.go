@@ -18,7 +18,9 @@ func initMysql() *gorm.DB {
 	// 日志配置
 	slowThreshold := time.Second
 	ignoreRecordNotFoundError := true
+	logLevel := logger.Warn
 	if config.Config.GinMode == "debug" {
+		logLevel = logger.Info
 		slowThreshold = 200 * time.Millisecond
 		ignoreRecordNotFoundError = false
 	}
@@ -26,7 +28,7 @@ func initMysql() *gorm.DB {
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer（日志输出的目标，前缀和日志包含的内容——译者注）
 		logger.Config{
 			SlowThreshold:             slowThreshold,             // 慢 SQL 阈值
-			LogLevel:                  logger.Warn,               // 日志级别
+			LogLevel:                  logLevel,                  // 日志级别
 			IgnoreRecordNotFoundError: ignoreRecordNotFoundError, // 忽略ErrRecordNotFound（记录未找到）错误
 			Colorful:                  true,                      // 彩色打印
 		},

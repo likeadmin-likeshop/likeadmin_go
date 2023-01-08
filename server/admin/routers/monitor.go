@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"likeadmin/core"
 	"likeadmin/core/response"
+	"likeadmin/middleware"
 	"likeadmin/util"
 	"strings"
 )
@@ -12,8 +13,8 @@ var MonitorGroup = core.Group("/monitor")
 
 func init() {
 	group := MonitorGroup
-	group.AddGET("/cache", cache)
-	group.AddGET("/server", server)
+	group.AddGET("/cache", cache, middleware.RecordLog("缓存监控"))
+	group.AddGET("/server", server, middleware.RecordLog("服务监控"))
 }
 
 //cache 缓存监控

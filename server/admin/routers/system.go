@@ -38,6 +38,8 @@ func init() {
 	group.AddPOST("/menu/add", menuAdd)
 	group.AddPOST("/menu/edit", menuEdit)
 	group.AddPOST("/menu/del", menuDel)
+	group.AddGET("/log/operate", logOperate)
+	group.AddGET("/log/login", logLogin)
 }
 
 //login 登录系统
@@ -201,4 +203,22 @@ func menuDel(c *gin.Context) {
 	util.VerifyUtil.VerifyJSON(c, &delReq)
 	system.SystemAuthMenuService.Del(delReq.ID)
 	response.Ok(c)
+}
+
+//logOperate 操作日志
+func logOperate(c *gin.Context) {
+	var page request.PageReq
+	var logReq req.SystemLogOperateReq
+	util.VerifyUtil.VerifyQuery(c, &page)
+	util.VerifyUtil.VerifyQuery(c, &logReq)
+	response.OkWithData(c, system.SystemLogsServer.Operate(page, logReq))
+}
+
+//logLogin 登录日志
+func logLogin(c *gin.Context) {
+	var page request.PageReq
+	var logReq req.SystemLogLoginReq
+	util.VerifyUtil.VerifyQuery(c, &page)
+	util.VerifyUtil.VerifyQuery(c, &logReq)
+	response.OkWithData(c, system.SystemLogsServer.Login(page, logReq))
 }
