@@ -9,3 +9,9 @@ type SettingWebsiteReq struct {
 	ShopName string `form:"shopName"` // 商城名称
 	ShopLogo string `form:"shopLogo"` // 商城Logo
 }
+
+//SettingCopyrightItemReq 保存备案信息参数
+type SettingCopyrightItemReq struct {
+	Name string `form:"name" json:"name"`  // 名称
+	Link string `form:"link"  json:"link"` // 链接
+}

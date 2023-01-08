@@ -1,8 +1,10 @@
 package util
 
 import (
+	"encoding/json"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	"io/ioutil"
 	"likeadmin/core/response"
 	"mime/multipart"
 )
@@ -14,6 +16,19 @@ type verifyUtil struct{}
 
 func (vu verifyUtil) VerifyJSON(c *gin.Context, obj any) {
 	if err := c.ShouldBindBodyWith(obj, binding.JSON); err != nil {
+		panic(response.ParamsValidError.MakeData(err.Error()))
+		return
+	}
+}
+
+func (vu verifyUtil) VerifyJSONArray(c *gin.Context, obj any) {
+	body, err := ioutil.ReadAll(c.Request.Body)
+	if err != nil {
+		panic(response.ParamsValidError.MakeData(err.Error()))
+		return
+	}
+	err = json.Unmarshal(body, &obj)
+	if err != nil {
 		panic(response.ParamsValidError.MakeData(err.Error()))
 		return
 	}

@@ -38,5 +38,4 @@ func (wSrv settingWebsiteService) Save(wsReq req.SettingWebsiteReq) {
 	util.CheckUtil.CheckErr(err, "Save Set shopName err")
 	err = util.ConfigUtil.Set("website", "shopLogo", util.UrlUtil.ToRelativeUrl(wsReq.ShopLogo))
 	util.CheckUtil.CheckErr(err, "Save Set shopLogo err")
-
 }
