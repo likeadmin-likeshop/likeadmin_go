@@ -1,9 +1,11 @@
 package util
 
 import (
+	"bufio"
 	"context"
 	"likeadmin/config"
 	"likeadmin/core"
+	"strings"
 	"time"
 )
 
@@ -11,6 +13,60 @@ var RedisUtil = redisUtil{}
 
 //redisUtil Redis操作工具类
 type redisUtil struct{}
+
+//stringToLines string拆分多行
+func stringToLines(s string) (lines []string, err error) {
+	scanner := bufio.NewScanner(strings.NewReader(s))
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	err = scanner.Err()
+	return
+}
+
+//stringToKV string拆分key和val
+func stringToKV(s string) (string, string) {
+	ss := strings.Split(s, ":")
+	if len(ss) < 2 {
+		return s, ""
+	}
+	return ss[0], ss[1]
+}
+
+//Info Redis服务信息
+func (ru redisUtil) Info(sections ...string) (res map[string]string) {
+	infoStr, err := core.Redis.Info(context.Background(), sections...).Result()
+	res = map[string]string{}
+	if err != nil {
+		core.Logger.Errorf("redisUtil.Info err: err=[%+v]", err)
+		return res
+	}
+	// string拆分多行
+	lines, err := stringToLines(infoStr)
+	if err != nil {
+		core.Logger.Errorf("stringToLines err: err=[%+v]", err)
+		return res
+	}
+	// 解析成Map
+	for i := 0; i < len(lines); i++ {
+		if lines[i] == "" || strings.HasPrefix(lines[i], "# ") {
+			continue
+		}
+		k, v := stringToKV(lines[i])
+		res[k] = v
+	}
+	return res
+}
+
+//DBSize 当前数据库key数量
+func (ru redisUtil) DBSize() int64 {
+	size, err := core.Redis.DBSize(context.Background()).Result()
+	if err != nil {
+		core.Logger.Errorf("redisUtil.DBSize err: err=[%+v]", err)
+		return 0
+	}
+	return size
+}
 
 //Set 设置键值对
 func (ru redisUtil) Set(key string, value interface{}, timeSec int) bool {

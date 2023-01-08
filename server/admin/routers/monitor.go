@@ -2,10 +2,10 @@ package routers
 
 import (
 	"github.com/gin-gonic/gin"
-	"likeadmin/admin/service/common"
 	"likeadmin/core"
 	"likeadmin/core/response"
 	"likeadmin/util"
+	"strings"
 )
 
 var MonitorGroup = core.Group("/monitor")
@@ -18,8 +18,19 @@ func init() {
 
 //cache 缓存监控
 func cache(c *gin.Context) {
-	// TODO: cache
-	response.OkWithData(c, common.IndexService.Console())
+	cmdStatsMap := util.RedisUtil.Info("commandstats")
+	var stats []map[string]string
+	for k, v := range cmdStatsMap {
+		stats = append(stats, map[string]string{
+			"name":  strings.Split(k, "_")[1],
+			"value": v[strings.Index(v, "=")+1 : strings.Index(v, ",")],
+		})
+	}
+	response.OkWithData(c, map[string]interface{}{
+		"info":         util.RedisUtil.Info(),
+		"commandStats": stats,
+		"dbSize":       util.RedisUtil.DBSize(),
+	})
 }
 
 //server 服务监控
