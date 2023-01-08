@@ -60,7 +60,7 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 		}
 	}()
 	token := util.ToolsUtil.MakeToken()
-	adminIdStr := strconv.Itoa(int(sysAdmin.ID))
+	adminIdStr := strconv.FormatUint(uint64(sysAdmin.ID), 10)
 
 	//非多处登录
 	if sysAdmin.IsMultipoint == 0 {

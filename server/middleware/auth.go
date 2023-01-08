@@ -49,7 +49,7 @@ func TokenAuth() gin.HandlerFunc {
 		uidStr := util.RedisUtil.Get(token)
 		var uid uint
 		if uidStr != "" {
-			i, err := strconv.Atoi(uidStr)
+			i, err := strconv.ParseUint(uidStr, 10, 32)
 			if err != nil {
 				core.Logger.Errorf("TokenAuth Atoi uidStr err: err=[%+v]", err)
 				response.Fail(c, response.TokenInvalid)
@@ -112,7 +112,7 @@ func TokenAuth() gin.HandlerFunc {
 		// 校验角色权限是否存在
 		roleId := mapping.Role
 		if util.RedisUtil.HExists(config.AdminConfig.BackstageRolesKey, roleId) {
-			i, err := strconv.Atoi(roleId)
+			i, err := strconv.ParseUint(roleId, 10, 32)
 			if err != nil {
 				core.Logger.Errorf("TokenAuth Atoi roleId err: err=[%+v]", err)
 				response.Fail(c, response.SystemError)

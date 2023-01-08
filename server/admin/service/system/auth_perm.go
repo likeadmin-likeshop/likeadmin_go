@@ -60,7 +60,7 @@ func (permSrv systemAuthPermService) CacheRoleMenusByRoleId(roleId uint) (err er
 			menuArray = append(menuArray, strings.Trim(menu.Perms, ""))
 		}
 	}
-	util.RedisUtil.HSet(config.AdminConfig.BackstageRolesKey, strconv.Itoa(int(roleId)), strings.Join(menuArray, ","), 0)
+	util.RedisUtil.HSet(config.AdminConfig.BackstageRolesKey, strconv.FormatUint(uint64(roleId), 10), strings.Join(menuArray, ","), 0)
 	return
 }
 
@@ -75,7 +75,7 @@ func (permSrv systemAuthPermService) BatchSaveByMenuIds(roleId uint, menuIds str
 	err := db.Transaction(func(tx *gorm.DB) error {
 		var perms []system.SystemAuthPerm
 		for _, menuIdStr := range strings.Split(menuIds, ",") {
-			menuId, _ := strconv.Atoi(menuIdStr)
+			menuId, _ := strconv.ParseUint(menuIdStr, 10, 32)
 			perms = append(perms, system.SystemAuthPerm{ID: util.ToolsUtil.MakeUuid(), RoleId: roleId, MenuId: uint(menuId)})
 		}
 		txErr := tx.Create(&perms).Error

@@ -41,7 +41,7 @@ func (adminSrv systemAuthAdminService) Self(adminId uint) (res resp.SystemAuthAd
 	// 角色权限
 	var auths []string
 	if adminId > 1 {
-		roleId, _ := strconv.Atoi(sysAdmin.Role)
+		roleId, _ := strconv.ParseUint(sysAdmin.Role, 10, 32)
 		menuIds := SystemAuthPermService.SelectMenuIdsByRoleId(uint(roleId))
 		if len(menuIds) > 0 {
 			var menus []system.SystemAuthMenu
@@ -66,7 +66,7 @@ func (adminSrv systemAuthAdminService) Self(adminId uint) (res resp.SystemAuthAd
 	}
 	var admin resp.SystemAuthAdminSelfOneResp
 	response.Copy(&admin, sysAdmin)
-	admin.Dept = strconv.Itoa(int(sysAdmin.DeptId))
+	admin.Dept = strconv.FormatUint(uint64(sysAdmin.DeptId), 10)
 	admin.Avatar = util.UrlUtil.ToAbsoluteUrl(sysAdmin.Avatar)
 	return resp.SystemAuthAdminSelfResp{User: admin, Permissions: auths}
 }
@@ -136,7 +136,7 @@ func (adminSrv systemAuthAdminService) Detail(id uint) (res resp.SystemAuthAdmin
 	response.Copy(&res, sysAdmin)
 	res.Avatar = util.UrlUtil.ToAbsoluteUrl(res.Avatar)
 	if res.Dept == "" {
-		res.Dept = strconv.Itoa(int(res.DeptId))
+		res.Dept = strconv.FormatUint(uint64(res.DeptId), 10)
 	}
 	return
 }
@@ -174,7 +174,7 @@ func (adminSrv systemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) {
 	}
 	salt := util.ToolsUtil.RandomString(5)
 	response.Copy(&sysAdmin, addReq)
-	sysAdmin.Role = strconv.Itoa(int(addReq.Role))
+	sysAdmin.Role = strconv.FormatUint(uint64(addReq.Role), 10)
 	sysAdmin.Salt = salt
 	sysAdmin.Password = util.ToolsUtil.MakeMd5(strings.Trim(addReq.Password, " ") + salt)
 	if addReq.Avatar == "" {
@@ -230,7 +230,7 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 	if editReq.ID == 1 {
 		role = 0
 	}
-	adminMap["Role"] = strconv.Itoa(int(role))
+	adminMap["Role"] = strconv.FormatUint(uint64(role), 10)
 	if editReq.ID == 1 {
 		delete(adminMap, "Username")
 	}
@@ -255,7 +255,7 @@ func (adminSrv systemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAu
 	if editReq.Password != "" && editReq.ID == adminId {
 		token := c.Request.Header.Get("token")
 		util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
-		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.Itoa(int(adminId))
+		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.FormatUint(uint64(adminId), 10)
 		ts := util.RedisUtil.SGet(adminSetKey)
 		if len(ts) > 0 {
 			var tokenKeys []string
@@ -313,7 +313,7 @@ func (adminSrv systemAuthAdminService) Update(c *gin.Context, updateReq req.Syst
 	if updateReq.Password != "" {
 		token := c.Request.Header.Get("token")
 		util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
-		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.Itoa(int(adminId))
+		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.FormatUint(uint64(adminId), 10)
 		ts := util.RedisUtil.SGet(adminSetKey)
 		if len(ts) > 0 {
 			var tokenKeys []string
@@ -383,6 +383,6 @@ func (adminSrv systemAuthAdminService) CacheAdminUserByUid(id uint) (err error) 
 	if err != nil {
 		return
 	}
-	util.RedisUtil.HSet(config.AdminConfig.BackstageManageKey, strconv.Itoa(int(admin.ID)), str, 0)
+	util.RedisUtil.HSet(config.AdminConfig.BackstageManageKey, strconv.FormatUint(uint64(admin.ID), 10), str, 0)
 	return nil
 }
