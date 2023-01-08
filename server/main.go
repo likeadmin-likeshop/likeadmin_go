@@ -28,6 +28,7 @@ func initRouter() *gin.Engine {
 	group := router.Group("/api")
 	core.RegisterGroup(group, routers.CommonGroup, nil)
 	core.RegisterGroup(group, routers.MonitorGroup, nil)
+	core.RegisterGroup(group, routers.SettingGroup, nil)
 	core.RegisterGroup(group, routers.SystemGroup, nil)
 	return router
 }
