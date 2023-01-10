@@ -51,6 +51,6 @@ __debug_bin
 
 # custom
 # env
-.env*
+.env
 # binary
 main

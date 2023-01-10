@@ -57,7 +57,7 @@ func loadConfig(path string) envConfig {
 		RedisUrl:      "redis://localhost:6379",
 		RedisPoolSize: 100,
 		// 数据源配置
-		DatabaseUrl:            "mysql+pymysql://root:root@localhost:3306/likeadmin?charset=utf8mb4",
+		DatabaseUrl:            "root:root@tcp(localhost:3306)/likeadmin?charset=utf8mb4&parseTime=True&loc=Local",
 		DbTablePrefix:          "la_",
 		DbDefaultStringSize:    256,
 		DbMaxIdleConns:         10,
