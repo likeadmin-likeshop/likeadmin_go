@@ -85,6 +85,20 @@ type SystemAuthDept struct {
 	DeleteTime int64  `gorm:"not null;default:0;comment:'删除时间'"`
 }
 
+//SystemAuthPost 系统岗位管理
+type SystemAuthPost struct {
+	ID         uint   `gorm:"primarykey;comment:'主键'"`
+	code       string `gorm:"not null;default:'';comment:'岗位编码''"`
+	Name       string `gorm:"not null;default:'';comment:'岗位名称''"`
+	remarks    string `gorm:"not null;default:'';comment:'岗位备注''"`
+	Sort       uint16 `gorm:"not null;default:0;comment:'岗位排序'"`
+	IsStop     uint8  `gorm:"not null;default:0;comment:'是否停用: 0=否, 1=是'"`
+	IsDelete   uint8  `gorm:"not null;default:0;comment:'是否删除: 0=否, 1=是'"`
+	CreateTime int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
+	UpdateTime int64  `gorm:"autoUpdateTime;not null;comment:'更新时间'"`
+	DeleteTime int64  `gorm:"not null;default:0;comment:'删除时间'"`
+}
+
 //SystemLogLogin 系统登录日志实体
 type SystemLogLogin struct {
 	ID         uint   `gorm:"primarykey;comment:'主键'"`

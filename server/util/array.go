@@ -7,6 +7,7 @@ type arrayUtil struct{}
 
 //ListToTree 字典列表转树形结构
 func (au arrayUtil) ListToTree(arr []map[string]interface{}, id string, pid string, child string) (mapList []interface{}) {
+	mapList = []interface{}{}
 	// 遍历以id_为key生成map
 	idValMap := make(map[uint]interface{})
 	for _, m := range arr {

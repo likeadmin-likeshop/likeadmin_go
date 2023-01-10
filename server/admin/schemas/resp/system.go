@@ -95,6 +95,19 @@ type SystemAuthMenuResp struct {
 	Children   []SystemAuthMenuResp `json:"children,omitempty" structs:"children"` // 子集
 }
 
+//SystemAuthDeptResp 系统部门返回信息
+type SystemAuthDeptResp struct {
+	ID         uint        `json:"id" structs:"id"`                 // 主键
+	Pid        uint        `json:"pid" structs:"pid"`               // 部门父级
+	Name       string      `json:"name" structs:"name"`             // 部门名称
+	Duty       string      `json:"duty" structs:"duty"`             // 负责人
+	Mobile     string      `json:"mobile" structs:"mobile"`         // 联系电话
+	Sort       uint16      `json:"sort" structs:"sort"`             // 排序编号
+	IsStop     uint8       `json:"isStop" structs:"isStop"`         // 是否停用: [0=否, 1=是]
+	CreateTime core.TsTime `json:"createTime" structs:"createTime"` // 创建时间
+	UpdateTime core.TsTime `json:"updateTime" structs:"updateTime"` // 更新时间
+}
+
 //SystemLogOperateResp 操作日志返回信息
 type SystemLogOperateResp struct {
 	ID         uint        `json:"id" structs:"id"`                 // 主键

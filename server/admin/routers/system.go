@@ -38,6 +38,12 @@ func init() {
 	group.AddPOST("/menu/add", menuAdd)
 	group.AddPOST("/menu/edit", menuEdit)
 	group.AddPOST("/menu/del", menuDel)
+	group.AddGET("/dept/all", deptAll)
+	group.AddGET("/dept/list", deptList)
+	group.AddGET("/dept/detail", deptDetail)
+	group.AddPOST("/dept/add", deptAdd)
+	group.AddPOST("/dept/edit", deptEdit)
+	group.AddPOST("/dept/del", deptDel)
 	group.AddGET("/log/operate", logOperate)
 	group.AddGET("/log/login", logLogin)
 }
@@ -202,6 +208,49 @@ func menuDel(c *gin.Context) {
 	var delReq req.SystemAuthMenuDelReq
 	util.VerifyUtil.VerifyJSON(c, &delReq)
 	system.SystemAuthMenuService.Del(delReq.ID)
+	response.Ok(c)
+}
+
+//deptAll 部门所有
+func deptAll(c *gin.Context) {
+	response.OkWithData(c, system.SystemAuthDeptService.All())
+}
+
+//deptList 部门列表
+func deptList(c *gin.Context) {
+	var listReq req.SystemAuthDeptListReq
+	util.VerifyUtil.VerifyQuery(c, &listReq)
+	response.OkWithData(c, system.SystemAuthDeptService.List(listReq))
+}
+
+//deptDetail 部门详情
+func deptDetail(c *gin.Context) {
+	var detailReq req.SystemAuthDeptDetailReq
+	util.VerifyUtil.VerifyQuery(c, &detailReq)
+	response.OkWithData(c, system.SystemAuthDeptService.Detail(detailReq.ID))
+}
+
+//deptAdd 部门新增
+func deptAdd(c *gin.Context) {
+	var addReq req.SystemAuthDeptAddReq
+	util.VerifyUtil.VerifyBody(c, &addReq)
+	system.SystemAuthDeptService.Add(addReq)
+	response.Ok(c)
+}
+
+//deptEdit 部门编辑
+func deptEdit(c *gin.Context) {
+	var editReq req.SystemAuthDeptEditReq
+	util.VerifyUtil.VerifyBody(c, &editReq)
+	system.SystemAuthDeptService.Edit(editReq)
+	response.Ok(c)
+}
+
+//deptDel 部门删除
+func deptDel(c *gin.Context) {
+	var delReq req.SystemAuthDeptDelReq
+	util.VerifyUtil.VerifyJSON(c, &delReq)
+	system.SystemAuthDeptService.Del(delReq.ID)
 	response.Ok(c)
 }
 
