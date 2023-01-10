@@ -87,12 +87,12 @@
     <el-card shadow="never" class="!border-none mt-4">
       <div>go虚拟机信息</div>
       <div class="mt-4">
-        <el-table :data="[info.jvm]" size="large">
+        <el-table :data="[info.go]" size="large">
           <el-table-column prop="name" label="go名称" min-width="120" />
           <el-table-column prop="startTime" label="启动时间" min-width="120" />
           <el-table-column prop="home" label="安装路径" min-width="120" />
           <el-table-column prop="inputArgs" label="运行参数" min-width="120" />
-          <el-table-column prop="version" label="Java版本" min-width="120" />
+          <el-table-column prop="version" label="go版本" min-width="120" />
           <el-table-column prop="runTime" label="运行时长" min-width="120" />
         </el-table>
       </div>
@@ -127,7 +127,7 @@ const loading = ref(false);
 const info = ref({
   cpu: {} as any,
   disk: [],
-  jvm: {},
+  go: {},
   mem: {} as any,
   sys: {},
 });
