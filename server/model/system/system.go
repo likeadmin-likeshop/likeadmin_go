@@ -88,9 +88,9 @@ type SystemAuthDept struct {
 //SystemAuthPost 系统岗位管理
 type SystemAuthPost struct {
 	ID         uint   `gorm:"primarykey;comment:'主键'"`
-	code       string `gorm:"not null;default:'';comment:'岗位编码''"`
+	Code       string `gorm:"not null;default:'';comment:'岗位编码''"`
 	Name       string `gorm:"not null;default:'';comment:'岗位名称''"`
-	remarks    string `gorm:"not null;default:'';comment:'岗位备注''"`
+	Remarks    string `gorm:"not null;default:'';comment:'岗位备注''"`
 	Sort       uint16 `gorm:"not null;default:0;comment:'岗位排序'"`
 	IsStop     uint8  `gorm:"not null;default:0;comment:'是否停用: 0=否, 1=是'"`
 	IsDelete   uint8  `gorm:"not null;default:0;comment:'是否删除: 0=否, 1=是'"`

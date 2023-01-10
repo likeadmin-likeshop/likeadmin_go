@@ -44,6 +44,12 @@ func init() {
 	group.AddPOST("/dept/add", deptAdd)
 	group.AddPOST("/dept/edit", deptEdit)
 	group.AddPOST("/dept/del", deptDel)
+	group.AddGET("/post/all", postAll)
+	group.AddGET("/post/list", postList)
+	group.AddGET("/post/detail", postDetail)
+	group.AddPOST("/post/add", postAdd)
+	group.AddPOST("/post/edit", postEdit)
+	group.AddPOST("/post/del", postDel)
 	group.AddGET("/log/operate", logOperate)
 	group.AddGET("/log/login", logLogin)
 }
@@ -249,8 +255,53 @@ func deptEdit(c *gin.Context) {
 //deptDel 部门删除
 func deptDel(c *gin.Context) {
 	var delReq req.SystemAuthDeptDelReq
-	util.VerifyUtil.VerifyJSON(c, &delReq)
+	util.VerifyUtil.VerifyBody(c, &delReq)
 	system.SystemAuthDeptService.Del(delReq.ID)
+	response.Ok(c)
+}
+
+//postAll 岗位所有
+func postAll(c *gin.Context) {
+	response.OkWithData(c, system.SystemAuthPostService.All())
+}
+
+//postList 岗位列表
+func postList(c *gin.Context) {
+	var page request.PageReq
+	var listReq req.SystemAuthPostListReq
+	util.VerifyUtil.VerifyQuery(c, &page)
+	util.VerifyUtil.VerifyQuery(c, &listReq)
+	response.OkWithData(c, system.SystemAuthPostService.List(page, listReq))
+}
+
+//postDetail 岗位详情
+func postDetail(c *gin.Context) {
+	var detailReq req.SystemAuthPostDetailReq
+	util.VerifyUtil.VerifyQuery(c, &detailReq)
+	response.OkWithData(c, system.SystemAuthPostService.Detail(detailReq.ID))
+}
+
+//postAdd 岗位新增
+func postAdd(c *gin.Context) {
+	var addReq req.SystemAuthPostAddReq
+	util.VerifyUtil.VerifyBody(c, &addReq)
+	system.SystemAuthPostService.Add(addReq)
+	response.Ok(c)
+}
+
+//postEdit 岗位编辑
+func postEdit(c *gin.Context) {
+	var editReq req.SystemAuthPostEditReq
+	util.VerifyUtil.VerifyBody(c, &editReq)
+	system.SystemAuthPostService.Edit(editReq)
+	response.Ok(c)
+}
+
+//postDel 岗位删除
+func postDel(c *gin.Context) {
+	var delReq req.SystemAuthPostDelReq
+	util.VerifyUtil.VerifyBody(c, &delReq)
+	system.SystemAuthPostService.Del(delReq.ID)
 	response.Ok(c)
 }
 

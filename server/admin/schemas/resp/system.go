@@ -108,6 +108,18 @@ type SystemAuthDeptResp struct {
 	UpdateTime core.TsTime `json:"updateTime" structs:"updateTime"` // 更新时间
 }
 
+//SystemAuthPostResp 系统岗位返回信息
+type SystemAuthPostResp struct {
+	ID         uint        `json:"id" structs:"id"`                 // 主键
+	Code       string      `json:"code" structs:"code"`             // 岗位编号
+	Name       string      `json:"name" structs:"name"`             // 岗位名称
+	Remarks    string      `json:"remarks" structs:"remarks"`       // 岗位备注
+	Sort       uint16      `json:"sort" structs:"sort"`             // 岗位排序
+	IsStop     uint8       `json:"isStop" structs:"isStop"`         // 是否停用: [0=否, 1=是]
+	CreateTime core.TsTime `json:"createTime" structs:"createTime"` // 创建时间
+	UpdateTime core.TsTime `json:"updateTime" structs:"updateTime"` // 更新时间
+}
+
 //SystemLogOperateResp 操作日志返回信息
 type SystemLogOperateResp struct {
 	ID         uint        `json:"id" structs:"id"`                 // 主键

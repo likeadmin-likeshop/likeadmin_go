@@ -14,7 +14,7 @@ var SystemAuthDeptService = systemAuthDeptService{}
 //systemAuthDeptService 系统部门服务实现类
 type systemAuthDeptService struct{}
 
-//All 岗位所有
+//All 部门所有
 func (deptSrv systemAuthDeptService) All() []resp.SystemAuthDeptResp {
 	var depts []system.SystemAuthDept
 	err := core.DB.Where("pid > ? AND is_delete = ?", 0, 0).Order("sort desc, id desc").Find(&depts).Error
@@ -56,8 +56,8 @@ func (deptSrv systemAuthDeptService) Detail(id uint) (res resp.SystemAuthDeptRes
 //Add 部门新增
 func (deptSrv systemAuthDeptService) Add(addReq req.SystemAuthDeptAddReq) {
 	if addReq.Pid == 0 {
-		r := core.DB.Where("pid = ? AND is_delete = ?", 0, 0).Limit(1).First(&system.SystemAuthDept{})
-		util.CheckUtil.CheckErr(r.Error, "Add First err")
+		r := core.DB.Where("pid = ? AND is_delete = ?", 0, 0).Limit(1).Find(&system.SystemAuthDept{})
+		util.CheckUtil.CheckErr(r.Error, "Add Find err")
 		if r.RowsAffected > 0 {
 			panic(response.AssertArgumentError.Make("顶级部门只允许有一个!"))
 		}
@@ -108,6 +108,6 @@ func (deptSrv systemAuthDeptService) Del(id uint) {
 		panic(response.AssertArgumentError.Make("该部门已被管理员使用,请先移除!"))
 	}
 	dept.IsDelete = 1
-	err = core.DB.Save(dept).Error
+	err = core.DB.Save(&dept).Error
 	util.CheckUtil.CheckErr(err, "Del Save err")
 }
