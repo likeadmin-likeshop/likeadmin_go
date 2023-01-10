@@ -49,5 +49,8 @@ out/
 __debug_bin
 .project
 
+# custom
 # env
 .env*
+# binary
+main
