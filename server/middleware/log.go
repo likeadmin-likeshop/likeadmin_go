@@ -43,7 +43,8 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 			if reqType == RequestFile {
 				// 文件类型
 				var filenames []string
-				form, _ := c.MultipartForm()
+				form, err := c.MultipartForm()
+				util.CheckUtil.CheckErr(err, "RecordLog MultipartForm err")
 				for _, files := range form.File {
 					for _, file := range files {
 						filenames = append(filenames, file.Filename)
