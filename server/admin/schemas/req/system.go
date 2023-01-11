@@ -82,9 +82,9 @@ type SystemAuthRoleDetailReq struct {
 //SystemAuthRoleAddReq 新增角色参数
 type SystemAuthRoleAddReq struct {
 	Name      string `form:"name" binding:"required,min=1,max=30"` // 角色名称
-	Sort      int    `form:"sort" binding:"required,gte=0"`        // 角色排序
+	Sort      int    `form:"sort" binding:"gte=0"`                 // 角色排序
 	IsDisable uint8  `form:"isDisable" binding:"oneof=0 1"`        // 是否禁用: [0=否, 1=是]
-	Remark    string `form:"remark" binding:"required,max=200"`    // 角色备注
+	Remark    string `form:"remark" binding:"max=200"`             // 角色备注
 	MenuIds   string `form:"menuIds"`                              // 关联菜单
 }
 
@@ -92,9 +92,9 @@ type SystemAuthRoleAddReq struct {
 type SystemAuthRoleEditReq struct {
 	ID        uint   `form:"id" binding:"required,gt=0"`           // 主键
 	Name      string `form:"name" binding:"required,min=1,max=30"` // 角色名称
-	Sort      int    `form:"sort" binding:"required,gte=0"`        // 角色排序
+	Sort      int    `form:"sort" binding:"gte=0"`                 // 角色排序
 	IsDisable uint8  `form:"isDisable" binding:"oneof=0 1"`        // 是否禁用: [0=否, 1=是]
-	Remark    string `form:"remark" binding:"required,max=200"`    // 角色备注
+	Remark    string `form:"remark" binding:"max=200"`             // 角色备注
 	MenuIds   string `form:"menuIds"`                              // 关联菜单
 }
 
