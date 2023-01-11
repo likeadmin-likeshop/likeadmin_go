@@ -72,14 +72,13 @@ func (adminSrv systemAuthAdminService) List(page request.PageReq, listReq req.Sy
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	// 查询
-	admin := system.SystemAuthAdmin{}
-	adminTbName := core.DBTableName(&admin)
+	adminTbName := core.DBTableName(&system.SystemAuthAdmin{})
 	roleTbName := core.DBTableName(&system.SystemAuthRole{})
 	deptTbName := core.DBTableName(&system.SystemAuthDept{})
-	adminModel := core.DB.Model(&admin).Joins(
-		fmt.Sprintf("LEFT JOIN %s ON %s.role = %s.id", roleTbName, adminTbName, roleTbName)).Joins(
-		fmt.Sprintf("LEFT JOIN %s ON %s.dept_id = %s.id", deptTbName, adminTbName, deptTbName)).Select(
-		fmt.Sprintf("%s.*, %s.name as dept, %s.name as role", adminTbName, deptTbName, roleTbName))
+	adminModel := core.DB.Table(adminTbName+" AS admin").Where("admin.is_delete = ?", 0).Joins(
+		fmt.Sprintf("LEFT JOIN %s ON admin.role = %s.id", roleTbName, roleTbName)).Joins(
+		fmt.Sprintf("LEFT JOIN %s ON admin.dept_id = %s.id", deptTbName, deptTbName)).Select(
+		fmt.Sprintf("admin.*, %s.name as dept, %s.name as role", deptTbName, roleTbName))
 	// 条件
 	if listReq.Username != "" {
 		adminModel = adminModel.Where("username like ?", "%"+listReq.Username+"%")
