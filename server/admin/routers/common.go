@@ -24,6 +24,10 @@ func init() {
 	group.AddPOST("/album/albumRename", albumRename, middleware.RecordLog("相册文件重命名"))
 	group.AddPOST("/album/albumMove", albumMove, middleware.RecordLog("相册文件移动"))
 	group.AddPOST("/album/albumDel", albumDel, middleware.RecordLog("相册文件删除"))
+	group.AddGET("/album/cateList", cateList)
+	group.AddPOST("/album/cateAdd", cateAdd, middleware.RecordLog("相册分类新增"))
+	group.AddPOST("/album/cateRename", cateRename, middleware.RecordLog("相册分类重命名"))
+	group.AddPOST("/album/cateDel", cateDel, middleware.RecordLog("相册分类删除"))
 }
 
 //indexConsole 控制台
@@ -82,5 +86,36 @@ func albumDel(c *gin.Context) {
 	var delReq req.CommonAlbumDelReq
 	util.VerifyUtil.VerifyJSON(c, &delReq)
 	common.AlbumService.AlbumDel(delReq.Ids)
+	response.Ok(c)
+}
+
+//cateList 类目列表
+func cateList(c *gin.Context) {
+	var listReq req.CommonCateListReq
+	util.VerifyUtil.VerifyQuery(c, &listReq)
+	response.OkWithData(c, common.AlbumService.CateList(listReq))
+}
+
+//cateAdd 类目新增
+func cateAdd(c *gin.Context) {
+	var addReq req.CommonCateAddReq
+	util.VerifyUtil.VerifyJSON(c, &addReq)
+	common.AlbumService.CateAdd(addReq)
+	response.Ok(c)
+}
+
+//cateRename 类目命名
+func cateRename(c *gin.Context) {
+	var rnReq req.CommonCateRenameReq
+	util.VerifyUtil.VerifyJSON(c, &rnReq)
+	common.AlbumService.CateRename(rnReq.ID, rnReq.Name)
+	response.Ok(c)
+}
+
+//cateDel 类目删除
+func cateDel(c *gin.Context) {
+	var delReq req.CommonCateDelReq
+	util.VerifyUtil.VerifyJSON(c, &delReq)
+	common.AlbumService.CateDel(delReq.ID)
 	response.Ok(c)
 }

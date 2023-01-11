@@ -119,3 +119,57 @@ func (albSrv albumService) AlbumDel(ids []uint) {
 		common.Album{IsDelete: 1, DeleteTime: time.Now().Unix()}).Error
 	util.CheckUtil.CheckErr(err, "AlbumDel UpdateColumn err")
 }
+
+//CateList 相册分类列表
+func (albSrv albumService) CateList(listReq req.CommonCateListReq) (mapList []interface{}) {
+	var cates []common.AlbumCate
+	cateModel := core.DB.Where("is_delete = ?", 0).Order("id desc")
+	if listReq.Type > 0 {
+		cateModel = cateModel.Where("type = ?", listReq.Type)
+	}
+	if listReq.Name != "" {
+		cateModel = cateModel.Where("name like ?", "%"+listReq.Name+"%")
+	}
+	err := cateModel.Find(&cates).Error
+	util.CheckUtil.CheckErr(err, "CateList Find err")
+	cateResps := []resp.CommonCateListResp{}
+	response.Copy(&cateResps, cates)
+	return util.ArrayUtil.ListToTree(
+		util.ConvertUtil.StructsToMaps(cateResps), "id", "pid", "children")
+}
+
+//CateAdd 分类新增
+func (albSrv albumService) CateAdd(addReq req.CommonCateAddReq) {
+	var cate common.AlbumCate
+	response.Copy(&cate, addReq)
+	err := core.DB.Create(&cate).Error
+	util.CheckUtil.CheckErr(err, "CateAdd Create err")
+}
+
+//CateRename 分类重命名
+func (albSrv albumService) CateRename(id uint, name string) {
+	var cate common.AlbumCate
+	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&cate).Error
+	util.CheckUtil.CheckErrDBNotRecord(err, "分类已不存在！")
+	util.CheckUtil.CheckErr(err, "CateRename First err")
+	cate.Name = name
+	err = core.DB.Save(&cate).Error
+	util.CheckUtil.CheckErr(err, "CateRename Save err")
+}
+
+//CateDel 分类删除
+func (albSrv albumService) CateDel(id uint) {
+	var cate common.AlbumCate
+	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&cate).Error
+	util.CheckUtil.CheckErrDBNotRecord(err, "分类已不存在！")
+	util.CheckUtil.CheckErr(err, "CateDel First err")
+	r := core.DB.Where("cid = ? AND is_delete = ?", id, 0).Limit(1).Find(&common.Album{})
+	util.CheckUtil.CheckErr(r.Error, "CateDel Find err")
+	if r.RowsAffected > 0 {
+		panic(response.AssertArgumentError.Make("当前分类正被使用中,不能删除！"))
+	}
+	cate.IsDelete = 1
+	cate.DeleteTime = time.Now().Unix()
+	err = core.DB.Save(&cate).Error
+	util.CheckUtil.CheckErr(err, "CateDel Save err")
+}

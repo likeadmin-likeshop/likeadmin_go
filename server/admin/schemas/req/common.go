@@ -24,11 +24,6 @@ type CommonAlbumMoveReq struct {
 	Cid int    `form:"cid,default=-1"`         // 类目ID
 }
 
-//CommonAlbumDelReq 相册文件删除参数
-type CommonAlbumDelReq struct {
-	Ids []uint `form:"ids" binding:"required"` // 主键
-}
-
 //CommonAlbumAddReq 相册文件新增参数
 type CommonAlbumAddReq struct {
 	Cid  uint   `form:"cid" binding:"gte=0"`        // 类目ID
@@ -39,4 +34,33 @@ type CommonAlbumAddReq struct {
 	Uri  string `form:"uri"`                        // 文件路径
 	Ext  string `form:"ext"`                        // 文件扩展
 	Size int64  `form:"size"`                       // 文件大小
+}
+
+//CommonAlbumDelReq 相册文件删除参数
+type CommonAlbumDelReq struct {
+	Ids []uint `form:"ids" binding:"required"` // 主键
+}
+
+//CommonCateListReq 相册分类列表参数
+type CommonCateListReq struct {
+	Type int    `form:"type" binding:"omitempty,oneof=10 20 30"` // 分类类型: [10=图片,20=视频]
+	Name string `form:"keyword"`                                 // 分类名称
+}
+
+//CommonCateAddReq 相册分类新增参数
+type CommonCateAddReq struct {
+	Pid  uint   `form:"pid" binding:"gte=0"`                    // 父级ID
+	Type int    `form:"type" binding:"required,oneof=10 20 30"` // 分类类型: [10=图片,20=视频]
+	Name string `form:"name" binding:"required,min=1,max=30"`   // 分类名称
+}
+
+//CommonCateRenameReq 相册分类重命名参数
+type CommonCateRenameReq struct {
+	ID   uint   `form:"id" binding:"required,gt=0"`              // 主键
+	Name string `form:"keyword" binding:"required,min=1,max=30"` // 分类名称
+}
+
+//CommonCateDelReq 相册分类删除参数
+type CommonCateDelReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
 }
