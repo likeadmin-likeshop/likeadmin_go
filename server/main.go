@@ -20,16 +20,16 @@ func initRouter() *gin.Engine {
 	// 设置静态路径
 	router.Static(config.Config.PublicPrefix, config.Config.UploadDirectory)
 	// 设置中间件
-	router.Use(gin.Logger(), middleware.Cors(), middleware.ErrorRecover(), middleware.TokenAuth())
+	router.Use(gin.Logger(), middleware.Cors(), middleware.ErrorRecover())
 	// 特殊异常处理
 	router.NoMethod(response.NoMethod)
 	router.NoRoute(response.NoRoute)
 	// 注册路由
 	group := router.Group("/api")
-	core.RegisterGroup(group, routers.CommonGroup, nil)
-	core.RegisterGroup(group, routers.MonitorGroup, nil)
-	core.RegisterGroup(group, routers.SettingGroup, nil)
-	core.RegisterGroup(group, routers.SystemGroup, nil)
+	core.RegisterGroup(group, routers.CommonGroup, middleware.TokenAuth())
+	core.RegisterGroup(group, routers.MonitorGroup, middleware.TokenAuth())
+	core.RegisterGroup(group, routers.SettingGroup, middleware.TokenAuth())
+	core.RegisterGroup(group, routers.SystemGroup, middleware.TokenAuth())
 	return router
 }
 

@@ -26,10 +26,10 @@ func Group(relativePath string) *groupBase {
 }
 
 //RegisterGroup registers all handle to gin
-func RegisterGroup(rg *gin.RouterGroup, group *groupBase, useFunc func(g *gin.RouterGroup)) {
+func RegisterGroup(rg *gin.RouterGroup, group *groupBase, middlewares ...gin.HandlerFunc) {
 	r := rg.Group(group.basePath)
-	if useFunc != nil {
-		useFunc(r)
+	if len(middlewares) > 0 {
+		r.Use(middlewares...)
 	}
 	for _, item := range group.routerMap {
 		var handlers []gin.HandlerFunc
