@@ -21,6 +21,8 @@ func init() {
 	group.AddPOST("/protocol/save", protocolSave)
 	group.AddGET("/storage/list", storageList)
 	group.AddGET("/storage/detail", storageDetail)
+	group.AddPOST("/storage/edit", storageEdit)
+	group.AddPOST("/storage/change", storageChange)
 }
 
 //websiteDetail 获取网站信息
@@ -72,4 +74,20 @@ func storageDetail(c *gin.Context) {
 	var detailReq req.SettingStorageDetailReq
 	util.VerifyUtil.VerifyQuery(c, &detailReq)
 	response.OkWithData(c, setting.SettingStorageService.Detail(detailReq.Alias))
+}
+
+//storageEdit 存储编辑
+func storageEdit(c *gin.Context) {
+	var editReq req.SettingStorageEditReq
+	util.VerifyUtil.VerifyBody(c, &editReq)
+	setting.SettingStorageService.Edit(editReq)
+	response.Ok(c)
+}
+
+//storageChange 存储切换
+func storageChange(c *gin.Context) {
+	var changeReq req.SettingStorageChangeReq
+	util.VerifyUtil.VerifyBody(c, &changeReq)
+	setting.SettingStorageService.Change(changeReq.Alias, changeReq.Status)
+	response.Ok(c)
 }

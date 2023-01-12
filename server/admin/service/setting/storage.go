@@ -1,6 +1,11 @@
 package setting
 
-import "likeadmin/util"
+import (
+	"fmt"
+	"likeadmin/admin/schemas/req"
+	"likeadmin/core/response"
+	"likeadmin/util"
+)
 
 var SettingStorageService = settingStorageService{}
 
@@ -39,4 +44,39 @@ func (sSrv settingStorageService) Detail(alias string) map[string]interface{} {
 		"alias":  alias,
 		"status": status,
 	}
+}
+
+//Edit 存储编辑
+func (sSrv settingStorageService) Edit(editReq req.SettingStorageEditReq) {
+	// TODO: engine默认local
+	engine := "local"
+	if engine != editReq.Alias {
+		panic(response.Failed.Make(fmt.Sprintf("engine:%s 暂时不支持", editReq.Alias)))
+	}
+	json, err := util.ToolsUtil.ObjToJson(map[string]interface{}{"name": "本地存储"})
+	util.CheckUtil.CheckErr(err, "Edit ObjToJson err")
+	err = util.ConfigUtil.Set("storage", editReq.Alias, json)
+	util.CheckUtil.CheckErr(err, "Edit Set alias err")
+	if editReq.Status == 1 {
+		err = util.ConfigUtil.Set("storage", "default", editReq.Alias)
+	} else {
+		util.ConfigUtil.Set("storage", "default", "")
+	}
+	util.CheckUtil.CheckErr(err, "Edit Set default err")
+}
+
+//Change 存储切换
+func (sSrv settingStorageService) Change(alias string, status int) {
+	// TODO: engine默认local
+	engine := "local"
+	if engine != alias {
+		panic(response.Failed.Make(fmt.Sprintf("engine:%s 暂时不支持", alias)))
+	}
+	var err error
+	if engine == alias && status == 0 {
+		err = util.ConfigUtil.Set("storage", "default", "")
+	} else {
+		err = util.ConfigUtil.Set("storage", "default", alias)
+	}
+	util.CheckUtil.CheckErr(err, "Change Set err")
 }
