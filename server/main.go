@@ -27,6 +27,7 @@ func initRouter() *gin.Engine {
 	// 注册路由
 	group := router.Group("/api")
 	core.RegisterGroup(group, routers.CommonGroup, nil)
+	core.RegisterGroup(group, routers.MonitorGroup, nil)
 	core.RegisterGroup(group, routers.SystemGroup, nil)
 	return router
 }

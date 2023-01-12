@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/google/uuid"
 	"likeadmin/config"
+	"math"
 	"math/rand"
 	"reflect"
 	"strconv"
@@ -67,6 +68,12 @@ func (tu toolsUtil) Contains(src interface{}, elem interface{}) bool {
 		}
 	}
 	return false
+}
+
+//Round float四舍五入
+func (tu toolsUtil) Round(val float64, n int) float64 {
+	base := math.Pow(10, float64(n))
+	return math.Round(base*val) / base
 }
 
 //JsonToObj JSON转Obj
