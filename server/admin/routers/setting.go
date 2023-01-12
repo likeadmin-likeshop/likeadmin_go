@@ -19,6 +19,8 @@ func init() {
 	group.AddPOST("/copyright/save", copyrightSave)
 	group.AddGET("/protocol/detail", protocolDetail)
 	group.AddPOST("/protocol/save", protocolSave)
+	group.AddGET("/storage/list", storageList)
+	group.AddGET("/storage/detail", storageDetail)
 }
 
 //websiteDetail 获取网站信息
@@ -58,4 +60,16 @@ func protocolSave(c *gin.Context) {
 	util.VerifyUtil.VerifyJSON(c, &pReq)
 	setting.SettingProtocolService.Save(pReq)
 	response.Ok(c)
+}
+
+//storageList 存储列表
+func storageList(c *gin.Context) {
+	response.OkWithData(c, setting.SettingStorageService.List())
+}
+
+//storageDetail 存储详情
+func storageDetail(c *gin.Context) {
+	var detailReq req.SettingStorageDetailReq
+	util.VerifyUtil.VerifyQuery(c, &detailReq)
+	response.OkWithData(c, setting.SettingStorageService.Detail(detailReq.Alias))
 }

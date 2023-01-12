@@ -27,3 +27,8 @@ type SettingProtocolReq struct {
 	Service SettingProtocolItem `form:"service" json:"service"`  // 服务协议
 	Privacy SettingProtocolItem `form:"privacy"  json:"privacy"` // 隐私协议
 }
+
+//SettingStorageDetailReq 存储详情参数
+type SettingStorageDetailReq struct {
+	Alias string `form:"alias" binding:"required,oneof=local qiniu qcloud aliyun"` // 别名: [local,qiniu,qcloud,aliyun]
+}
