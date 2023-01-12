@@ -24,6 +24,7 @@ type envConfig struct {
 	DbMaxIdleConns         int      // 数据库空闲连接池最大值
 	DbMaxOpenConns         int      // 数据库连接池最大值
 	DbConnMaxLifetimeHours int16    // 连接可复用的最大时间(小时)
+	Version                string   // 版本
 	Secret                 string   // 系统加密字符
 	RedisPrefix            string   // Redis键前缀
 	UploadImageSize        int64    // 上传图片限制
@@ -63,6 +64,8 @@ func loadConfig(path string) envConfig {
 		DbMaxOpenConns:         100,
 		DbConnMaxLifetimeHours: 2,
 		// 全局配置
+		// 版本
+		Version: "v1.0.0",
 		// 系统加密字符
 		Secret: "UVTIyzCy",
 		// Redis键前缀
