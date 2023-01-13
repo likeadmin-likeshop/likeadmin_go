@@ -34,6 +34,12 @@ var AdminConfig = adminConfig{
 		"article:cate:all",      // 所有文章分类
 	},
 
+	// 演示模式白名单
+	ShowWhitelistUri: []string{
+		"system:login",  // 登录接口
+		"system:logout", // 退出登录
+	},
+
 	// 请求临时数据
 	SuperAdminId:   1,
 	ReqAdminIdKey:  "admin_id",
@@ -49,6 +55,7 @@ type adminConfig struct {
 	BackstageTokenSet  string
 	NotLoginUri        []string
 	NotAuthUri         []string
+	ShowWhitelistUri   []string
 	SuperAdminId       uint
 	ReqAdminIdKey      string
 	ReqRoleIdKey       string

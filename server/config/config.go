@@ -11,9 +11,10 @@ var Config = loadConfig(".")
 
 //envConfig 环境配置
 type envConfig struct {
-	GinMode                string   `mapstructure:"GIN_MODE"`    // gin运行模式
-	PublicUrl              string   `mapstructure:"PUBLIC_URL"`  // 对外发布的Url
-	ServerPort             int      `mapstructure:"SERVER_PORT"` // 服务运行端口
+	GinMode                string   `mapstructure:"GIN_MODE"`        // gin运行模式
+	PublicUrl              string   `mapstructure:"PUBLIC_URL"`      // 对外发布的Url
+	ServerPort             int      `mapstructure:"SERVER_PORT"`     // 服务运行端口
+	DisallowModify         bool     `mapstructure:"DISALLOW_MODIFY"` // 禁止修改操作 (演示功能,限制POST请求)
 	PublicPrefix           string   // 资源访问前缀
 	UploadDirectory        string   `mapstructure:"UPLOAD_DIRECTORY"` // 上传文件路径
 	RedisUrl               string   `mapstructure:"REDIS_URL"`        // Redis源配置
@@ -33,6 +34,7 @@ type envConfig struct {
 	UploadVideoSize        int64    // 上传视频限制
 	UploadImageExt         []string // 上传图片扩展
 	UploadVideoExt         []string // 上传视频扩展
+
 }
 
 //loadConfig 加载配置
@@ -51,6 +53,8 @@ func loadConfig(path string) envConfig {
 		GinMode: "debug",
 		// 服务运行端口
 		ServerPort: 8000,
+		// 禁止修改操作 (演示功能,限制POST请求)
+		DisallowModify: false,
 		// 资源访问前缀
 		PublicPrefix: "/api/uploads",
 		// 上传文件路径

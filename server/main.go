@@ -22,6 +22,10 @@ func initRouter() *gin.Engine {
 	router.Static(config.Config.StaticPath, config.Config.StaticDirectory)
 	// 设置中间件
 	router.Use(gin.Logger(), middleware.Cors(), middleware.ErrorRecover())
+	// 演示模式
+	if config.Config.DisallowModify {
+		router.Use(middleware.ShowMode())
+	}
 	// 特殊异常处理
 	router.NoMethod(response.NoMethod)
 	router.NoRoute(response.NoRoute)
