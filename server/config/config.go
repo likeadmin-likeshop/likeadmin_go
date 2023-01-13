@@ -26,6 +26,8 @@ type envConfig struct {
 	DbConnMaxLifetimeHours int16    // 连接可复用的最大时间(小时)
 	Version                string   // 版本
 	Secret                 string   // 系统加密字符
+	StaticPath             string   // 静态资源URL路径
+	StaticDirectory        string   // 静态资源本地路径
 	RedisPrefix            string   // Redis键前缀
 	UploadImageSize        int64    // 上传图片限制
 	UploadVideoSize        int64    // 上传视频限制
@@ -68,6 +70,10 @@ func loadConfig(path string) envConfig {
 		Version: "v1.0.0",
 		// 系统加密字符
 		Secret: "UVTIyzCy",
+		// 静态资源URL路径
+		StaticPath: "/api/static",
+		// 静态资源本地路径
+		StaticDirectory: "static",
 		// Redis键前缀
 		RedisPrefix: "Like:",
 		// 上传图片限制

@@ -19,6 +19,7 @@ func initRouter() *gin.Engine {
 	router := gin.New()
 	// 设置静态路径
 	router.Static(config.Config.PublicPrefix, config.Config.UploadDirectory)
+	router.Static(config.Config.StaticPath, config.Config.StaticDirectory)
 	// 设置中间件
 	router.Use(gin.Logger(), middleware.Cors(), middleware.ErrorRecover())
 	// 特殊异常处理
