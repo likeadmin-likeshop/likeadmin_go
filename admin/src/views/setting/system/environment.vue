@@ -13,21 +13,21 @@
 
             <div class="sm:flex-1 w-1/2 mb-4">
               <div class="text-4xl mb-3">
-                {{ info.cpu.used ? `${info.cpu.used}%` : "-" }}
+                {{ info.cpu.used ? `${info.cpu.used}%` : '-' }}
               </div>
               <div class="text-tx-regular">用户使用率</div>
             </div>
 
             <div class="sm:flex-1 w-1/2 mb-4">
               <div class="text-4xl mb-3">
-                {{ info.cpu.sys ? `${info.cpu.sys}%` : "-" }}
+                {{ info.cpu.sys ? `${info.cpu.sys}%` : '-' }}
               </div>
               <div class="text-tx-regular">系统使用率</div>
             </div>
 
             <div class="sm:flex-1 w-1/2 mb-4">
               <div class="text-4xl mb-3">
-                {{ info.cpu.free ? `${info.cpu.free}%` : "-" }}
+                {{ info.cpu.free ? `${info.cpu.free}%` : '-' }}
               </div>
               <div class="text-tx-regular">当前空闲率</div>
             </div>
@@ -45,21 +45,21 @@
 
             <div class="sm:flex-1 w-1/2 mb-4">
               <div class="text-4xl mb-3">
-                {{ info.mem.used ? `${info.mem.used}%` : "-" }}
+                {{ info.mem.used ? `${info.mem.used}%` : '-' }}
               </div>
               <div class="text-tx-regular">已用内存</div>
             </div>
 
             <div class="sm:flex-1 w-1/2 mb-4">
               <div class="text-4xl mb-3">
-                {{ info.mem.free ? `${info.mem.free}%` : "-" }}
+                {{ info.mem.free ? `${info.mem.free}%` : '-' }}
               </div>
               <div class="text-tx-regular">剩余内存</div>
             </div>
 
             <div class="sm:flex-1 w-1/2 mb-4">
               <div class="text-4xl mb-3">
-                {{ info.mem.usage ? `${info.mem.usage}%` : "-" }}
+                {{ info.mem.usage ? `${info.mem.usage}%` : '-' }}
               </div>
               <div class="text-tx-regular">使用率</div>
             </div>
@@ -71,11 +71,7 @@
       <div>服务器信息</div>
       <div class="mt-4">
         <el-table :data="[info.sys]" size="large">
-          <el-table-column
-            prop="computerName"
-            label="服务器名称"
-            min-width="150"
-          />
+          <el-table-column prop="computerName" label="服务器名称" min-width="150" />
           <el-table-column prop="computerIp" label="服务器IP" min-width="120" />
           <el-table-column prop="osName" label="操作系统" min-width="100" />
           <el-table-column prop="osArch" label="系统架构" min-width="100" />
@@ -85,7 +81,7 @@
     </el-card>
 
     <el-card shadow="never" class="!border-none mt-4">
-      <div>go虚拟机信息</div>
+      <div>go环境信息</div>
       <div class="mt-4">
         <el-table :data="[info.go]" size="large">
           <el-table-column prop="name" label="go名称" min-width="120" />
@@ -103,11 +99,7 @@
       <div class="mt-4">
         <el-table :data="info.disk" size="large">
           <el-table-column prop="dirName" label="盘符路径" min-width="100" />
-          <el-table-column
-            prop="sysTypeName"
-            label="文件系统"
-            min-width="100"
-          />
+          <el-table-column prop="sysTypeName" label="文件系统" min-width="100" />
           <el-table-column prop="typeName" label="盘符类型" min-width="100" />
           <el-table-column prop="total" label="总大小" min-width="100" />
           <el-table-column prop="free" label="可用大小" min-width="100" />
@@ -122,29 +114,29 @@
 </template>
 
 <script lang="ts" setup name="environment">
-import { systemInfo } from "@/api/setting/system";
-const loading = ref(false);
+import { systemInfo } from '@/api/setting/system'
+const loading = ref(false)
 const info = ref({
   cpu: {} as any,
   disk: [],
   go: {},
   mem: {} as any,
-  sys: {},
-});
+  sys: {}
+})
 
 const getSystemInfo = async () => {
   try {
-    loading.value = true;
-    const data = await systemInfo();
-    info.value = data;
+    loading.value = true
+    const data = await systemInfo()
+    info.value = data
 
-    loading.value = false;
+    loading.value = false
   } catch (error) {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
-getSystemInfo();
+getSystemInfo()
 </script>
 
 <style lang="scss" scoped></style>
