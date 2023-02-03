@@ -7,6 +7,7 @@ import (
 	"go.uber.org/zap"
 	"likeadmin/config"
 	"likeadmin/core"
+	"likeadmin/core/response"
 	"likeadmin/model/system"
 	"likeadmin/util"
 	"net/url"
@@ -44,7 +45,12 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 				// 文件类型
 				var filenames []string
 				form, err := c.MultipartForm()
-				util.CheckUtil.CheckErr(err, "RecordLog MultipartForm err")
+				// 校验错误
+				if response.IsFailWithResp(c, response.CheckErr(err, "RecordLog MultipartForm err")) {
+					c.Abort()
+					return
+				}
+				// 获取文件列表
 				for _, files := range form.File {
 					for _, file := range files {
 						filenames = append(filenames, file.Filename)
@@ -57,7 +63,11 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 				err := c.ShouldBindBodyWith(&formParams, binding.JSON)
 				if err == nil {
 					val, err := util.ToolsUtil.ObjToJson(&formParams)
-					util.CheckUtil.CheckErr(err, "RecordLog POST Marshal err")
+					// 校验错误
+					if response.IsFailWithResp(c, response.CheckErr(err, "RecordLog POST Marshal err")) {
+						c.Abort()
+						return
+					}
 					args = val
 				}
 			}
@@ -79,15 +89,15 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 				taskTime := endTime - startTime
 				// 获取当前的用户
 				adminId := config.AdminConfig.GetAdminId(c)
-				url := c.Request.URL.Path
+				urlPath := c.Request.URL.Path
 				ip := c.ClientIP()
 				method := c.HandlerName()
 				err := core.DB.Create(&system.SystemLogOperate{
 					AdminId: adminId, Type: reqMethod, Title: title, Ip: ip,
-					Url: url, Method: method, Args: args, Error: errStr, Status: status,
+					Url: urlPath, Method: method, Args: args, Error: errStr, Status: status,
 					StartTime: startTime / 1000, EndTime: endTime / 1000, TaskTime: taskTime,
 				}).Error
-				util.CheckUtil.CheckErr(err, "RecordLog recover Create err")
+				response.CheckErr(err, "RecordLog recover Create err")
 				core.Logger.WithOptions(zap.AddCallerSkip(2)).Infof(
 					"RecordLog recover: err=[%+v]", r)
 				panic(r)
@@ -95,20 +105,24 @@ func RecordLog(title string, reqTypes ...requestType) gin.HandlerFunc {
 		}()
 		// 执行方法
 		c.Next()
+		if len(c.Errors) > 0 {
+			errStr = c.Errors.String()
+			status = 2
+		}
 		// 结束时间
 		endTime := time.Now().UnixMilli()
 		// 执行时间(毫秒)
 		taskTime := endTime - startTime
 		// 获取当前的用户
 		adminId := config.AdminConfig.GetAdminId(c)
-		url := c.Request.URL.Path
+		urlPath := c.Request.URL.Path
 		ip := c.ClientIP()
 		method := c.HandlerName()
 		err := core.DB.Create(&system.SystemLogOperate{
 			AdminId: adminId, Type: reqMethod, Title: title, Ip: ip,
-			Url: url, Method: method, Args: args, Error: errStr, Status: status,
+			Url: urlPath, Method: method, Args: args, Error: errStr, Status: status,
 			StartTime: startTime / 1000, EndTime: endTime / 1000, TaskTime: taskTime,
 		}).Error
-		util.CheckUtil.CheckErr(err, "RecordLog Create err")
+		response.CheckErr(err, "RecordLog Create err")
 	}
 }

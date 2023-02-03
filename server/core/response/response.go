@@ -1,11 +1,14 @@
 package response
 
 import (
+	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"likeadmin/core"
 	"net/http"
+	"strconv"
 )
 
 //RespType 响应类型
@@ -43,6 +46,11 @@ var (
 	SystemError = RespType{code: 500, msg: "系统错误"}
 )
 
+//Error 实现error方法
+func (rt RespType) Error() string {
+	return strconv.Itoa(rt.code) + ":" + rt.msg
+}
+
 //Make 以响应类型生成信息
 func (rt RespType) Make(msg string) RespType {
 	rt.msg = msg
@@ -74,6 +82,9 @@ func (rt RespType) Data() interface{} {
 func Result(c *gin.Context, resp RespType, data interface{}) {
 	if data == nil {
 		data = resp.data
+	}
+	if resp != Success {
+		c.Error(resp)
 	}
 	c.JSON(http.StatusOK, Response{
 		Code: resp.code,
@@ -134,4 +145,43 @@ func FailWithMsg(c *gin.Context, resp RespType, msg string) {
 func FailWithData(c *gin.Context, resp RespType, data interface{}) {
 	respLogger(resp, "Request FailWithData: url=[%s], resp=[%+v], data=[%+v]", c.Request.URL.Path, resp, data)
 	Result(c, resp, data)
+}
+
+//IsFailWithResp 判断是否出现错误，并追加错误返回信息
+func IsFailWithResp(c *gin.Context, err error) bool {
+	if err == nil {
+		return false
+	}
+	switch v := err.(type) {
+	// 自定义类型
+	case RespType:
+		Fail(c, v)
+	// 其他类型
+	default:
+		Fail(c, SystemError)
+	}
+	return true
+}
+
+//CheckErr 校验未知错误并抛出
+func CheckErr(err error, template string, args ...interface{}) (e error) {
+	prefix := ": "
+	if len(args) > 0 {
+		prefix = " ,"
+	}
+	args = append(args, err)
+	if err != nil {
+		core.Logger.WithOptions(zap.AddCallerSkip(1)).Errorf(template+prefix+"err=[%+v]", args...)
+		return SystemError
+	}
+	return
+}
+
+//CheckErrDBNotRecord 校验数据库记录不存在的错误
+func CheckErrDBNotRecord(err error, msg string) (e error) {
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+		core.Logger.WithOptions(zap.AddCallerSkip(1)).Infof("CheckErrDBNotRecord err: err=[%+v]", err)
+		return AssertArgumentError.Make(msg)
+	}
+	return
 }
