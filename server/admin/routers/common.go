@@ -32,90 +32,118 @@ func init() {
 
 //indexConsole 控制台
 func indexConsole(c *gin.Context) {
-	response.OkWithData(c, common.IndexService.Console())
+	res, err := common.IndexService.Console()
+	response.CheckAndRespWithData(c, res, err)
 }
 
 //indexConfig 公共配置
 func indexConfig(c *gin.Context) {
-	response.OkWithData(c, common.IndexService.Config())
+	res, err := common.IndexService.Config()
+	response.CheckAndRespWithData(c, res, err)
 }
 
 //uploadImage 上传图片
 func uploadImage(c *gin.Context) {
 	var uReq req.CommonUploadImageReq
-	util.VerifyUtil.VerifyBody(c, &uReq)
-	file := util.VerifyUtil.VerifyFile(c, "file")
-	response.OkWithData(c, common.UploadService.UploadImage(file, uReq.Cid, config.AdminConfig.GetAdminId(c)))
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &uReq)) {
+		return
+	}
+	file, ve := util.VerifyUtil.VerifyFile(c, "file")
+	if response.IsFailWithResp(c, ve) {
+		return
+	}
+	res, err := common.UploadService.UploadImage(file, uReq.Cid, config.AdminConfig.GetAdminId(c))
+	response.CheckAndRespWithData(c, res, err)
 }
 
 //uploadVideo 上传视频
 func uploadVideo(c *gin.Context) {
 	var uReq req.CommonUploadImageReq
-	util.VerifyUtil.VerifyBody(c, &uReq)
-	file := util.VerifyUtil.VerifyFile(c, "file")
-	response.OkWithData(c, common.UploadService.UploadVideo(file, uReq.Cid, config.AdminConfig.GetAdminId(c)))
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &uReq)) {
+		return
+	}
+	file, ve := util.VerifyUtil.VerifyFile(c, "file")
+	if response.IsFailWithResp(c, ve) {
+		return
+	}
+	res, err := common.UploadService.UploadVideo(file, uReq.Cid, config.AdminConfig.GetAdminId(c))
+	response.CheckAndRespWithData(c, res, err)
 }
 
 //albumList 相册文件列表
 func albumList(c *gin.Context) {
 	var page request.PageReq
 	var listReq req.CommonAlbumListReq
-	util.VerifyUtil.VerifyQuery(c, &page)
-	util.VerifyUtil.VerifyQuery(c, &listReq)
-	response.OkWithData(c, common.AlbumService.AlbumList(page, listReq))
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {
+		return
+	}
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &listReq)) {
+		return
+	}
+	res, err := common.AlbumService.AlbumList(page, listReq)
+	response.CheckAndRespWithData(c, res, err)
 }
 
 //albumRename 相册文件重命名
 func albumRename(c *gin.Context) {
 	var rnReq req.CommonAlbumRenameReq
-	util.VerifyUtil.VerifyJSON(c, &rnReq)
-	common.AlbumService.AlbumRename(rnReq.ID, rnReq.Name)
-	response.Ok(c)
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &rnReq)) {
+		return
+	}
+	response.CheckAndResp(c, common.AlbumService.AlbumRename(rnReq.ID, rnReq.Name))
 }
 
 //albumMove 相册文件移动
 func albumMove(c *gin.Context) {
 	var mvReq req.CommonAlbumMoveReq
-	util.VerifyUtil.VerifyJSON(c, &mvReq)
-	common.AlbumService.AlbumMove(mvReq.Ids, mvReq.Cid)
-	response.Ok(c)
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &mvReq)) {
+		return
+	}
+	response.CheckAndResp(c, common.AlbumService.AlbumMove(mvReq.Ids, mvReq.Cid))
 }
 
 //albumDel 相册文件删除
 func albumDel(c *gin.Context) {
 	var delReq req.CommonAlbumDelReq
-	util.VerifyUtil.VerifyJSON(c, &delReq)
-	common.AlbumService.AlbumDel(delReq.Ids)
-	response.Ok(c)
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
+		return
+	}
+	response.CheckAndResp(c, common.AlbumService.AlbumDel(delReq.Ids))
 }
 
 //cateList 类目列表
 func cateList(c *gin.Context) {
 	var listReq req.CommonCateListReq
-	util.VerifyUtil.VerifyQuery(c, &listReq)
-	response.OkWithData(c, common.AlbumService.CateList(listReq))
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &listReq)) {
+		return
+	}
+	res, err := common.AlbumService.CateList(listReq)
+	response.CheckAndRespWithData(c, res, err)
 }
 
 //cateAdd 类目新增
 func cateAdd(c *gin.Context) {
 	var addReq req.CommonCateAddReq
-	util.VerifyUtil.VerifyJSON(c, &addReq)
-	common.AlbumService.CateAdd(addReq)
-	response.Ok(c)
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &addReq)) {
+		return
+	}
+	response.CheckAndResp(c, common.AlbumService.CateAdd(addReq))
 }
 
 //cateRename 类目命名
 func cateRename(c *gin.Context) {
 	var rnReq req.CommonCateRenameReq
-	util.VerifyUtil.VerifyJSON(c, &rnReq)
-	common.AlbumService.CateRename(rnReq.ID, rnReq.Name)
-	response.Ok(c)
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &rnReq)) {
+		return
+	}
+	response.CheckAndResp(c, common.AlbumService.CateRename(rnReq.ID, rnReq.Name))
 }
 
 //cateDel 类目删除
 func cateDel(c *gin.Context) {
 	var delReq req.CommonCateDelReq
-	util.VerifyUtil.VerifyJSON(c, &delReq)
-	common.AlbumService.CateDel(delReq.ID)
-	response.Ok(c)
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
+		return
+	}
+	response.CheckAndResp(c, common.AlbumService.CateDel(delReq.ID))
 }

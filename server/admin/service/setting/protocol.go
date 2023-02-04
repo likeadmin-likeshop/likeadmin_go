@@ -2,6 +2,7 @@ package setting
 
 import (
 	"likeadmin/admin/schemas/req"
+	"likeadmin/core/response"
 	"likeadmin/util"
 )
 
@@ -11,30 +12,45 @@ var SettingProtocolService = settingProtocolService{}
 type settingProtocolService struct{}
 
 //Detail 获取政策协议信息
-func (cSrv settingProtocolService) Detail() map[string]interface{} {
+func (cSrv settingProtocolService) Detail() (res map[string]interface{}, e error) {
 	defaultVal := `{"name":"","content":""}`
 	json, err := util.ConfigUtil.GetVal("protocol", "service", defaultVal)
-	util.CheckUtil.CheckErr(err, "Detail GetVal service err")
+	if e = response.CheckErr(err, "Detail GetVal service err"); e != nil {
+		return
+	}
 	var service map[string]interface{}
-	util.CheckUtil.CheckErr(util.ToolsUtil.JsonToObj(json, &service), "Detail JsonToObj service err")
+	if e = response.CheckErr(util.ToolsUtil.JsonToObj(json, &service), "Detail JsonToObj service err"); e != nil {
+		return
+	}
 	json, err = util.ConfigUtil.GetVal("protocol", "privacy", defaultVal)
-	util.CheckUtil.CheckErr(err, "Detail GetVal privacy err")
+	if e = response.CheckErr(err, "Detail GetVal privacy err"); e != nil {
+		return
+	}
 	var privacy map[string]interface{}
-	util.CheckUtil.CheckErr(util.ToolsUtil.JsonToObj(json, &privacy), "Detail JsonToObj privacy err")
+	if e = response.CheckErr(util.ToolsUtil.JsonToObj(json, &privacy), "Detail JsonToObj privacy err"); e != nil {
+		return
+	}
 	return map[string]interface{}{
 		"service": service,
 		"privacy": privacy,
-	}
+	}, nil
 }
 
 //Save 保存政策协议信息
-func (cSrv settingProtocolService) Save(pReq req.SettingProtocolReq) {
+func (cSrv settingProtocolService) Save(pReq req.SettingProtocolReq) (e error) {
 	serviceJson, err := util.ToolsUtil.ObjToJson(pReq.Service)
-	util.CheckUtil.CheckErr(err, "Save ObjToJson service err")
+	if e = response.CheckErr(err, "Save ObjToJson service err"); e != nil {
+		return
+	}
 	privacyJson, err := util.ToolsUtil.ObjToJson(pReq.Privacy)
-	util.CheckUtil.CheckErr(err, "Save ObjToJson privacy err")
+	if e = response.CheckErr(err, "Save ObjToJson privacy err"); e != nil {
+		return
+	}
 	err = util.ConfigUtil.Set("protocol", "service", serviceJson)
-	util.CheckUtil.CheckErr(err, "Save Set service err")
+	if e = response.CheckErr(err, "Save Set service err"); e != nil {
+		return
+	}
 	err = util.ConfigUtil.Set("protocol", "privacy", privacyJson)
-	util.CheckUtil.CheckErr(err, "Save Set privacy err")
+	e = response.CheckErr(err, "Save Set privacy err")
+	return
 }

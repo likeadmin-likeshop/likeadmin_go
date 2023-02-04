@@ -3,6 +3,7 @@ package common
 import (
 	"likeadmin/config"
 	"likeadmin/core"
+	"likeadmin/core/response"
 	"likeadmin/util"
 	"time"
 )
@@ -13,10 +14,12 @@ var IndexService = indexService{}
 type indexService struct{}
 
 //Console 控制台数据
-func (iSrv indexService) Console() map[string]interface{} {
+func (iSrv indexService) Console() (res map[string]interface{}, e error) {
 	// 版本信息
 	name, err := util.ConfigUtil.GetVal("website", "name", "LikeAdmin-Go")
-	util.CheckUtil.CheckErr(err, "Console Get err")
+	if e = response.CheckErr(err, "Console Get err"); e != nil {
+		return
+	}
 	version := map[string]interface{}{
 		"name":    name,
 		"version": config.Config.Version,
@@ -53,19 +56,25 @@ func (iSrv indexService) Console() map[string]interface{} {
 		"version": version,
 		"today":   today,
 		"visitor": visitor,
-	}
+	}, nil
 }
 
 //Config 公共配置
-func (iSrv indexService) Config() map[string]interface{} {
+func (iSrv indexService) Config() (res map[string]interface{}, e error) {
 	website, err := util.ConfigUtil.Get("website")
-	util.CheckUtil.CheckErr(err, "Config Get err")
+	if e = response.CheckErr(err, "Config Get err"); e != nil {
+		return
+	}
 	copyrightStr, err := util.ConfigUtil.GetVal("website", "copyright", "")
-	util.CheckUtil.CheckErr(err, "Config GetVal err")
+	if e = response.CheckErr(err, "Config GetVal err"); e != nil {
+		return
+	}
 	var copyright []map[string]string
 	if copyrightStr != "" {
 		err = util.ToolsUtil.JsonToObj(copyrightStr, &copyright)
-		util.CheckUtil.CheckErr(err, "Config JsonToObj err")
+		if e = response.CheckErr(err, "Config JsonToObj err"); e != nil {
+			return
+		}
 	} else {
 		copyright = []map[string]string{}
 	}
@@ -76,5 +85,5 @@ func (iSrv indexService) Config() map[string]interface{} {
 		"webBackdrop": util.UrlUtil.ToAbsoluteUrl(website["backdrop"]),
 		"ossDomain":   config.Config.PublicUrl,
 		"copyright":   copyright,
-	}
+	}, nil
 }

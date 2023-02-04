@@ -31,16 +31,20 @@ type UploadFile struct {
 type storageDriver struct{}
 
 //Upload 根据引擎类型上传文件
-func (sd storageDriver) Upload(file *multipart.FileHeader, folder string, fileType int) *UploadFile {
+func (sd storageDriver) Upload(file *multipart.FileHeader, folder string, fileType int) (uf *UploadFile, e error) {
 	// TODO: engine默认local
-	sd.checkFile(file, fileType)
+	if e = sd.checkFile(file, fileType); e != nil {
+		return
+	}
 	key := sd.buildSaveName(file)
 	engine := "local"
 	if engine == "local" {
-		sd.localUpload(file, key, folder)
+		if e = sd.localUpload(file, key, folder); e != nil {
+			return
+		}
 	} else {
 		core.Logger.Errorf("storageDriver.Upload engine err: err=[unsupported engine]")
-		panic(response.Failed.Make(fmt.Sprintf("engine:%s 暂时不支持", engine)))
+		return nil, response.Failed.Make(fmt.Sprintf("engine:%s 暂时不支持", engine))
 	}
 	fileRelPath := path.Join(folder, key)
 	return &UploadFile{
@@ -50,11 +54,11 @@ func (sd storageDriver) Upload(file *multipart.FileHeader, folder string, fileTy
 		Ext:  strings.ToLower(strings.Replace(path.Ext(file.Filename), ".", "", 1)),
 		Uri:  fileRelPath,
 		Path: util.UrlUtil.ToAbsoluteUrl(fileRelPath),
-	}
+	}, nil
 }
 
 //localUpload 本地上传 (临时方法)
-func (sd storageDriver) localUpload(file *multipart.FileHeader, key string, folder string) {
+func (sd storageDriver) localUpload(file *multipart.FileHeader, key string, folder string) (e error) {
 	// TODO: 临时方法，后续调整
 	// 映射目录
 	directory := config.Config.UploadDirectory
@@ -62,7 +66,7 @@ func (sd storageDriver) localUpload(file *multipart.FileHeader, key string, fold
 	src, err := file.Open()
 	if err != nil {
 		core.Logger.Errorf("storageDriver.localUpload Open err: err=[%+v]", err)
-		panic(response.Failed.Make("打开文件失败!"))
+		return response.Failed.Make("打开文件失败!")
 	}
 	defer src.Close()
 	// 文件信息
@@ -73,14 +77,14 @@ func (sd storageDriver) localUpload(file *multipart.FileHeader, key string, fold
 	if err != nil && !os.IsExist(err) {
 		core.Logger.Errorf(
 			"storageDriver.localUpload MkdirAll err: path=[%s], err=[%+v]", savePath, err)
-		panic(response.Failed.Make("创建上传目录失败!"))
+		return response.Failed.Make("创建上传目录失败!")
 	}
 	// 创建目标文件
 	out, err := os.Create(saveFilePath)
 	if err != nil {
 		core.Logger.Errorf(
 			"storageDriver.localUpload Create err: file=[%s], err=[%+v]", saveFilePath, err)
-		panic(response.Failed.Make("创建文件失败!"))
+		return response.Failed.Make("创建文件失败!")
 	}
 	defer out.Close()
 	// 写入目标文件
@@ -88,8 +92,9 @@ func (sd storageDriver) localUpload(file *multipart.FileHeader, key string, fold
 	if err != nil {
 		core.Logger.Errorf(
 			"storageDriver.localUpload Copy err: file=[%s], err=[%+v]", saveFilePath, err)
-		panic(response.Failed.Make("上传文件失败: " + err.Error()))
+		return response.Failed.Make("上传文件失败: " + err.Error())
 	}
+	return nil
 }
 
 //checkFile 生成文件名称
@@ -101,28 +106,29 @@ func (sd storageDriver) buildSaveName(file *multipart.FileHeader) string {
 }
 
 //checkFile 文件验证
-func (sd storageDriver) checkFile(file *multipart.FileHeader, fileType int) {
+func (sd storageDriver) checkFile(file *multipart.FileHeader, fileType int) (e error) {
 	fileName := file.Filename
 	fileExt := strings.ToLower(strings.Replace(path.Ext(fileName), ".", "", 1))
 	fileSize := file.Size
 	if fileType == 10 {
 		// 图片文件
 		if !util.ToolsUtil.Contains(config.Config.UploadImageExt, fileExt) {
-			panic(response.Failed.Make("不被支持的图片扩展: " + fileExt))
+			return response.Failed.Make("不被支持的图片扩展: " + fileExt)
 		}
 		if fileSize > config.Config.UploadImageSize {
-			panic(response.Failed.Make("上传图片不能超出限制: " + strconv.FormatInt(config.Config.UploadImageSize/1024/1024, 10) + "M"))
+			return response.Failed.Make("上传图片不能超出限制: " + strconv.FormatInt(config.Config.UploadImageSize/1024/1024, 10) + "M")
 		}
 	} else if fileType == 20 {
 		// 视频文件
 		if !util.ToolsUtil.Contains(config.Config.UploadVideoExt, fileExt) {
-			panic(response.Failed.Make("不被支持的视频扩展: " + fileExt))
+			return response.Failed.Make("不被支持的视频扩展: " + fileExt)
 		}
 		if fileSize > config.Config.UploadVideoSize {
-			panic(response.Failed.Make("上传视频不能超出限制: " + strconv.FormatInt(config.Config.UploadVideoSize/1024/1024, 10) + "M"))
+			return response.Failed.Make("上传视频不能超出限制: " + strconv.FormatInt(config.Config.UploadVideoSize/1024/1024, 10) + "M")
 		}
 	} else {
 		core.Logger.Errorf("storageDriver.checkFile fileType err: err=[unsupported fileType]")
-		panic(response.Failed.Make("上传文件类型错误"))
+		return response.Failed.Make("上传文件类型错误")
 	}
+	return nil
 }

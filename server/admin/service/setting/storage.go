@@ -17,7 +17,7 @@ var storageList = []map[string]interface{}{
 }
 
 //List 存储列表
-func (sSrv settingStorageService) List() []map[string]interface{} {
+func (sSrv settingStorageService) List() ([]map[string]interface{}, error) {
 	// TODO: engine默认local
 	engine := "local"
 	mapList := storageList
@@ -26,15 +26,17 @@ func (sSrv settingStorageService) List() []map[string]interface{} {
 			mapList[i]["status"] = 1
 		}
 	}
-	return mapList
+	return mapList, nil
 }
 
 //Detail 存储详情
-func (sSrv settingStorageService) Detail(alias string) map[string]interface{} {
+func (sSrv settingStorageService) Detail(alias string) (res map[string]interface{}, e error) {
 	// TODO: engine默认local
 	engine := "local"
 	cnf, err := util.ConfigUtil.GetMap("storage", alias)
-	util.CheckUtil.CheckErr(err, "Detail GetMap err")
+	if e = response.CheckErr(err, "Detail GetMap err"); e != nil {
+		return
+	}
 	status := 0
 	if engine == alias {
 		status = 1
@@ -43,34 +45,39 @@ func (sSrv settingStorageService) Detail(alias string) map[string]interface{} {
 		"name":   cnf["name"],
 		"alias":  alias,
 		"status": status,
-	}
+	}, nil
 }
 
 //Edit 存储编辑
-func (sSrv settingStorageService) Edit(editReq req.SettingStorageEditReq) {
+func (sSrv settingStorageService) Edit(editReq req.SettingStorageEditReq) (e error) {
 	// TODO: engine默认local
 	engine := "local"
 	if engine != editReq.Alias {
-		panic(response.Failed.Make(fmt.Sprintf("engine:%s 暂时不支持", editReq.Alias)))
+		return response.Failed.Make(fmt.Sprintf("engine:%s 暂时不支持", editReq.Alias))
 	}
 	json, err := util.ToolsUtil.ObjToJson(map[string]interface{}{"name": "本地存储"})
-	util.CheckUtil.CheckErr(err, "Edit ObjToJson err")
+	if e = response.CheckErr(err, "Edit ObjToJson err"); e != nil {
+		return
+	}
 	err = util.ConfigUtil.Set("storage", editReq.Alias, json)
-	util.CheckUtil.CheckErr(err, "Edit Set alias err")
+	if e = response.CheckErr(err, "Edit Set alias err"); e != nil {
+		return
+	}
 	if editReq.Status == 1 {
 		err = util.ConfigUtil.Set("storage", "default", editReq.Alias)
 	} else {
 		util.ConfigUtil.Set("storage", "default", "")
 	}
-	util.CheckUtil.CheckErr(err, "Edit Set default err")
+	e = response.CheckErr(err, "Edit Set default err")
+	return
 }
 
 //Change 存储切换
-func (sSrv settingStorageService) Change(alias string, status int) {
+func (sSrv settingStorageService) Change(alias string, status int) (e error) {
 	// TODO: engine默认local
 	engine := "local"
 	if engine != alias {
-		panic(response.Failed.Make(fmt.Sprintf("engine:%s 暂时不支持", alias)))
+		return response.Failed.Make(fmt.Sprintf("engine:%s 暂时不支持", alias))
 	}
 	var err error
 	if engine == alias && status == 0 {
@@ -78,5 +85,6 @@ func (sSrv settingStorageService) Change(alias string, status int) {
 	} else {
 		err = util.ConfigUtil.Set("storage", "default", alias)
 	}
-	util.CheckUtil.CheckErr(err, "Change Set err")
+	e = response.CheckErr(err, "Change Set err")
+	return
 }

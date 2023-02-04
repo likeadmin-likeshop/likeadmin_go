@@ -163,6 +163,22 @@ func IsFailWithResp(c *gin.Context, err error) bool {
 	return true
 }
 
+//CheckAndResp 判断是否出现错误，并返回对应响应
+func CheckAndResp(c *gin.Context, err error) {
+	if IsFailWithResp(c, err) {
+		return
+	}
+	Ok(c)
+}
+
+//CheckAndRespWithData 判断是否出现错误，并返回对应响应（带data数据）
+func CheckAndRespWithData(c *gin.Context, data interface{}, err error) {
+	if IsFailWithResp(c, err) {
+		return
+	}
+	OkWithData(c, data)
+}
+
 //CheckErr 校验未知错误并抛出
 func CheckErr(err error, template string, args ...interface{}) (e error) {
 	prefix := ": "

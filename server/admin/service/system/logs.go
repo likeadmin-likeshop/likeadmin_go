@@ -8,7 +8,6 @@ import (
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/model/system"
-	"likeadmin/util"
 )
 
 var SystemLogsServer = systemLogsServer{}
@@ -17,10 +16,8 @@ var SystemLogsServer = systemLogsServer{}
 type systemLogsServer struct{}
 
 //Operate 系统操作日志
-func (logSrv systemLogsServer) Operate(page request.PageReq, logReq req.SystemLogOperateReq) response.PageResp {
+func (logSrv systemLogsServer) Operate(page request.PageReq, logReq req.SystemLogOperateReq) (res response.PageResp, e error) {
 	// 分页信息
-	var res response.PageResp
-	response.Copy(&res, page)
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	// 查询
@@ -57,24 +54,26 @@ func (logSrv systemLogsServer) Operate(page request.PageReq, logReq req.SystemLo
 	// 总数
 	var count int64
 	err := logModel.Count(&count).Error
-	util.CheckUtil.CheckErr(err, "Operate Count err")
+	if e = response.CheckErr(err, "Operate Count err"); e != nil {
+		return
+	}
 	// 数据
 	var logResp []resp.SystemLogOperateResp
 	err = logModel.Limit(limit).Offset(offset).Order("id desc").Find(&logResp).Error
-	util.CheckUtil.CheckErr(err, "Operate Find err")
+	if e = response.CheckErr(err, "Operate Find err"); e != nil {
+		return
+	}
 	return response.PageResp{
 		PageNo:   page.PageNo,
 		PageSize: page.PageSize,
 		Count:    count,
 		Lists:    logResp,
-	}
+	}, nil
 }
 
 //Login 系统登录日志
-func (logSrv systemLogsServer) Login(page request.PageReq, logReq req.SystemLogLoginReq) response.PageResp {
+func (logSrv systemLogsServer) Login(page request.PageReq, logReq req.SystemLogLoginReq) (res response.PageResp, e error) {
 	// 分页信息
-	var res response.PageResp
-	response.Copy(&res, page)
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	// 查询
@@ -95,15 +94,19 @@ func (logSrv systemLogsServer) Login(page request.PageReq, logReq req.SystemLogL
 	// 总数
 	var count int64
 	err := logModel.Count(&count).Error
-	util.CheckUtil.CheckErr(err, "Login Count err")
+	if e = response.CheckErr(err, "Login Count err"); e != nil {
+		return
+	}
 	// 数据
 	var logResp []resp.SystemLogLoginResp
 	err = logModel.Limit(limit).Offset(offset).Order("id desc").Find(&logResp).Error
-	util.CheckUtil.CheckErr(err, "Login Find err")
+	if e = response.CheckErr(err, "Login Find err"); e != nil {
+		return
+	}
 	return response.PageResp{
 		PageNo:   page.PageNo,
 		PageSize: page.PageSize,
 		Count:    count,
 		Lists:    logResp,
-	}
+	}, nil
 }

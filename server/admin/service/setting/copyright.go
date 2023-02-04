@@ -2,6 +2,7 @@ package setting
 
 import (
 	"likeadmin/admin/schemas/req"
+	"likeadmin/core/response"
 	"likeadmin/util"
 )
 
@@ -11,17 +12,22 @@ var SettingCopyrightService = settingCopyrightService{}
 type settingCopyrightService struct{}
 
 //Detail 获取网站备案信息
-func (cSrv settingCopyrightService) Detail() (res []map[string]interface{}) {
+func (cSrv settingCopyrightService) Detail() (res []map[string]interface{}, e error) {
 	data, err := util.ConfigUtil.GetVal("website", "copyright", "[]")
-	util.CheckUtil.CheckErr(err, "Detail GetVal err")
-	util.CheckUtil.CheckErr(util.ToolsUtil.JsonToObj(data, &res), "Detail JsonToObj err")
-	return res
+	if e = response.CheckErr(err, "Detail GetVal err"); e != nil {
+		return
+	}
+	e = response.CheckErr(util.ToolsUtil.JsonToObj(data, &res), "Detail JsonToObj err")
+	return
 }
 
 //Save 保存网站备案信息
-func (cSrv settingCopyrightService) Save(cReqs []req.SettingCopyrightItemReq) {
+func (cSrv settingCopyrightService) Save(cReqs []req.SettingCopyrightItemReq) (e error) {
 	json, err := util.ToolsUtil.ObjToJson(cReqs)
-	util.CheckUtil.CheckErr(err, "Save ObjToJson err")
+	if e = response.CheckErr(err, "Save ObjToJson err"); e != nil {
+		return
+	}
 	err = util.ConfigUtil.Set("website", "copyright", json)
-	util.CheckUtil.CheckErr(err, "Save Set err")
+	e = response.CheckErr(err, "Save Set err")
+	return
 }

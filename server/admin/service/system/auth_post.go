@@ -7,7 +7,6 @@ import (
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/model/system"
-	"likeadmin/util"
 )
 
 var SystemAuthPostService = systemAuthPostService{}
@@ -16,20 +15,20 @@ var SystemAuthPostService = systemAuthPostService{}
 type systemAuthPostService struct{}
 
 //All 岗位所有
-func (postSrv systemAuthPostService) All() []resp.SystemAuthPostResp {
+func (postSrv systemAuthPostService) All() (res []resp.SystemAuthPostResp, e error) {
 	var posts []system.SystemAuthPost
 	err := core.DB.Where("is_delete = ?", 0).Order("sort desc, id desc").Find(&posts).Error
-	util.CheckUtil.CheckErr(err, "All Find err")
-	res := []resp.SystemAuthPostResp{}
+	if e = response.CheckErr(err, "All Find err"); e != nil {
+		return
+	}
+	res = []resp.SystemAuthPostResp{}
 	response.Copy(&res, posts)
-	return res
+	return
 }
 
 //List 岗位列表
-func (postSrv systemAuthPostService) List(page request.PageReq, listReq req.SystemAuthPostListReq) response.PageResp {
+func (postSrv systemAuthPostService) List(page request.PageReq, listReq req.SystemAuthPostListReq) (res response.PageResp, e error) {
 	// 分页信息
-	var res response.PageResp
-	response.Copy(&res, page)
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	// 查询
@@ -46,11 +45,15 @@ func (postSrv systemAuthPostService) List(page request.PageReq, listReq req.Syst
 	// 总数
 	var count int64
 	err := postModel.Count(&count).Error
-	util.CheckUtil.CheckErr(err, "List Count err")
+	if e = response.CheckErr(err, "List Count err"); e != nil {
+		return
+	}
 	// 数据
 	var posts []system.SystemAuthPost
 	err = postModel.Limit(limit).Offset(offset).Order("id desc").Find(&posts).Error
-	util.CheckUtil.CheckErr(err, "List Find err")
+	if e = response.CheckErr(err, "List Find err"); e != nil {
+		return
+	}
 	postResps := []resp.SystemAuthPostResp{}
 	response.Copy(&postResps, posts)
 	return response.PageResp{
@@ -58,63 +61,84 @@ func (postSrv systemAuthPostService) List(page request.PageReq, listReq req.Syst
 		PageSize: page.PageSize,
 		Count:    count,
 		Lists:    postResps,
-	}
+	}, nil
 }
 
 //Detail 部门详情
-func (postSrv systemAuthPostService) Detail(id uint) (res resp.SystemAuthPostResp) {
+func (postSrv systemAuthPostService) Detail(id uint) (res resp.SystemAuthPostResp, e error) {
 	var post system.SystemAuthPost
 	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&post).Error
-	util.CheckUtil.CheckErrDBNotRecord(err, "岗位不存在!")
-	util.CheckUtil.CheckErr(err, "Detail First err")
+	if e = response.CheckErrDBNotRecord(err, "岗位不存在!"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "Detail First err"); e != nil {
+		return
+	}
 	response.Copy(&res, post)
 	return
 }
 
 //Add 部门新增
-func (postSrv systemAuthPostService) Add(addReq req.SystemAuthPostAddReq) {
+func (postSrv systemAuthPostService) Add(addReq req.SystemAuthPostAddReq) (e error) {
 	r := core.DB.Where("(code = ? OR name = ?) AND is_delete = ?", addReq.Code, addReq.Name, 0).Limit(1).Find(&system.SystemAuthPost{})
-	util.CheckUtil.CheckErr(r.Error, "Add Find err")
+	if e = response.CheckErr(r.Error, "Add Find err"); e != nil {
+		return
+	}
 	if r.RowsAffected > 0 {
-		panic(response.AssertArgumentError.Make("该岗位已存在!"))
+		return response.AssertArgumentError.Make("该岗位已存在!")
 	}
 	var post system.SystemAuthPost
 	response.Copy(&post, addReq)
 	err := core.DB.Create(&post).Error
-	util.CheckUtil.CheckErr(err, "Add Create err")
+	e = response.CheckErr(err, "Add Create err")
+	return
 }
 
 //Edit 部门编辑
-func (postSrv systemAuthPostService) Edit(editReq req.SystemAuthPostEditReq) {
+func (postSrv systemAuthPostService) Edit(editReq req.SystemAuthPostEditReq) (e error) {
 	var post system.SystemAuthPost
 	err := core.DB.Where("id = ? AND is_delete = ?", editReq.ID, 0).Limit(1).First(&post).Error
 	// 校验
-	util.CheckUtil.CheckErrDBNotRecord(err, "部门不存在!")
-	util.CheckUtil.CheckErr(err, "Edit First err")
+	if e = response.CheckErrDBNotRecord(err, "部门不存在!"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "Edit First err"); e != nil {
+		return
+	}
 	r := core.DB.Where("(code = ? OR name = ?) AND id != ? AND is_delete = ?", editReq.Code, editReq.Name, editReq.ID, 0).Limit(1).Find(&system.SystemAuthPost{})
-	util.CheckUtil.CheckErr(r.Error, "Add Find err")
+	if e = response.CheckErr(r.Error, "Add Find err"); e != nil {
+		return
+	}
 	if r.RowsAffected > 0 {
-		panic(response.AssertArgumentError.Make("该岗位已存在!"))
+		return response.AssertArgumentError.Make("该岗位已存在!")
 	}
 	// 更新
 	response.Copy(&post, editReq)
 	err = core.DB.Model(&post).Updates(post).Error
-	util.CheckUtil.CheckErr(err, "Edit Updates err")
+	e = response.CheckErr(err, "Edit Updates err")
+	return
 }
 
 //Del 部门删除
-func (postSrv systemAuthPostService) Del(id uint) {
+func (postSrv systemAuthPostService) Del(id uint) (e error) {
 	var post system.SystemAuthPost
 	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&post).Error
 	// 校验
-	util.CheckUtil.CheckErrDBNotRecord(err, "部门不存在!")
-	util.CheckUtil.CheckErr(err, "Del First err")
+	if e = response.CheckErrDBNotRecord(err, "部门不存在!"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "Del First err"); e != nil {
+		return
+	}
 	r := core.DB.Where("post_id = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{})
-	util.CheckUtil.CheckErr(r.Error, "Del Find err")
+	if e = response.CheckErr(r.Error, "Del Find err"); e != nil {
+		return
+	}
 	if r.RowsAffected > 0 {
-		panic(response.AssertArgumentError.Make("该岗位已被管理员使用,请先移除!"))
+		return response.AssertArgumentError.Make("该岗位已被管理员使用,请先移除!")
 	}
 	post.IsDelete = 1
 	err = core.DB.Save(&post).Error
-	util.CheckUtil.CheckErr(err, "Del Save err")
+	e = response.CheckErr(err, "Del Save err")
+	return
 }

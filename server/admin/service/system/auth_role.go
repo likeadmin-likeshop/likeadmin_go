@@ -21,27 +21,31 @@ var SystemAuthRoleService = systemAuthRoleService{}
 type systemAuthRoleService struct{}
 
 //All 角色所有
-func (roleSrv systemAuthRoleService) All() (res []resp.SystemAuthRoleSimpleResp) {
+func (roleSrv systemAuthRoleService) All() (res []resp.SystemAuthRoleSimpleResp, e error) {
 	var roles []system.SystemAuthRole
 	err := core.DB.Order("sort desc, id desc").Find(&roles).Error
-	util.CheckUtil.CheckErr(err, "All Find err")
+	if e = response.CheckErr(err, "All Find err"); e != nil {
+		return
+	}
 	response.Copy(&res, roles)
 	return
 }
 
 //List 根据角色ID获取菜单ID
-func (roleSrv systemAuthRoleService) List(page request.PageReq) response.PageResp {
-	var res response.PageResp
-	response.Copy(&res, page)
+func (roleSrv systemAuthRoleService) List(page request.PageReq) (res response.PageResp, e error) {
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	roleModel := core.DB.Model(&system.SystemAuthRole{})
 	var count int64
 	err := roleModel.Count(&count).Error
-	util.CheckUtil.CheckErr(err, "List Count err")
+	if e = response.CheckErr(err, "List Count err"); e != nil {
+		return
+	}
 	var roles []system.SystemAuthRole
 	err = roleModel.Limit(limit).Offset(offset).Order("sort desc, id desc").Find(&roles).Error
-	util.CheckUtil.CheckErr(err, "List Find err")
+	if e = response.CheckErr(err, "List Find err"); e != nil {
+		return
+	}
 	var roleResp []resp.SystemAuthRoleResp
 	response.Copy(&roleResp, roles)
 	for i := 0; i < len(roleResp); i++ {
@@ -53,18 +57,22 @@ func (roleSrv systemAuthRoleService) List(page request.PageReq) response.PageRes
 		PageSize: page.PageSize,
 		Count:    count,
 		Lists:    roleResp,
-	}
+	}, nil
 }
 
 //Detail 角色详情
-func (roleSrv systemAuthRoleService) Detail(id uint) (res resp.SystemAuthRoleResp) {
+func (roleSrv systemAuthRoleService) Detail(id uint) (res resp.SystemAuthRoleResp, e error) {
 	var role system.SystemAuthRole
 	err := core.DB.Where("id = ?", id).Limit(1).First(&role).Error
-	util.CheckUtil.CheckErrDBNotRecord(err, "角色已不存在!")
-	util.CheckUtil.CheckErr(err, "Detail First err")
+	if e = response.CheckErrDBNotRecord(err, "角色已不存在!"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "Detail First err"); e != nil {
+		return
+	}
 	response.Copy(&res, role)
 	res.Member = roleSrv.getMemberCnt(role.ID)
-	res.Menus = SystemAuthPermService.SelectMenuIdsByRoleId(role.ID)
+	res.Menus, e = SystemAuthPermService.SelectMenuIdsByRoleId(role.ID)
 	return
 }
 
@@ -76,34 +84,39 @@ func (roleSrv systemAuthRoleService) getMemberCnt(roleId uint) (count int64) {
 }
 
 //Add 新增角色
-func (roleSrv systemAuthRoleService) Add(addReq req.SystemAuthRoleAddReq) {
+func (roleSrv systemAuthRoleService) Add(addReq req.SystemAuthRoleAddReq) (e error) {
 	var role system.SystemAuthRole
 	if r := core.DB.Where("name = ?", strings.Trim(addReq.Name, " ")).Limit(1).First(&role); r.RowsAffected > 0 {
-		panic(response.AssertArgumentError.Make("角色名称已存在!"))
+		return response.AssertArgumentError.Make("角色名称已存在!")
 	}
 	response.Copy(&role, addReq)
 	role.Name = strings.Trim(addReq.Name, " ")
 	// 事务
 	err := core.DB.Transaction(func(tx *gorm.DB) error {
 		txErr := tx.Create(&role).Error
-		if txErr != nil {
-			core.Logger.Errorf("Add Create err: txErr=[%+v]", txErr)
-			return txErr
+		var te error
+		if te = response.CheckErr(txErr, "Add Create in tx err"); te != nil {
+			return te
 		}
-		SystemAuthPermService.BatchSaveByMenuIds(role.ID, addReq.MenuIds, tx)
-		return nil
+		te = SystemAuthPermService.BatchSaveByMenuIds(role.ID, addReq.MenuIds, tx)
+		return te
 	})
-	util.CheckUtil.CheckErr(err, "Add Transaction err")
+	e = response.CheckErr(err, "Add Transaction err")
+	return
 }
 
 //Edit 编辑角色
-func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
+func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) (e error) {
 	err := core.DB.Where("id = ?", editReq.ID).Limit(1).First(&system.SystemAuthRole{}).Error
-	util.CheckUtil.CheckErrDBNotRecord(err, "角色已不存在!")
-	util.CheckUtil.CheckErr(err, "Edit First err")
+	if e = response.CheckErrDBNotRecord(err, "角色已不存在!"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "Edit First err"); e != nil {
+		return
+	}
 	var role system.SystemAuthRole
 	if r := core.DB.Where("id != ? AND name = ?", editReq.ID, strings.Trim(editReq.Name, " ")).Limit(1).First(&role); r.RowsAffected > 0 {
-		panic(response.AssertArgumentError.Make("角色名称已存在!"))
+		return response.AssertArgumentError.Make("角色名称已存在!")
 	}
 	role.ID = editReq.ID
 	roleMap := structs.Map(editReq)
@@ -113,36 +126,48 @@ func (roleSrv systemAuthRoleService) Edit(editReq req.SystemAuthRoleEditReq) {
 	// 事务
 	err = core.DB.Transaction(func(tx *gorm.DB) error {
 		txErr := tx.Model(&role).Updates(roleMap).Error
-		if txErr != nil {
-			core.Logger.Errorf("Edit Updates err: txErr=[%+v]", txErr)
-			return txErr
+		var te error
+		if te = response.CheckErr(txErr, "Edit Updates in tx err"); te != nil {
+			return te
 		}
-		SystemAuthPermService.BatchDeleteByRoleId(editReq.ID, tx)
-		SystemAuthPermService.BatchSaveByMenuIds(editReq.ID, editReq.MenuIds, tx)
-		SystemAuthPermService.CacheRoleMenusByRoleId(editReq.ID)
-		return nil
+		if te = SystemAuthPermService.BatchDeleteByRoleId(editReq.ID, tx); te != nil {
+			return te
+		}
+		if te = SystemAuthPermService.BatchSaveByMenuIds(editReq.ID, editReq.MenuIds, tx); te != nil {
+			return te
+		}
+		te = SystemAuthPermService.CacheRoleMenusByRoleId(editReq.ID)
+		return te
 	})
-	util.CheckUtil.CheckErr(err, "Edit Transaction err")
+	e = response.CheckErr(err, "Edit Transaction err")
+	return
 }
 
 //Del 删除角色
-func (roleSrv systemAuthRoleService) Del(id uint) {
+func (roleSrv systemAuthRoleService) Del(id uint) (e error) {
 	err := core.DB.Where("id = ?", id).Limit(1).First(&system.SystemAuthRole{}).Error
-	util.CheckUtil.CheckErrDBNotRecord(err, "角色已不存在!")
-	util.CheckUtil.CheckErr(err, "Del First err")
+	if e = response.CheckErrDBNotRecord(err, "角色已不存在!"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "Del First err"); e != nil {
+		return
+	}
 	if r := core.DB.Where("role = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{}); r.RowsAffected > 0 {
-		panic(response.AssertArgumentError.Make("角色已被管理员使用,请先移除!"))
+		return response.AssertArgumentError.Make("角色已被管理员使用,请先移除!")
 	}
 	// 事务
 	err = core.DB.Transaction(func(tx *gorm.DB) error {
 		txErr := tx.Delete(&system.SystemAuthRole{}, "id = ?", id).Error
-		if txErr != nil {
-			core.Logger.Errorf("Del Delete err: txErr=[%+v]", txErr)
-			return txErr
+		var te error
+		if te = response.CheckErr(txErr, "Del Delete in tx err"); te != nil {
+			return te
 		}
-		SystemAuthPermService.BatchDeleteByRoleId(id, tx)
+		if te = SystemAuthPermService.BatchDeleteByRoleId(id, tx); te != nil {
+			return te
+		}
 		util.RedisUtil.HDel(config.AdminConfig.BackstageRolesKey, strconv.FormatUint(uint64(id), 10))
 		return nil
 	})
-	util.CheckUtil.CheckErr(err, "Del Transaction err")
+	e = response.CheckErr(err, "Del Transaction err")
+	return
 }

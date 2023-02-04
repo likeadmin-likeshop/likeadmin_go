@@ -22,28 +22,43 @@ var SystemLoginService = systemLoginService{}
 type systemLoginService struct{}
 
 //Login 登录
-func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq) resp.SystemLoginResp {
+func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq) (res resp.SystemLoginResp, e error) {
 	sysAdmin, err := SystemAuthAdminService.FindByUsername(req.Username)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		loginSrv.RecordLoginLog(c, 0, req.Username, response.LoginAccountError.Msg())
-		panic(response.LoginAccountError)
+		if e = loginSrv.RecordLoginLog(c, 0, req.Username, response.LoginAccountError.Msg()); e != nil {
+			return
+		}
+		e = response.LoginAccountError
+		return
 	} else if err != nil {
 		core.Logger.Errorf("Login FindByUsername err: err=[%+v]", err)
-		loginSrv.RecordLoginLog(c, 0, req.Username, response.Failed.Msg())
-		panic(response.Failed)
+		if e = loginSrv.RecordLoginLog(c, 0, req.Username, response.Failed.Msg()); e != nil {
+			return
+		}
+		e = response.Failed
+		return
 	}
 	if sysAdmin.IsDelete == 1 {
-		loginSrv.RecordLoginLog(c, 0, req.Username, response.LoginAccountError.Msg())
-		panic(response.LoginAccountError)
+		if e = loginSrv.RecordLoginLog(c, 0, req.Username, response.LoginAccountError.Msg()); e != nil {
+			return
+		}
+		e = response.LoginAccountError
+		return
 	}
 	if sysAdmin.IsDisable == 1 {
-		loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.LoginDisableError.Msg())
-		panic(response.LoginDisableError)
+		if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.LoginDisableError.Msg()); e != nil {
+			return
+		}
+		e = response.LoginDisableError
+		return
 	}
 	md5Pwd := util.ToolsUtil.MakeMd5(req.Password + sysAdmin.Salt)
 	if sysAdmin.Password != md5Pwd {
-		loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.LoginAccountError.Msg())
-		panic(response.LoginAccountError)
+		if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.LoginAccountError.Msg()); e != nil {
+			return
+		}
+		e = response.LoginAccountError
+		return
 	}
 	defer func() {
 		if r := recover(); r != nil {
@@ -85,22 +100,29 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 	err = core.DB.Model(&sysAdmin).Updates(
 		system.SystemAuthAdmin{LastLoginIp: c.ClientIP(), LastLoginTime: time.Now().Unix()}).Error
 	if err != nil {
-		loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.SystemError.Msg())
-		util.CheckUtil.CheckErr(err, "Login Updates err")
+		if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.SystemError.Msg()); e != nil {
+			return
+		}
+		if e = response.CheckErr(err, "Login Updates err"); e != nil {
+			return
+		}
 	}
 	// 记录登录日志
-	loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, "")
+	if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, ""); e != nil {
+		return
+	}
 	// 返回登录信息
-	return resp.SystemLoginResp{Token: token}
+	return resp.SystemLoginResp{Token: token}, nil
 }
 
 //Logout 退出
-func (loginSrv systemLoginService) Logout(req *req.SystemLogoutReq) {
+func (loginSrv systemLoginService) Logout(req *req.SystemLogoutReq) (e error) {
 	util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + req.Token)
+	return
 }
 
 //RecordLoginLog 记录登录日志
-func (loginSrv systemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) {
+func (loginSrv systemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) (e error) {
 	ua := core.UAParser.Parse(c.GetHeader("user-agent"))
 	var status uint8
 	if errStr == "" {
@@ -109,5 +131,6 @@ func (loginSrv systemLoginService) RecordLoginLog(c *gin.Context, adminId uint, 
 	err := core.DB.Create(&system.SystemLogLogin{
 		AdminId: adminId, Username: username, Ip: c.ClientIP(), Os: ua.Os.Family,
 		Browser: ua.UserAgent.Family, Status: status}).Error
-	util.CheckUtil.CheckErr(err, "RecordLoginLog Create err")
+	e = response.CheckErr(err, "RecordLoginLog Create err")
+	return
 }
