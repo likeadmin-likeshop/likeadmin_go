@@ -62,8 +62,8 @@ func login(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	adminSrv := system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv)
-	res, err := system.NewSystemLoginService(core.DB, adminSrv).Login(c, &loginReq)
+	adminSrv := system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv)
+	res, err := system.NewSystemLoginService(c, core.DB, adminSrv).Login(&loginReq)
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -75,8 +75,8 @@ func logout(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	adminSrv := system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv)
-	response.CheckAndResp(c, system.NewSystemLoginService(core.DB, adminSrv).Logout(&logoutReq))
+	adminSrv := system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv)
+	response.CheckAndResp(c, system.NewSystemLoginService(c, core.DB, adminSrv).Logout(&logoutReq))
 }
 
 //adminSelf 管理员信息
@@ -84,7 +84,7 @@ func adminSelf(c *gin.Context) {
 	adminId := config.AdminConfig.GetAdminId(c)
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	res, err := system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv).Self(adminId)
+	res, err := system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv).Self(adminId)
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -100,7 +100,7 @@ func adminList(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	res, err := system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv).List(page, listReq)
+	res, err := system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv).List(page, listReq)
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -112,7 +112,7 @@ func adminDetail(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	res, err := system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv).Detail(detailReq.ID)
+	res, err := system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv).Detail(detailReq.ID)
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -124,7 +124,7 @@ func adminAdd(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	response.CheckAndResp(c, system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv).Add(addReq))
+	response.CheckAndResp(c, system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv).Add(addReq))
 }
 
 //adminEdit 管理员编辑
@@ -135,7 +135,7 @@ func adminEdit(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	response.CheckAndResp(c, system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv).Edit(c, editReq))
+	response.CheckAndResp(c, system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv).Edit(editReq))
 }
 
 //adminUpInfo 管理员更新
@@ -146,7 +146,7 @@ func adminUpInfo(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	response.CheckAndResp(c, system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv).Update(c, updateReq, config.AdminConfig.GetAdminId(c)))
+	response.CheckAndResp(c, system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv).Update(updateReq, config.AdminConfig.GetAdminId(c)))
 }
 
 //adminDel 管理员删除
@@ -157,7 +157,7 @@ func adminDel(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	response.CheckAndResp(c, system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv).Del(c, delReq.ID))
+	response.CheckAndResp(c, system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv).Del(delReq.ID))
 }
 
 //adminDisable 管理员状态切换
@@ -168,7 +168,7 @@ func adminDisable(c *gin.Context) {
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
 	roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-	response.CheckAndResp(c, system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv).Disable(c, disableReq.ID))
+	response.CheckAndResp(c, system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv).Disable(disableReq.ID))
 }
 
 //roleAll 角色所有
@@ -234,14 +234,14 @@ func roleDel(c *gin.Context) {
 func menuRoute(c *gin.Context) {
 	adminId := config.AdminConfig.GetAdminId(c)
 	permSrv := system.NewSystemAuthPermService(core.DB)
-	res, err := system.NewSystemAuthMenuService(core.DB, permSrv).SelectMenuByRoleId(c, adminId)
+	res, err := system.NewSystemAuthMenuService(c, core.DB, permSrv).SelectMenuByRoleId(adminId)
 	response.CheckAndRespWithData(c, res, err)
 }
 
 //menuList 菜单列表
 func menuList(c *gin.Context) {
 	permSrv := system.NewSystemAuthPermService(core.DB)
-	res, err := system.NewSystemAuthMenuService(core.DB, permSrv).List()
+	res, err := system.NewSystemAuthMenuService(c, core.DB, permSrv).List()
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -252,7 +252,7 @@ func menuDetail(c *gin.Context) {
 		return
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
-	res, err := system.NewSystemAuthMenuService(core.DB, permSrv).Detail(detailReq.ID)
+	res, err := system.NewSystemAuthMenuService(c, core.DB, permSrv).Detail(detailReq.ID)
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -263,7 +263,7 @@ func menuAdd(c *gin.Context) {
 		return
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
-	response.CheckAndResp(c, system.NewSystemAuthMenuService(core.DB, permSrv).Add(addReq))
+	response.CheckAndResp(c, system.NewSystemAuthMenuService(c, core.DB, permSrv).Add(addReq))
 }
 
 //menuEdit 编辑菜单
@@ -273,7 +273,7 @@ func menuEdit(c *gin.Context) {
 		return
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
-	response.CheckAndResp(c, system.NewSystemAuthMenuService(core.DB, permSrv).Edit(editReq))
+	response.CheckAndResp(c, system.NewSystemAuthMenuService(c, core.DB, permSrv).Edit(editReq))
 }
 
 //menuDel 删除菜单
@@ -283,7 +283,7 @@ func menuDel(c *gin.Context) {
 		return
 	}
 	permSrv := system.NewSystemAuthPermService(core.DB)
-	response.CheckAndResp(c, system.NewSystemAuthMenuService(core.DB, permSrv).Del(delReq.ID))
+	response.CheckAndResp(c, system.NewSystemAuthMenuService(c, core.DB, permSrv).Del(delReq.ID))
 }
 
 //deptAll 部门所有
