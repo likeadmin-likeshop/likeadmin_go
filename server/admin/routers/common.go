@@ -32,13 +32,13 @@ func init() {
 
 //indexConsole 控制台
 func indexConsole(c *gin.Context) {
-	res, err := common.IndexService.Console()
+	res, err := common.NewIndexService(core.DB).Console()
 	response.CheckAndRespWithData(c, res, err)
 }
 
 //indexConfig 公共配置
 func indexConfig(c *gin.Context) {
-	res, err := common.IndexService.Config()
+	res, err := common.NewIndexService(core.DB).Config()
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -52,7 +52,8 @@ func uploadImage(c *gin.Context) {
 	if response.IsFailWithResp(c, ve) {
 		return
 	}
-	res, err := common.UploadService.UploadImage(file, uReq.Cid, config.AdminConfig.GetAdminId(c))
+	srv := common.NewUploadService(common.NewAlbumService(core.DB))
+	res, err := srv.UploadImage(file, uReq.Cid, config.AdminConfig.GetAdminId(c))
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -66,7 +67,8 @@ func uploadVideo(c *gin.Context) {
 	if response.IsFailWithResp(c, ve) {
 		return
 	}
-	res, err := common.UploadService.UploadVideo(file, uReq.Cid, config.AdminConfig.GetAdminId(c))
+	srv := common.NewUploadService(common.NewAlbumService(core.DB))
+	res, err := srv.UploadVideo(file, uReq.Cid, config.AdminConfig.GetAdminId(c))
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -80,7 +82,7 @@ func albumList(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &listReq)) {
 		return
 	}
-	res, err := common.AlbumService.AlbumList(page, listReq)
+	res, err := common.NewAlbumService(core.DB).AlbumList(page, listReq)
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -90,7 +92,7 @@ func albumRename(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &rnReq)) {
 		return
 	}
-	response.CheckAndResp(c, common.AlbumService.AlbumRename(rnReq.ID, rnReq.Name))
+	response.CheckAndResp(c, common.NewAlbumService(core.DB).AlbumRename(rnReq.ID, rnReq.Name))
 }
 
 //albumMove 相册文件移动
@@ -99,7 +101,7 @@ func albumMove(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &mvReq)) {
 		return
 	}
-	response.CheckAndResp(c, common.AlbumService.AlbumMove(mvReq.Ids, mvReq.Cid))
+	response.CheckAndResp(c, common.NewAlbumService(core.DB).AlbumMove(mvReq.Ids, mvReq.Cid))
 }
 
 //albumDel 相册文件删除
@@ -108,7 +110,7 @@ func albumDel(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
 		return
 	}
-	response.CheckAndResp(c, common.AlbumService.AlbumDel(delReq.Ids))
+	response.CheckAndResp(c, common.NewAlbumService(core.DB).AlbumDel(delReq.Ids))
 }
 
 //cateList 类目列表
@@ -117,7 +119,7 @@ func cateList(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &listReq)) {
 		return
 	}
-	res, err := common.AlbumService.CateList(listReq)
+	res, err := common.NewAlbumService(core.DB).CateList(listReq)
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -127,7 +129,7 @@ func cateAdd(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &addReq)) {
 		return
 	}
-	response.CheckAndResp(c, common.AlbumService.CateAdd(addReq))
+	response.CheckAndResp(c, common.NewAlbumService(core.DB).CateAdd(addReq))
 }
 
 //cateRename 类目命名
@@ -136,7 +138,7 @@ func cateRename(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &rnReq)) {
 		return
 	}
-	response.CheckAndResp(c, common.AlbumService.CateRename(rnReq.ID, rnReq.Name))
+	response.CheckAndResp(c, common.NewAlbumService(core.DB).CateRename(rnReq.ID, rnReq.Name))
 }
 
 //cateDel 类目删除
@@ -145,5 +147,5 @@ func cateDel(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
 		return
 	}
-	response.CheckAndResp(c, common.AlbumService.CateDel(delReq.ID))
+	response.CheckAndResp(c, common.NewAlbumService(core.DB).CateDel(delReq.ID))
 }

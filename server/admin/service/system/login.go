@@ -16,14 +16,20 @@ import (
 	"time"
 )
 
-var SystemLoginService = systemLoginService{}
+//NewSystemLoginService 初始化
+func NewSystemLoginService(db *gorm.DB, adminSrv *SystemAuthAdminService) *SystemLoginService {
+	return &SystemLoginService{db: db, adminSrv: adminSrv}
+}
 
-//systemLoginService 系统登录服务实现类
-type systemLoginService struct{}
+//SystemLoginService 系统登录服务实现类
+type SystemLoginService struct {
+	db       *gorm.DB
+	adminSrv *SystemAuthAdminService
+}
 
 //Login 登录
-func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq) (res resp.SystemLoginResp, e error) {
-	sysAdmin, err := SystemAuthAdminService.FindByUsername(req.Username)
+func (loginSrv SystemLoginService) Login(c *gin.Context, req *req.SystemLoginReq) (res resp.SystemLoginResp, e error) {
+	sysAdmin, err := loginSrv.adminSrv.FindByUsername(req.Username)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		if e = loginSrv.RecordLoginLog(c, 0, req.Username, response.LoginAccountError.Msg()); e != nil {
 			return
@@ -94,10 +100,10 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 
 	// 缓存登录信息
 	util.RedisUtil.Set(config.AdminConfig.BackstageTokenKey+token, adminIdStr, 7200)
-	SystemAuthAdminService.CacheAdminUserByUid(sysAdmin.ID)
+	loginSrv.adminSrv.CacheAdminUserByUid(sysAdmin.ID)
 
 	// 更新登录信息
-	err = core.DB.Model(&sysAdmin).Updates(
+	err = loginSrv.db.Model(&sysAdmin).Updates(
 		system.SystemAuthAdmin{LastLoginIp: c.ClientIP(), LastLoginTime: time.Now().Unix()}).Error
 	if err != nil {
 		if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.SystemError.Msg()); e != nil {
@@ -116,19 +122,19 @@ func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 }
 
 //Logout 退出
-func (loginSrv systemLoginService) Logout(req *req.SystemLogoutReq) (e error) {
+func (loginSrv SystemLoginService) Logout(req *req.SystemLogoutReq) (e error) {
 	util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + req.Token)
 	return
 }
 
 //RecordLoginLog 记录登录日志
-func (loginSrv systemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) (e error) {
+func (loginSrv SystemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) (e error) {
 	ua := core.UAParser.Parse(c.GetHeader("user-agent"))
 	var status uint8
 	if errStr == "" {
 		status = 1
 	}
-	err := core.DB.Create(&system.SystemLogLogin{
+	err := loginSrv.db.Create(&system.SystemLogLogin{
 		AdminId: adminId, Username: username, Ip: c.ClientIP(), Os: ua.Os.Family,
 		Browser: ua.UserAgent.Family, Status: status}).Error
 	e = response.CheckErr(err, "RecordLoginLog Create err")

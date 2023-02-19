@@ -1,19 +1,25 @@
 package setting
 
 import (
+	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/core/response"
 	"likeadmin/util"
 )
 
-var SettingWebsiteService = settingWebsiteService{}
+//NewSettingWebsiteService 初始化
+func NewSettingWebsiteService(db *gorm.DB) *SettingWebsiteService {
+	return &SettingWebsiteService{db: db}
+}
 
-//settingWebsiteService 网站信息配置服务实现类
-type settingWebsiteService struct{}
+//SettingWebsiteService 网站信息配置服务实现类
+type SettingWebsiteService struct {
+	db *gorm.DB
+}
 
 //Detail 获取网站信息
-func (wSrv settingWebsiteService) Detail() (res map[string]string, e error) {
-	data, err := util.ConfigUtil.Get("website")
+func (wSrv SettingWebsiteService) Detail() (res map[string]string, e error) {
+	data, err := util.ConfigUtil.Get(wSrv.db, "website")
 	if e = response.CheckErr(err, "Detail Get err"); e != nil {
 		return
 	}
@@ -28,28 +34,28 @@ func (wSrv settingWebsiteService) Detail() (res map[string]string, e error) {
 }
 
 //Save 保存网站信息
-func (wSrv settingWebsiteService) Save(wsReq req.SettingWebsiteReq) (e error) {
-	err := util.ConfigUtil.Set("website", "name", wsReq.Name)
+func (wSrv SettingWebsiteService) Save(wsReq req.SettingWebsiteReq) (e error) {
+	err := util.ConfigUtil.Set(wSrv.db, "website", "name", wsReq.Name)
 	if e = response.CheckErr(err, "Save Set name err"); e != nil {
 		return
 	}
-	err = util.ConfigUtil.Set("website", "logo", util.UrlUtil.ToRelativeUrl(wsReq.Logo))
+	err = util.ConfigUtil.Set(wSrv.db, "website", "logo", util.UrlUtil.ToRelativeUrl(wsReq.Logo))
 	if e = response.CheckErr(err, "Save Set logo err"); e != nil {
 		return
 	}
-	err = util.ConfigUtil.Set("website", "favicon", util.UrlUtil.ToRelativeUrl(wsReq.Favicon))
+	err = util.ConfigUtil.Set(wSrv.db, "website", "favicon", util.UrlUtil.ToRelativeUrl(wsReq.Favicon))
 	if e = response.CheckErr(err, "Save Set favicon err"); e != nil {
 		return
 	}
-	err = util.ConfigUtil.Set("website", "backdrop", util.UrlUtil.ToRelativeUrl(wsReq.Backdrop))
+	err = util.ConfigUtil.Set(wSrv.db, "website", "backdrop", util.UrlUtil.ToRelativeUrl(wsReq.Backdrop))
 	if e = response.CheckErr(err, "Save Set backdrop err"); e != nil {
 		return
 	}
-	err = util.ConfigUtil.Set("website", "shopName", wsReq.ShopName)
+	err = util.ConfigUtil.Set(wSrv.db, "website", "shopName", wsReq.ShopName)
 	if e = response.CheckErr(err, "Save Set shopName err"); e != nil {
 		return
 	}
-	err = util.ConfigUtil.Set("website", "shopLogo", util.UrlUtil.ToRelativeUrl(wsReq.ShopLogo))
+	err = util.ConfigUtil.Set(wSrv.db, "website", "shopLogo", util.UrlUtil.ToRelativeUrl(wsReq.ShopLogo))
 	e = response.CheckErr(err, "Save Set shopLogo err")
 	return
 }

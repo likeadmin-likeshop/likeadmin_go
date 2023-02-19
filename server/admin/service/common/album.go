@@ -1,10 +1,10 @@
 package common
 
 import (
+	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/config"
-	"likeadmin/core"
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/model/common"
@@ -13,18 +13,23 @@ import (
 	"time"
 )
 
-var AlbumService = albumService{}
+//NewAlbumService 初始化
+func NewAlbumService(db *gorm.DB) *AlbumService {
+	return &AlbumService{db: db}
+}
 
-//albumService 相册服务实现类
-type albumService struct{}
+//AlbumService 相册服务实现类
+type AlbumService struct {
+	db *gorm.DB
+}
 
 //AlbumList 相册文件列表
-func (albSrv albumService) AlbumList(page request.PageReq, listReq req.CommonAlbumListReq) (res response.PageResp, e error) {
+func (albSrv AlbumService) AlbumList(page request.PageReq, listReq req.CommonAlbumListReq) (res response.PageResp, e error) {
 	// 分页信息
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	// 查询
-	albumModel := core.DB.Model(&common.Album{}).Where("is_delete = ?", 0)
+	albumModel := albSrv.db.Model(&common.Album{}).Where("is_delete = ?", 0)
 	if listReq.Cid > 0 {
 		albumModel = albumModel.Where("cid = ?", listReq.Cid)
 	}
@@ -68,9 +73,9 @@ func (albSrv albumService) AlbumList(page request.PageReq, listReq req.CommonAlb
 }
 
 //AlbumRename 相册文件重命名
-func (albSrv albumService) AlbumRename(id uint, name string) (e error) {
+func (albSrv AlbumService) AlbumRename(id uint, name string) (e error) {
 	var album common.Album
-	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&album).Error
+	err := albSrv.db.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&album).Error
 	if e = response.CheckErrDBNotRecord(err, "文件丢失！"); e != nil {
 		return
 	}
@@ -78,15 +83,15 @@ func (albSrv albumService) AlbumRename(id uint, name string) (e error) {
 		return
 	}
 	album.Name = name
-	err = core.DB.Save(&album).Error
+	err = albSrv.db.Save(&album).Error
 	e = response.CheckErr(err, "AlbumRename Save err")
 	return
 }
 
 //AlbumMove 相册文件移动
-func (albSrv albumService) AlbumMove(ids []uint, cid int) (e error) {
+func (albSrv AlbumService) AlbumMove(ids []uint, cid int) (e error) {
 	var albums []common.Album
-	err := core.DB.Where("id in ? AND is_delete = ?", ids, 0).Find(&albums).Error
+	err := albSrv.db.Where("id in ? AND is_delete = ?", ids, 0).Find(&albums).Error
 	if e = response.CheckErr(err, "AlbumMove Find err"); e != nil {
 		return
 	}
@@ -94,7 +99,7 @@ func (albSrv albumService) AlbumMove(ids []uint, cid int) (e error) {
 		return response.AssertArgumentError.Make("文件丢失！")
 	}
 	if cid > 0 {
-		err = core.DB.Where("id = ? AND is_delete = ?", cid, 0).Limit(1).First(&common.AlbumCate{}).Error
+		err = albSrv.db.Where("id = ? AND is_delete = ?", cid, 0).Limit(1).First(&common.AlbumCate{}).Error
 		if e = response.CheckErrDBNotRecord(err, "类目已不存在！"); e != nil {
 			return
 		}
@@ -102,13 +107,13 @@ func (albSrv albumService) AlbumMove(ids []uint, cid int) (e error) {
 			return
 		}
 	}
-	err = core.DB.Model(&common.Album{}).Where("id in ?", ids).UpdateColumn("cid", cid).Error
+	err = albSrv.db.Model(&common.Album{}).Where("id in ?", ids).UpdateColumn("cid", cid).Error
 	e = response.CheckErr(err, "AlbumMove UpdateColumn err")
 	return
 }
 
 //AlbumAdd 相册文件新增
-func (albSrv albumService) AlbumAdd(addReq req.CommonAlbumAddReq) (res uint, e error) {
+func (albSrv AlbumService) AlbumAdd(addReq req.CommonAlbumAddReq) (res uint, e error) {
 	var alb common.Album
 	//var params map[string]interface{}
 	//if err := mapstructure.Decode(params, &alb); err != nil {
@@ -116,7 +121,7 @@ func (albSrv albumService) AlbumAdd(addReq req.CommonAlbumAddReq) (res uint, e e
 	//	return response.SystemError
 	//}
 	response.Copy(&alb, addReq)
-	err := core.DB.Create(&alb).Error
+	err := albSrv.db.Create(&alb).Error
 	if e = response.CheckErr(err, "AlbumAdd Create err"); e != nil {
 		return
 	}
@@ -124,25 +129,25 @@ func (albSrv albumService) AlbumAdd(addReq req.CommonAlbumAddReq) (res uint, e e
 }
 
 //AlbumDel 相册文件删除
-func (albSrv albumService) AlbumDel(ids []uint) (e error) {
+func (albSrv AlbumService) AlbumDel(ids []uint) (e error) {
 	var albums []common.Album
-	err := core.DB.Where("id in ? AND is_delete = ?", ids, 0).Find(&albums).Error
+	err := albSrv.db.Where("id in ? AND is_delete = ?", ids, 0).Find(&albums).Error
 	if e = response.CheckErr(err, "AlbumDel Find err"); e != nil {
 		return
 	}
 	if len(albums) == 0 {
 		return response.AssertArgumentError.Make("文件丢失！")
 	}
-	err = core.DB.Model(&common.Album{}).Where("id in ?", ids).Updates(
+	err = albSrv.db.Model(&common.Album{}).Where("id in ?", ids).Updates(
 		common.Album{IsDelete: 1, DeleteTime: time.Now().Unix()}).Error
 	e = response.CheckErr(err, "AlbumDel UpdateColumn err")
 	return
 }
 
 //CateList 相册分类列表
-func (albSrv albumService) CateList(listReq req.CommonCateListReq) (mapList []interface{}, e error) {
+func (albSrv AlbumService) CateList(listReq req.CommonCateListReq) (mapList []interface{}, e error) {
 	var cates []common.AlbumCate
-	cateModel := core.DB.Where("is_delete = ?", 0).Order("id desc")
+	cateModel := albSrv.db.Where("is_delete = ?", 0).Order("id desc")
 	if listReq.Type > 0 {
 		cateModel = cateModel.Where("type = ?", listReq.Type)
 	}
@@ -160,18 +165,18 @@ func (albSrv albumService) CateList(listReq req.CommonCateListReq) (mapList []in
 }
 
 //CateAdd 分类新增
-func (albSrv albumService) CateAdd(addReq req.CommonCateAddReq) (e error) {
+func (albSrv AlbumService) CateAdd(addReq req.CommonCateAddReq) (e error) {
 	var cate common.AlbumCate
 	response.Copy(&cate, addReq)
-	err := core.DB.Create(&cate).Error
+	err := albSrv.db.Create(&cate).Error
 	e = response.CheckErr(err, "CateAdd Create err")
 	return
 }
 
 //CateRename 分类重命名
-func (albSrv albumService) CateRename(id uint, name string) (e error) {
+func (albSrv AlbumService) CateRename(id uint, name string) (e error) {
 	var cate common.AlbumCate
-	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&cate).Error
+	err := albSrv.db.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&cate).Error
 	if e = response.CheckErrDBNotRecord(err, "分类已不存在！"); e != nil {
 		return
 	}
@@ -179,22 +184,22 @@ func (albSrv albumService) CateRename(id uint, name string) (e error) {
 		return
 	}
 	cate.Name = name
-	err = core.DB.Save(&cate).Error
+	err = albSrv.db.Save(&cate).Error
 	e = response.CheckErr(err, "CateRename Save err")
 	return
 }
 
 //CateDel 分类删除
-func (albSrv albumService) CateDel(id uint) (e error) {
+func (albSrv AlbumService) CateDel(id uint) (e error) {
 	var cate common.AlbumCate
-	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&cate).Error
+	err := albSrv.db.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&cate).Error
 	if e = response.CheckErrDBNotRecord(err, "分类已不存在！"); e != nil {
 		return
 	}
 	if e = response.CheckErr(err, "CateDel First err"); e != nil {
 		return
 	}
-	r := core.DB.Where("cid = ? AND is_delete = ?", id, 0).Limit(1).Find(&common.Album{})
+	r := albSrv.db.Where("cid = ? AND is_delete = ?", id, 0).Limit(1).Find(&common.Album{})
 	if e = response.CheckErr(r.Error, "CateDel Find err"); e != nil {
 		return
 	}
@@ -203,7 +208,7 @@ func (albSrv albumService) CateDel(id uint) (e error) {
 	}
 	cate.IsDelete = 1
 	cate.DeleteTime = time.Now().Unix()
-	err = core.DB.Save(&cate).Error
+	err = albSrv.db.Save(&cate).Error
 	e = response.CheckErr(err, "CateDel Save err")
 	return
 }

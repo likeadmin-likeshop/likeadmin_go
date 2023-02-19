@@ -2,6 +2,7 @@ package system
 
 import (
 	"fmt"
+	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
 	"likeadmin/core"
@@ -10,20 +11,25 @@ import (
 	"likeadmin/model/system"
 )
 
-var SystemLogsServer = systemLogsServer{}
+//NewSystemLogsServer 初始化
+func NewSystemLogsServer(db *gorm.DB) *SystemLogsServer {
+	return &SystemLogsServer{db: db}
+}
 
-//systemAuthMenuService 系统日志服务实现类
-type systemLogsServer struct{}
+//SystemLogsServer 系统日志服务实现类
+type SystemLogsServer struct {
+	db *gorm.DB
+}
 
 //Operate 系统操作日志
-func (logSrv systemLogsServer) Operate(page request.PageReq, logReq req.SystemLogOperateReq) (res response.PageResp, e error) {
+func (logSrv SystemLogsServer) Operate(page request.PageReq, logReq req.SystemLogOperateReq) (res response.PageResp, e error) {
 	// 分页信息
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	// 查询
 	logTbName := core.DBTableName(&system.SystemLogOperate{})
 	adminTbName := core.DBTableName(&system.SystemAuthAdmin{})
-	logModel := core.DB.Table(logTbName + " AS log").Joins(
+	logModel := logSrv.db.Table(logTbName + " AS log").Joins(
 		fmt.Sprintf("LEFT JOIN %s AS admin ON log.admin_id = admin.id", adminTbName)).Select(
 		"log.*, admin.username, admin.nickname")
 	// 条件
@@ -72,12 +78,12 @@ func (logSrv systemLogsServer) Operate(page request.PageReq, logReq req.SystemLo
 }
 
 //Login 系统登录日志
-func (logSrv systemLogsServer) Login(page request.PageReq, logReq req.SystemLogLoginReq) (res response.PageResp, e error) {
+func (logSrv SystemLogsServer) Login(page request.PageReq, logReq req.SystemLogLoginReq) (res response.PageResp, e error) {
 	// 分页信息
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	// 查询
-	logModel := core.DB.Model(&system.SystemLogLogin{})
+	logModel := logSrv.db.Model(&system.SystemLogLogin{})
 	// 条件
 	if logReq.Username != "" {
 		logModel = logModel.Where("username like ?", "%"+logReq.Username+"%")

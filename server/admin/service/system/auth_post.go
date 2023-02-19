@@ -1,23 +1,28 @@
 package system
 
 import (
+	"gorm.io/gorm"
 	"likeadmin/admin/schemas/req"
 	"likeadmin/admin/schemas/resp"
-	"likeadmin/core"
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/model/system"
 )
 
-var SystemAuthPostService = systemAuthPostService{}
+//NewSystemAuthPostService 初始化
+func NewSystemAuthPostService(db *gorm.DB) *SystemAuthPostService {
+	return &SystemAuthPostService{db: db}
+}
 
-//systemAuthPostService 系统岗位服务实现类
-type systemAuthPostService struct{}
+//SystemAuthPostService 系统岗位服务实现类
+type SystemAuthPostService struct {
+	db *gorm.DB
+}
 
 //All 岗位所有
-func (postSrv systemAuthPostService) All() (res []resp.SystemAuthPostResp, e error) {
+func (postSrv SystemAuthPostService) All() (res []resp.SystemAuthPostResp, e error) {
 	var posts []system.SystemAuthPost
-	err := core.DB.Where("is_delete = ?", 0).Order("sort desc, id desc").Find(&posts).Error
+	err := postSrv.db.Where("is_delete = ?", 0).Order("sort desc, id desc").Find(&posts).Error
 	if e = response.CheckErr(err, "All Find err"); e != nil {
 		return
 	}
@@ -27,12 +32,12 @@ func (postSrv systemAuthPostService) All() (res []resp.SystemAuthPostResp, e err
 }
 
 //List 岗位列表
-func (postSrv systemAuthPostService) List(page request.PageReq, listReq req.SystemAuthPostListReq) (res response.PageResp, e error) {
+func (postSrv SystemAuthPostService) List(page request.PageReq, listReq req.SystemAuthPostListReq) (res response.PageResp, e error) {
 	// 分页信息
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
 	// 查询
-	postModel := core.DB.Model(&system.SystemAuthPost{}).Where("is_delete = ?", 0)
+	postModel := postSrv.db.Model(&system.SystemAuthPost{}).Where("is_delete = ?", 0)
 	if listReq.Code != "" {
 		postModel = postModel.Where("code like ?", "%"+listReq.Code+"%")
 	}
@@ -65,9 +70,9 @@ func (postSrv systemAuthPostService) List(page request.PageReq, listReq req.Syst
 }
 
 //Detail 部门详情
-func (postSrv systemAuthPostService) Detail(id uint) (res resp.SystemAuthPostResp, e error) {
+func (postSrv SystemAuthPostService) Detail(id uint) (res resp.SystemAuthPostResp, e error) {
 	var post system.SystemAuthPost
-	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&post).Error
+	err := postSrv.db.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&post).Error
 	if e = response.CheckErrDBNotRecord(err, "岗位不存在!"); e != nil {
 		return
 	}
@@ -79,8 +84,8 @@ func (postSrv systemAuthPostService) Detail(id uint) (res resp.SystemAuthPostRes
 }
 
 //Add 部门新增
-func (postSrv systemAuthPostService) Add(addReq req.SystemAuthPostAddReq) (e error) {
-	r := core.DB.Where("(code = ? OR name = ?) AND is_delete = ?", addReq.Code, addReq.Name, 0).Limit(1).Find(&system.SystemAuthPost{})
+func (postSrv SystemAuthPostService) Add(addReq req.SystemAuthPostAddReq) (e error) {
+	r := postSrv.db.Where("(code = ? OR name = ?) AND is_delete = ?", addReq.Code, addReq.Name, 0).Limit(1).Find(&system.SystemAuthPost{})
 	if e = response.CheckErr(r.Error, "Add Find err"); e != nil {
 		return
 	}
@@ -89,15 +94,15 @@ func (postSrv systemAuthPostService) Add(addReq req.SystemAuthPostAddReq) (e err
 	}
 	var post system.SystemAuthPost
 	response.Copy(&post, addReq)
-	err := core.DB.Create(&post).Error
+	err := postSrv.db.Create(&post).Error
 	e = response.CheckErr(err, "Add Create err")
 	return
 }
 
 //Edit 部门编辑
-func (postSrv systemAuthPostService) Edit(editReq req.SystemAuthPostEditReq) (e error) {
+func (postSrv SystemAuthPostService) Edit(editReq req.SystemAuthPostEditReq) (e error) {
 	var post system.SystemAuthPost
-	err := core.DB.Where("id = ? AND is_delete = ?", editReq.ID, 0).Limit(1).First(&post).Error
+	err := postSrv.db.Where("id = ? AND is_delete = ?", editReq.ID, 0).Limit(1).First(&post).Error
 	// 校验
 	if e = response.CheckErrDBNotRecord(err, "部门不存在!"); e != nil {
 		return
@@ -105,7 +110,7 @@ func (postSrv systemAuthPostService) Edit(editReq req.SystemAuthPostEditReq) (e 
 	if e = response.CheckErr(err, "Edit First err"); e != nil {
 		return
 	}
-	r := core.DB.Where("(code = ? OR name = ?) AND id != ? AND is_delete = ?", editReq.Code, editReq.Name, editReq.ID, 0).Limit(1).Find(&system.SystemAuthPost{})
+	r := postSrv.db.Where("(code = ? OR name = ?) AND id != ? AND is_delete = ?", editReq.Code, editReq.Name, editReq.ID, 0).Limit(1).Find(&system.SystemAuthPost{})
 	if e = response.CheckErr(r.Error, "Add Find err"); e != nil {
 		return
 	}
@@ -114,15 +119,15 @@ func (postSrv systemAuthPostService) Edit(editReq req.SystemAuthPostEditReq) (e 
 	}
 	// 更新
 	response.Copy(&post, editReq)
-	err = core.DB.Model(&post).Updates(post).Error
+	err = postSrv.db.Model(&post).Updates(post).Error
 	e = response.CheckErr(err, "Edit Updates err")
 	return
 }
 
 //Del 部门删除
-func (postSrv systemAuthPostService) Del(id uint) (e error) {
+func (postSrv SystemAuthPostService) Del(id uint) (e error) {
 	var post system.SystemAuthPost
-	err := core.DB.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&post).Error
+	err := postSrv.db.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&post).Error
 	// 校验
 	if e = response.CheckErrDBNotRecord(err, "部门不存在!"); e != nil {
 		return
@@ -130,7 +135,7 @@ func (postSrv systemAuthPostService) Del(id uint) (e error) {
 	if e = response.CheckErr(err, "Del First err"); e != nil {
 		return
 	}
-	r := core.DB.Where("post_id = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{})
+	r := postSrv.db.Where("post_id = ? AND is_delete = ?", id, 0).Limit(1).Find(&system.SystemAuthAdmin{})
 	if e = response.CheckErr(r.Error, "Del Find err"); e != nil {
 		return
 	}
@@ -138,7 +143,7 @@ func (postSrv systemAuthPostService) Del(id uint) (e error) {
 		return response.AssertArgumentError.Make("该岗位已被管理员使用,请先移除!")
 	}
 	post.IsDelete = 1
-	err = core.DB.Save(&post).Error
+	err = postSrv.db.Save(&post).Error
 	e = response.CheckErr(err, "Del Save err")
 	return
 }

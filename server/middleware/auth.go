@@ -58,8 +58,11 @@ func TokenAuth() gin.HandlerFunc {
 			}
 			uid = uint(i)
 		}
+		permSrv := system.NewSystemAuthPermService(core.DB)
+		roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
+		adminSrv := system.NewSystemAuthAdminService(core.DB, permSrv, roleSrv)
 		if !util.RedisUtil.HExists(config.AdminConfig.BackstageManageKey, uidStr) {
-			err := system.SystemAuthAdminService.CacheAdminUserByUid(uid)
+			err := adminSrv.CacheAdminUserByUid(uid)
 			if err != nil {
 				core.Logger.Errorf("TokenAuth CacheAdminUserByUid err: err=[%+v]", err)
 				response.Fail(c, response.SystemError)
@@ -119,7 +122,7 @@ func TokenAuth() gin.HandlerFunc {
 				c.Abort()
 				return
 			}
-			err = system.SystemAuthPermService.CacheRoleMenusByRoleId(uint(i))
+			err = permSrv.CacheRoleMenusByRoleId(uint(i))
 			if err != nil {
 				core.Logger.Errorf("TokenAuth CacheRoleMenusByRoleId err: err=[%+v]", err)
 				response.Fail(c, response.SystemError)

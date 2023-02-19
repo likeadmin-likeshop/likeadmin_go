@@ -3,16 +3,19 @@ package util
 import (
 	"bufio"
 	"context"
+	"github.com/go-redis/redis/v9"
 	"likeadmin/config"
 	"likeadmin/core"
 	"strings"
 	"time"
 )
 
-var RedisUtil = redisUtil{}
+var RedisUtil = redisUtil{redis: core.Redis}
 
 //redisUtil Redis操作工具类
-type redisUtil struct{}
+type redisUtil struct {
+	redis *redis.Client
+}
 
 //stringToLines string拆分多行
 func stringToLines(s string) (lines []string, err error) {
@@ -35,7 +38,7 @@ func stringToKV(s string) (string, string) {
 
 //Info Redis服务信息
 func (ru redisUtil) Info(sections ...string) (res map[string]string) {
-	infoStr, err := core.Redis.Info(context.Background(), sections...).Result()
+	infoStr, err := ru.redis.Info(context.Background(), sections...).Result()
 	res = map[string]string{}
 	if err != nil {
 		core.Logger.Errorf("redisUtil.Info err: err=[%+v]", err)
@@ -60,7 +63,7 @@ func (ru redisUtil) Info(sections ...string) (res map[string]string) {
 
 //DBSize 当前数据库key数量
 func (ru redisUtil) DBSize() int64 {
-	size, err := core.Redis.DBSize(context.Background()).Result()
+	size, err := ru.redis.DBSize(context.Background()).Result()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.DBSize err: err=[%+v]", err)
 		return 0
@@ -70,7 +73,7 @@ func (ru redisUtil) DBSize() int64 {
 
 //Set 设置键值对
 func (ru redisUtil) Set(key string, value interface{}, timeSec int) bool {
-	err := core.Redis.Set(context.Background(),
+	err := ru.redis.Set(context.Background(),
 		config.Config.RedisPrefix+key, value, time.Duration(timeSec)*time.Second).Err()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.Set err: err=[%+v]", err)
@@ -81,7 +84,7 @@ func (ru redisUtil) Set(key string, value interface{}, timeSec int) bool {
 
 //Get 获取key的值
 func (ru redisUtil) Get(key string) string {
-	res, err := core.Redis.Get(context.Background(), config.Config.RedisPrefix+key).Result()
+	res, err := ru.redis.Get(context.Background(), config.Config.RedisPrefix+key).Result()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.Get err: err=[%+v]", err)
 		return ""
@@ -91,7 +94,7 @@ func (ru redisUtil) Get(key string) string {
 
 //SSet 将数据放入set缓存
 func (ru redisUtil) SSet(key string, values ...interface{}) bool {
-	err := core.Redis.SAdd(context.Background(), config.Config.RedisPrefix+key, values...).Err()
+	err := ru.redis.SAdd(context.Background(), config.Config.RedisPrefix+key, values...).Err()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.SSet err: err=[%+v]", err)
 		return false
@@ -101,7 +104,7 @@ func (ru redisUtil) SSet(key string, values ...interface{}) bool {
 
 //SGet 根据key获取Set中的所有值
 func (ru redisUtil) SGet(key string) []string {
-	res, err := core.Redis.SMembers(context.Background(), config.Config.RedisPrefix+key).Result()
+	res, err := ru.redis.SMembers(context.Background(), config.Config.RedisPrefix+key).Result()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.SGet err: err=[%+v]", err)
 		return []string{}
@@ -111,7 +114,7 @@ func (ru redisUtil) SGet(key string) []string {
 
 //HMSet 设置key, 通过字典的方式设置多个field, value对
 func (ru redisUtil) HMSet(key string, mapping map[string]string, timeSec int) bool {
-	err := core.Redis.HSet(context.Background(), config.Config.RedisPrefix+key, mapping).Err()
+	err := ru.redis.HSet(context.Background(), config.Config.RedisPrefix+key, mapping).Err()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.HMSet err: err=[%+v]", err)
 		return false
@@ -131,7 +134,7 @@ func (ru redisUtil) HSet(key string, field string, value string, timeSec int) bo
 
 //HGet 获取key中field域的值
 func (ru redisUtil) HGet(key string, field string) string {
-	res, err := core.Redis.HGet(context.Background(), config.Config.RedisPrefix+key, field).Result()
+	res, err := ru.redis.HGet(context.Background(), config.Config.RedisPrefix+key, field).Result()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.HGet err: err=[%+v]", err)
 		return ""
@@ -141,7 +144,7 @@ func (ru redisUtil) HGet(key string, field string) string {
 
 //HExists 判断key中有没有field域名
 func (ru redisUtil) HExists(key string, field string) bool {
-	res, err := core.Redis.HExists(context.Background(), config.Config.RedisPrefix+key, field).Result()
+	res, err := ru.redis.HExists(context.Background(), config.Config.RedisPrefix+key, field).Result()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.HExists err: err=[%+v]", err)
 		return false
@@ -151,7 +154,7 @@ func (ru redisUtil) HExists(key string, field string) bool {
 
 //HDel 删除hash表中的值
 func (ru redisUtil) HDel(key string, fields ...string) bool {
-	err := core.Redis.HDel(context.Background(), config.Config.RedisPrefix+key, fields...).Err()
+	err := ru.redis.HDel(context.Background(), config.Config.RedisPrefix+key, fields...).Err()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.HDel err: err=[%+v]", err)
 		return false
@@ -162,7 +165,7 @@ func (ru redisUtil) HDel(key string, fields ...string) bool {
 //Exists 判断多项key是否存在
 func (ru redisUtil) Exists(keys ...string) int64 {
 	fullKeys := ru.toFullKeys(keys)
-	cnt, err := core.Redis.Exists(context.Background(), fullKeys...).Result()
+	cnt, err := ru.redis.Exists(context.Background(), fullKeys...).Result()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.Exists err: err=[%+v]", err)
 		return -1
@@ -172,7 +175,7 @@ func (ru redisUtil) Exists(keys ...string) int64 {
 
 //Expire 指定缓存失效时间
 func (ru redisUtil) Expire(key string, timeSec int) bool {
-	err := core.Redis.Expire(context.Background(), config.Config.RedisPrefix+key, time.Duration(timeSec)*time.Second).Err()
+	err := ru.redis.Expire(context.Background(), config.Config.RedisPrefix+key, time.Duration(timeSec)*time.Second).Err()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.Expire err: err=[%+v]", err)
 		return false
@@ -182,7 +185,7 @@ func (ru redisUtil) Expire(key string, timeSec int) bool {
 
 //TTL 根据key获取过期时间
 func (ru redisUtil) TTL(key string) int {
-	td, err := core.Redis.TTL(context.Background(), config.Config.RedisPrefix+key).Result()
+	td, err := ru.redis.TTL(context.Background(), config.Config.RedisPrefix+key).Result()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.TTL err: err=[%+v]", err)
 		return 0
@@ -193,7 +196,7 @@ func (ru redisUtil) TTL(key string) int {
 //Del 删除一个或多个键
 func (ru redisUtil) Del(keys ...string) bool {
 	fullKeys := ru.toFullKeys(keys)
-	err := core.Redis.Del(context.Background(), fullKeys...).Err()
+	err := ru.redis.Del(context.Background(), fullKeys...).Err()
 	if err != nil {
 		core.Logger.Errorf("redisUtil.Del err: err=[%+v]", err)
 		return false

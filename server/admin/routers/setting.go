@@ -27,7 +27,7 @@ func init() {
 
 //websiteDetail 获取网站信息
 func websiteDetail(c *gin.Context) {
-	res, err := setting.SettingWebsiteService.Detail()
+	res, err := setting.NewSettingWebsiteService(core.DB).Detail()
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -37,12 +37,12 @@ func websiteSave(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &wsReq)) {
 		return
 	}
-	response.CheckAndResp(c, setting.SettingWebsiteService.Save(wsReq))
+	response.CheckAndResp(c, setting.NewSettingWebsiteService(core.DB).Save(wsReq))
 }
 
 //copyrightDetail 获取备案信息
 func copyrightDetail(c *gin.Context) {
-	res, err := setting.SettingCopyrightService.Detail()
+	res, err := setting.NewSettingCopyrightService(core.DB).Detail()
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -52,12 +52,12 @@ func copyrightSave(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSONArray(c, &cReqs)) {
 		return
 	}
-	response.CheckAndResp(c, setting.SettingCopyrightService.Save(cReqs))
+	response.CheckAndResp(c, setting.NewSettingCopyrightService(core.DB).Save(cReqs))
 }
 
 //protocolDetail 获取政策信息
 func protocolDetail(c *gin.Context) {
-	res, err := setting.SettingProtocolService.Detail()
+	res, err := setting.NewSettingProtocolService(core.DB).Detail()
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -67,12 +67,12 @@ func protocolSave(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &pReq)) {
 		return
 	}
-	response.CheckAndResp(c, setting.SettingProtocolService.Save(pReq))
+	response.CheckAndResp(c, setting.NewSettingProtocolService(core.DB).Save(pReq))
 }
 
 //storageList 存储列表
 func storageList(c *gin.Context) {
-	res, err := setting.SettingStorageService.List()
+	res, err := setting.NewSettingStorageService(core.DB).List()
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -82,7 +82,7 @@ func storageDetail(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
 		return
 	}
-	res, err := setting.SettingStorageService.Detail(detailReq.Alias)
+	res, err := setting.NewSettingStorageService(core.DB).Detail(detailReq.Alias)
 	response.CheckAndRespWithData(c, res, err)
 }
 
@@ -92,7 +92,7 @@ func storageEdit(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &editReq)) {
 		return
 	}
-	response.CheckAndResp(c, setting.SettingStorageService.Edit(editReq))
+	response.CheckAndResp(c, setting.NewSettingStorageService(core.DB).Edit(editReq))
 }
 
 //storageChange 存储切换
@@ -101,5 +101,5 @@ func storageChange(c *gin.Context) {
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &changeReq)) {
 		return
 	}
-	response.CheckAndResp(c, setting.SettingStorageService.Change(changeReq.Alias, changeReq.Status))
+	response.CheckAndResp(c, setting.NewSettingStorageService(core.DB).Change(changeReq.Alias, changeReq.Status))
 }
