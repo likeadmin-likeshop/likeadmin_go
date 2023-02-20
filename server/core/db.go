@@ -11,7 +11,11 @@ import (
 	"time"
 )
 
-var DB = initMysql()
+var db = initMysql()
+
+func GetDB() *gorm.DB {
+	return db
+}
 
 //initMysql 初始化mysql会话
 func initMysql() *gorm.DB {
@@ -65,7 +69,7 @@ func initMysql() *gorm.DB {
 }
 
 func DBTableName(model interface{}) string {
-	stmt := &gorm.Statement{DB: DB}
+	stmt := &gorm.Statement{DB: db}
 	stmt.Parse(model)
 	return stmt.Schema.Table
 }

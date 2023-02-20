@@ -17,43 +17,42 @@ import (
 )
 
 //NewSystemLoginService 初始化
-func NewSystemLoginService(c *gin.Context, db *gorm.DB, adminSrv *SystemAuthAdminService) *SystemLoginService {
-	return &SystemLoginService{c: c, db: db, adminSrv: adminSrv}
+func NewSystemLoginService(db *gorm.DB, adminSrv *SystemAuthAdminService) *SystemLoginService {
+	return &SystemLoginService{db: db, adminSrv: adminSrv}
 }
 
 //SystemLoginService 系统登录服务实现类
 type SystemLoginService struct {
-	c        *gin.Context
 	db       *gorm.DB
 	adminSrv *SystemAuthAdminService
 }
 
 //Login 登录
-func (loginSrv SystemLoginService) Login(req *req.SystemLoginReq) (res resp.SystemLoginResp, e error) {
+func (loginSrv SystemLoginService) Login(c *gin.Context, req *req.SystemLoginReq) (res resp.SystemLoginResp, e error) {
 	sysAdmin, err := loginSrv.adminSrv.FindByUsername(req.Username)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
-		if e = loginSrv.RecordLoginLog(0, req.Username, response.LoginAccountError.Msg()); e != nil {
+		if e = loginSrv.RecordLoginLog(c, 0, req.Username, response.LoginAccountError.Msg()); e != nil {
 			return
 		}
 		e = response.LoginAccountError
 		return
 	} else if err != nil {
 		core.Logger.Errorf("Login FindByUsername err: err=[%+v]", err)
-		if e = loginSrv.RecordLoginLog(0, req.Username, response.Failed.Msg()); e != nil {
+		if e = loginSrv.RecordLoginLog(c, 0, req.Username, response.Failed.Msg()); e != nil {
 			return
 		}
 		e = response.Failed
 		return
 	}
 	if sysAdmin.IsDelete == 1 {
-		if e = loginSrv.RecordLoginLog(0, req.Username, response.LoginAccountError.Msg()); e != nil {
+		if e = loginSrv.RecordLoginLog(c, 0, req.Username, response.LoginAccountError.Msg()); e != nil {
 			return
 		}
 		e = response.LoginAccountError
 		return
 	}
 	if sysAdmin.IsDisable == 1 {
-		if e = loginSrv.RecordLoginLog(sysAdmin.ID, req.Username, response.LoginDisableError.Msg()); e != nil {
+		if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.LoginDisableError.Msg()); e != nil {
 			return
 		}
 		e = response.LoginDisableError
@@ -61,7 +60,7 @@ func (loginSrv SystemLoginService) Login(req *req.SystemLoginReq) (res resp.Syst
 	}
 	md5Pwd := util.ToolsUtil.MakeMd5(req.Password + sysAdmin.Salt)
 	if sysAdmin.Password != md5Pwd {
-		if e = loginSrv.RecordLoginLog(sysAdmin.ID, req.Username, response.LoginAccountError.Msg()); e != nil {
+		if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.LoginAccountError.Msg()); e != nil {
 			return
 		}
 		e = response.LoginAccountError
@@ -76,7 +75,7 @@ func (loginSrv SystemLoginService) Login(req *req.SystemLoginReq) (res resp.Syst
 			// 其他类型
 			default:
 				core.Logger.Errorf("stacktrace from panic: %+v\n%s", r, string(debug.Stack()))
-				loginSrv.RecordLoginLog(sysAdmin.ID, req.Username, response.Failed.Msg())
+				loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.Failed.Msg())
 				panic(response.Failed)
 			}
 		}
@@ -105,9 +104,9 @@ func (loginSrv SystemLoginService) Login(req *req.SystemLoginReq) (res resp.Syst
 
 	// 更新登录信息
 	err = loginSrv.db.Model(&sysAdmin).Updates(
-		system.SystemAuthAdmin{LastLoginIp: loginSrv.c.ClientIP(), LastLoginTime: time.Now().Unix()}).Error
+		system.SystemAuthAdmin{LastLoginIp: c.ClientIP(), LastLoginTime: time.Now().Unix()}).Error
 	if err != nil {
-		if e = loginSrv.RecordLoginLog(sysAdmin.ID, req.Username, response.SystemError.Msg()); e != nil {
+		if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, response.SystemError.Msg()); e != nil {
 			return
 		}
 		if e = response.CheckErr(err, "Login Updates err"); e != nil {
@@ -115,7 +114,7 @@ func (loginSrv SystemLoginService) Login(req *req.SystemLoginReq) (res resp.Syst
 		}
 	}
 	// 记录登录日志
-	if e = loginSrv.RecordLoginLog(sysAdmin.ID, req.Username, ""); e != nil {
+	if e = loginSrv.RecordLoginLog(c, sysAdmin.ID, req.Username, ""); e != nil {
 		return
 	}
 	// 返回登录信息
@@ -129,14 +128,14 @@ func (loginSrv SystemLoginService) Logout(req *req.SystemLogoutReq) (e error) {
 }
 
 //RecordLoginLog 记录登录日志
-func (loginSrv SystemLoginService) RecordLoginLog(adminId uint, username string, errStr string) (e error) {
-	ua := core.UAParser.Parse(loginSrv.c.GetHeader("user-agent"))
+func (loginSrv SystemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) (e error) {
+	ua := core.UAParser.Parse(c.GetHeader("user-agent"))
 	var status uint8
 	if errStr == "" {
 		status = 1
 	}
 	err := loginSrv.db.Create(&system.SystemLogLogin{
-		AdminId: adminId, Username: username, Ip: loginSrv.c.ClientIP(), Os: ua.Os.Family,
+		AdminId: adminId, Username: username, Ip: c.ClientIP(), Os: ua.Os.Family,
 		Browser: ua.UserAgent.Family, Status: status}).Error
 	e = response.CheckErr(err, "RecordLoginLog Create err")
 	return

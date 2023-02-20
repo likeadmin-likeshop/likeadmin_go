@@ -13,20 +13,19 @@ import (
 )
 
 //NewSystemAuthMenuService 初始化
-func NewSystemAuthMenuService(c *gin.Context, db *gorm.DB, permSrv *SystemAuthPermService) *SystemAuthMenuService {
-	return &SystemAuthMenuService{c: c, db: db, permSrv: permSrv}
+func NewSystemAuthMenuService(db *gorm.DB, permSrv *SystemAuthPermService) *SystemAuthMenuService {
+	return &SystemAuthMenuService{db: db, permSrv: permSrv}
 }
 
 //SystemAuthMenuService 系统菜单服务实现类
 type SystemAuthMenuService struct {
-	c       *gin.Context
 	db      *gorm.DB
 	permSrv *SystemAuthPermService
 }
 
 //SelectMenuByRoleId 根据角色ID获取菜单
-func (menuSrv SystemAuthMenuService) SelectMenuByRoleId(roleId uint) (mapList []interface{}, e error) {
-	adminId := config.AdminConfig.GetAdminId(menuSrv.c)
+func (menuSrv SystemAuthMenuService) SelectMenuByRoleId(c *gin.Context, roleId uint) (mapList []interface{}, e error) {
+	adminId := config.AdminConfig.GetAdminId(c)
 	var menuIds []uint
 	if menuIds, e = menuSrv.permSrv.SelectMenuIdsByRoleId(roleId); e != nil {
 		return

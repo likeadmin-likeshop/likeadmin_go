@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
+	"go.uber.org/dig"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 	"likeadmin/core"
@@ -100,6 +101,12 @@ func Copy(toValue interface{}, fromValue interface{}) interface{} {
 		panic(SystemError)
 	}
 	return toValue
+}
+
+func DI(c *gin.Context, function interface{}, opts ...dig.InvokeOption) {
+	if err := core.DI(function, opts...); err != nil {
+		Fail(c, SystemError)
+	}
 }
 
 //Ok 正常响应

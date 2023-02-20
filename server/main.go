@@ -3,14 +3,27 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"likeadmin/admin/routers"
+	"likeadmin/admin/service"
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
 	"likeadmin/middleware"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
 )
+
+//initDI 初始化DI
+func initDI() {
+	regFunctions := service.InitFunctions
+	regFunctions = append(regFunctions, core.GetDB)
+	for i := 0; i < len(regFunctions); i++ {
+		if err := core.ProvideForDI(regFunctions[i]); err != nil {
+			log.Fatalln(err)
+		}
+	}
+}
 
 //initRouter 初始化router
 func initRouter() *gin.Engine {
@@ -53,14 +66,16 @@ func main() {
 	// 刷新日志缓冲
 	defer core.Logger.Sync()
 	// 程序结束前关闭数据库连接
-	if core.DB != nil {
-		db, _ := core.DB.DB()
+	if core.GetDB() != nil {
+		db, _ := core.GetDB().DB()
 		defer db.Close()
 	}
+	// 初始化DI
+	initDI()
 	// 初始化router
 	router := initRouter()
 	// 初始化server
 	s := initServer(router)
 	// 运行服务
-	s.ListenAndServe().Error()
+	log.Fatalln(s.ListenAndServe().Error())
 }

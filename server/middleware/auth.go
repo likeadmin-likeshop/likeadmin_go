@@ -58,9 +58,9 @@ func TokenAuth() gin.HandlerFunc {
 			}
 			uid = uint(i)
 		}
-		permSrv := system.NewSystemAuthPermService(core.DB)
-		roleSrv := system.NewSystemAuthRoleService(core.DB, permSrv)
-		adminSrv := system.NewSystemAuthAdminService(c, core.DB, permSrv, roleSrv)
+		permSrv := system.NewSystemAuthPermService(core.GetDB())
+		roleSrv := system.NewSystemAuthRoleService(core.GetDB(), permSrv)
+		adminSrv := system.NewSystemAuthAdminService(core.GetDB(), permSrv, roleSrv)
 		if !util.RedisUtil.HExists(config.AdminConfig.BackstageManageKey, uidStr) {
 			err := adminSrv.CacheAdminUserByUid(uid)
 			if err != nil {

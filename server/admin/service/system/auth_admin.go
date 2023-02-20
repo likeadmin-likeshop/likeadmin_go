@@ -19,13 +19,12 @@ import (
 )
 
 //NewSystemAuthAdminService 初始化
-func NewSystemAuthAdminService(c *gin.Context, db *gorm.DB, permSrv *SystemAuthPermService, roleSrv *SystemAuthRoleService) *SystemAuthAdminService {
-	return &SystemAuthAdminService{c: c, db: db, permSrv: permSrv, roleSrv: roleSrv}
+func NewSystemAuthAdminService(db *gorm.DB, permSrv *SystemAuthPermService, roleSrv *SystemAuthRoleService) *SystemAuthAdminService {
+	return &SystemAuthAdminService{db: db, permSrv: permSrv, roleSrv: roleSrv}
 }
 
 //SystemAuthAdminService 系统管理员服务实现类
 type SystemAuthAdminService struct {
-	c       *gin.Context
 	db      *gorm.DB
 	permSrv *SystemAuthPermService
 	roleSrv *SystemAuthRoleService
@@ -194,7 +193,7 @@ func (adminSrv SystemAuthAdminService) Add(addReq req.SystemAuthAdminAddReq) (e 
 }
 
 //Edit 管理员编辑
-func (adminSrv SystemAuthAdminService) Edit(editReq req.SystemAuthAdminEditReq) (e error) {
+func (adminSrv SystemAuthAdminService) Edit(c *gin.Context, editReq req.SystemAuthAdminEditReq) (e error) {
 	// 检查id
 	err := adminSrv.db.Where("id = ? AND is_delete = ?", editReq.ID, 0).Limit(1).First(&system.SystemAuthAdmin{}).Error
 	if e = response.CheckErrDBNotRecord(err, "账号不存在了!"); e != nil {
@@ -257,9 +256,9 @@ func (adminSrv SystemAuthAdminService) Edit(editReq req.SystemAuthAdminEditReq) 
 	}
 	adminSrv.CacheAdminUserByUid(editReq.ID)
 	// 如果更改自己的密码,则删除旧缓存
-	adminId := config.AdminConfig.GetAdminId(adminSrv.c)
+	adminId := config.AdminConfig.GetAdminId(c)
 	if editReq.Password != "" && editReq.ID == adminId {
-		token := adminSrv.c.Request.Header.Get("token")
+		token := c.Request.Header.Get("token")
 		util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
 		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.FormatUint(uint64(adminId), 10)
 		ts := util.RedisUtil.SGet(adminSetKey)
@@ -277,7 +276,7 @@ func (adminSrv SystemAuthAdminService) Edit(editReq req.SystemAuthAdminEditReq) 
 }
 
 //Update 管理员更新
-func (adminSrv SystemAuthAdminService) Update(updateReq req.SystemAuthAdminUpdateReq, adminId uint) (e error) {
+func (adminSrv SystemAuthAdminService) Update(c *gin.Context, updateReq req.SystemAuthAdminUpdateReq, adminId uint) (e error) {
 	// 检查id
 	var admin system.SystemAuthAdmin
 	err := adminSrv.db.Where("id = ? AND is_delete = ?", adminId, 0).Limit(1).First(&admin).Error
@@ -318,7 +317,7 @@ func (adminSrv SystemAuthAdminService) Update(updateReq req.SystemAuthAdminUpdat
 	adminSrv.CacheAdminUserByUid(adminId)
 	// 如果更改自己的密码,则删除旧缓存
 	if updateReq.Password != "" {
-		token := adminSrv.c.Request.Header.Get("token")
+		token := c.Request.Header.Get("token")
 		util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + token)
 		adminSetKey := config.AdminConfig.BackstageTokenSet + strconv.FormatUint(uint64(adminId), 10)
 		ts := util.RedisUtil.SGet(adminSetKey)
@@ -336,7 +335,7 @@ func (adminSrv SystemAuthAdminService) Update(updateReq req.SystemAuthAdminUpdat
 }
 
 //Del 管理员删除
-func (adminSrv SystemAuthAdminService) Del(id uint) (e error) {
+func (adminSrv SystemAuthAdminService) Del(c *gin.Context, id uint) (e error) {
 	var admin system.SystemAuthAdmin
 	err := adminSrv.db.Where("id = ? AND is_delete = ?", id, 0).Limit(1).First(&admin).Error
 	if e = response.CheckErrDBNotRecord(err, "账号已不存在!"); e != nil {
@@ -348,7 +347,7 @@ func (adminSrv SystemAuthAdminService) Del(id uint) (e error) {
 	if id == 1 {
 		return response.AssertArgumentError.Make("系统管理员不允许删除!")
 	}
-	if id == config.AdminConfig.GetAdminId(adminSrv.c) {
+	if id == config.AdminConfig.GetAdminId(c) {
 		return response.AssertArgumentError.Make("不能删除自己!")
 	}
 	err = adminSrv.db.Model(&admin).Updates(system.SystemAuthAdmin{IsDelete: 1, DeleteTime: time.Now().Unix()}).Error
@@ -357,7 +356,7 @@ func (adminSrv SystemAuthAdminService) Del(id uint) (e error) {
 }
 
 //Disable 管理员状态切换
-func (adminSrv SystemAuthAdminService) Disable(id uint) (e error) {
+func (adminSrv SystemAuthAdminService) Disable(c *gin.Context, id uint) (e error) {
 	var admin system.SystemAuthAdmin
 	err := adminSrv.db.Where("id = ? AND is_delete = ?", id, 0).Limit(1).Find(&admin).Error
 	if e = response.CheckErr(err, "Disable Find err"); e != nil {
@@ -366,7 +365,7 @@ func (adminSrv SystemAuthAdminService) Disable(id uint) (e error) {
 	if admin.ID == 0 {
 		return response.AssertArgumentError.Make("账号已不存在!")
 	}
-	if id == config.AdminConfig.GetAdminId(adminSrv.c) {
+	if id == config.AdminConfig.GetAdminId(c) {
 		return response.AssertArgumentError.Make("不能禁用自己!")
 	}
 	var isDisable uint8
