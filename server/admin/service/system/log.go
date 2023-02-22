@@ -18,16 +18,16 @@ type ISystemLogsServer interface {
 
 //NewSystemLogsServer 初始化
 func NewSystemLogsServer(db *gorm.DB) ISystemLogsServer {
-	return &SystemLogsServer{db: db}
+	return &systemLogsServer{db: db}
 }
 
-//SystemLogsServer 系统日志服务实现类
-type SystemLogsServer struct {
+//systemLogsServer 系统日志服务实现类
+type systemLogsServer struct {
 	db *gorm.DB
 }
 
 //Operate 系统操作日志
-func (logSrv SystemLogsServer) Operate(page request.PageReq, logReq req.SystemLogOperateReq) (res response.PageResp, e error) {
+func (logSrv systemLogsServer) Operate(page request.PageReq, logReq req.SystemLogOperateReq) (res response.PageResp, e error) {
 	// 分页信息
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)
@@ -83,7 +83,7 @@ func (logSrv SystemLogsServer) Operate(page request.PageReq, logReq req.SystemLo
 }
 
 //Login 系统登录日志
-func (logSrv SystemLogsServer) Login(page request.PageReq, logReq req.SystemLogLoginReq) (res response.PageResp, e error) {
+func (logSrv systemLogsServer) Login(page request.PageReq, logReq req.SystemLogLoginReq) (res response.PageResp, e error) {
 	// 分页信息
 	limit := page.PageSize
 	offset := page.PageSize * (page.PageNo - 1)

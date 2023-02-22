@@ -14,16 +14,16 @@ type ISettingWebsiteService interface {
 
 //NewSettingWebsiteService 初始化
 func NewSettingWebsiteService(db *gorm.DB) ISettingWebsiteService {
-	return &SettingWebsiteService{db: db}
+	return &settingWebsiteService{db: db}
 }
 
-//SettingWebsiteService 网站信息配置服务实现类
-type SettingWebsiteService struct {
+//settingWebsiteService 网站信息配置服务实现类
+type settingWebsiteService struct {
 	db *gorm.DB
 }
 
 //Detail 获取网站信息
-func (wSrv SettingWebsiteService) Detail() (res map[string]string, e error) {
+func (wSrv settingWebsiteService) Detail() (res map[string]string, e error) {
 	data, err := util.ConfigUtil.Get(wSrv.db, "website")
 	if e = response.CheckErr(err, "Detail Get err"); e != nil {
 		return
@@ -39,7 +39,7 @@ func (wSrv SettingWebsiteService) Detail() (res map[string]string, e error) {
 }
 
 //Save 保存网站信息
-func (wSrv SettingWebsiteService) Save(wsReq req.SettingWebsiteReq) (e error) {
+func (wSrv settingWebsiteService) Save(wsReq req.SettingWebsiteReq) (e error) {
 	err := util.ConfigUtil.Set(wSrv.db, "website", "name", wsReq.Name)
 	if e = response.CheckErr(err, "Save Set name err"); e != nil {
 		return

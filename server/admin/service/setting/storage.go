@@ -17,11 +17,11 @@ type ISettingStorageService interface {
 
 //NewSettingStorageService 初始化
 func NewSettingStorageService(db *gorm.DB) ISettingStorageService {
-	return &SettingStorageService{db: db}
+	return &settingStorageService{db: db}
 }
 
-//SettingStorageService 存储配置服务实现类
-type SettingStorageService struct {
+//settingStorageService 存储配置服务实现类
+type settingStorageService struct {
 	db *gorm.DB
 }
 
@@ -30,7 +30,7 @@ var storageList = []map[string]interface{}{
 }
 
 //List 存储列表
-func (sSrv SettingStorageService) List() ([]map[string]interface{}, error) {
+func (sSrv settingStorageService) List() ([]map[string]interface{}, error) {
 	// TODO: engine默认local
 	engine := "local"
 	mapList := storageList
@@ -43,7 +43,7 @@ func (sSrv SettingStorageService) List() ([]map[string]interface{}, error) {
 }
 
 //Detail 存储详情
-func (sSrv SettingStorageService) Detail(alias string) (res map[string]interface{}, e error) {
+func (sSrv settingStorageService) Detail(alias string) (res map[string]interface{}, e error) {
 	// TODO: engine默认local
 	engine := "local"
 	cnf, err := util.ConfigUtil.GetMap(sSrv.db, "storage", alias)
@@ -62,7 +62,7 @@ func (sSrv SettingStorageService) Detail(alias string) (res map[string]interface
 }
 
 //Edit 存储编辑
-func (sSrv SettingStorageService) Edit(editReq req.SettingStorageEditReq) (e error) {
+func (sSrv settingStorageService) Edit(editReq req.SettingStorageEditReq) (e error) {
 	// TODO: engine默认local
 	engine := "local"
 	if engine != editReq.Alias {
@@ -86,7 +86,7 @@ func (sSrv SettingStorageService) Edit(editReq req.SettingStorageEditReq) (e err
 }
 
 //Change 存储切换
-func (sSrv SettingStorageService) Change(alias string, status int) (e error) {
+func (sSrv settingStorageService) Change(alias string, status int) (e error) {
 	// TODO: engine默认local
 	engine := "local"
 	if engine != alias {

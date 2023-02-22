@@ -24,17 +24,17 @@ type ISystemLoginService interface {
 
 //NewSystemLoginService 初始化
 func NewSystemLoginService(db *gorm.DB, adminSrv ISystemAuthAdminService) ISystemLoginService {
-	return &SystemLoginService{db: db, adminSrv: adminSrv}
+	return &systemLoginService{db: db, adminSrv: adminSrv}
 }
 
-//SystemLoginService 系统登录服务实现类
-type SystemLoginService struct {
+//systemLoginService 系统登录服务实现类
+type systemLoginService struct {
 	db       *gorm.DB
 	adminSrv ISystemAuthAdminService
 }
 
 //Login 登录
-func (loginSrv SystemLoginService) Login(c *gin.Context, req *req.SystemLoginReq) (res resp.SystemLoginResp, e error) {
+func (loginSrv systemLoginService) Login(c *gin.Context, req *req.SystemLoginReq) (res resp.SystemLoginResp, e error) {
 	sysAdmin, err := loginSrv.adminSrv.FindByUsername(req.Username)
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		if e = loginSrv.RecordLoginLog(c, 0, req.Username, response.LoginAccountError.Msg()); e != nil {
@@ -128,13 +128,13 @@ func (loginSrv SystemLoginService) Login(c *gin.Context, req *req.SystemLoginReq
 }
 
 //Logout 退出
-func (loginSrv SystemLoginService) Logout(req *req.SystemLogoutReq) (e error) {
+func (loginSrv systemLoginService) Logout(req *req.SystemLogoutReq) (e error) {
 	util.RedisUtil.Del(config.AdminConfig.BackstageTokenKey + req.Token)
 	return
 }
 
 //RecordLoginLog 记录登录日志
-func (loginSrv SystemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) (e error) {
+func (loginSrv systemLoginService) RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) (e error) {
 	ua := core.UAParser.Parse(c.GetHeader("user-agent"))
 	var status uint8
 	if errStr == "" {

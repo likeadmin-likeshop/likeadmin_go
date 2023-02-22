@@ -14,16 +14,16 @@ type ISettingProtocolService interface {
 
 //NewSettingProtocolService 初始化
 func NewSettingProtocolService(db *gorm.DB) ISettingProtocolService {
-	return &SettingProtocolService{db: db}
+	return &settingProtocolService{db: db}
 }
 
-//SettingProtocolService 政策协议服务实现类
-type SettingProtocolService struct {
+//settingProtocolService 政策协议服务实现类
+type settingProtocolService struct {
 	db *gorm.DB
 }
 
 //Detail 获取政策协议信息
-func (cSrv SettingProtocolService) Detail() (res map[string]interface{}, e error) {
+func (cSrv settingProtocolService) Detail() (res map[string]interface{}, e error) {
 	defaultVal := `{"name":"","content":""}`
 	json, err := util.ConfigUtil.GetVal(cSrv.db, "protocol", "service", defaultVal)
 	if e = response.CheckErr(err, "Detail GetVal service err"); e != nil {
@@ -48,7 +48,7 @@ func (cSrv SettingProtocolService) Detail() (res map[string]interface{}, e error
 }
 
 //Save 保存政策协议信息
-func (cSrv SettingProtocolService) Save(pReq req.SettingProtocolReq) (e error) {
+func (cSrv settingProtocolService) Save(pReq req.SettingProtocolReq) (e error) {
 	serviceJson, err := util.ToolsUtil.ObjToJson(pReq.Service)
 	if e = response.CheckErr(err, "Save ObjToJson service err"); e != nil {
 		return

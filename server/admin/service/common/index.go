@@ -16,16 +16,16 @@ type IIndexService interface {
 
 //NewIndexService 初始化
 func NewIndexService(db *gorm.DB) IIndexService {
-	return &IndexService{db: db}
+	return &indexService{db: db}
 }
 
-//IndexService 主页服务实现类
-type IndexService struct {
+//indexService 主页服务实现类
+type indexService struct {
 	db *gorm.DB
 }
 
 //Console 控制台数据
-func (iSrv IndexService) Console() (res map[string]interface{}, e error) {
+func (iSrv indexService) Console() (res map[string]interface{}, e error) {
 	// 版本信息
 	name, err := util.ConfigUtil.GetVal(iSrv.db, "website", "name", "LikeAdmin-Go")
 	if e = response.CheckErr(err, "Console Get err"); e != nil {
@@ -71,7 +71,7 @@ func (iSrv IndexService) Console() (res map[string]interface{}, e error) {
 }
 
 //Config 公共配置
-func (iSrv IndexService) Config() (res map[string]interface{}, e error) {
+func (iSrv indexService) Config() (res map[string]interface{}, e error) {
 	website, err := util.ConfigUtil.Get(iSrv.db, "website")
 	if e = response.CheckErr(err, "Config Get err"); e != nil {
 		return
