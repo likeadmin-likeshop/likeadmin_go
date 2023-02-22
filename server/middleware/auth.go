@@ -12,6 +12,12 @@ import (
 	"strings"
 )
 
+var (
+	permSrv  = system.NewSystemAuthPermService(core.GetDB())
+	roleSrv  = system.NewSystemAuthRoleService(core.GetDB(), permSrv)
+	adminSrv = system.NewSystemAuthAdminService(core.GetDB(), permSrv, roleSrv)
+)
+
 //TokenAuth Token认证中间件
 func TokenAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -58,9 +64,7 @@ func TokenAuth() gin.HandlerFunc {
 			}
 			uid = uint(i)
 		}
-		permSrv := system.NewSystemAuthPermService(core.GetDB())
-		roleSrv := system.NewSystemAuthRoleService(core.GetDB(), permSrv)
-		adminSrv := system.NewSystemAuthAdminService(core.GetDB(), permSrv, roleSrv)
+
 		if !util.RedisUtil.HExists(config.AdminConfig.BackstageManageKey, uidStr) {
 			err := adminSrv.CacheAdminUserByUid(uid)
 			if err != nil {
