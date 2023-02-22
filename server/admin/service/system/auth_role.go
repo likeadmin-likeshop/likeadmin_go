@@ -14,15 +14,24 @@ import (
 	"strings"
 )
 
+type ISystemAuthRoleService interface {
+	All() (res []resp.SystemAuthRoleSimpleResp, e error)
+	List(page request.PageReq) (res response.PageResp, e error)
+	Detail(id uint) (res resp.SystemAuthRoleResp, e error)
+	Add(addReq req.SystemAuthRoleAddReq) (e error)
+	Edit(editReq req.SystemAuthRoleEditReq) (e error)
+	Del(id uint) (e error)
+}
+
 //NewSystemAuthRoleService 初始化
-func NewSystemAuthRoleService(db *gorm.DB, permSrv *SystemAuthPermService) *SystemAuthRoleService {
+func NewSystemAuthRoleService(db *gorm.DB, permSrv ISystemAuthPermService) ISystemAuthRoleService {
 	return &SystemAuthRoleService{db: db, permSrv: permSrv}
 }
 
 //SystemAuthRoleService 系统角色服务实现类
 type SystemAuthRoleService struct {
 	db      *gorm.DB
-	permSrv *SystemAuthPermService
+	permSrv ISystemAuthPermService
 }
 
 //All 角色所有

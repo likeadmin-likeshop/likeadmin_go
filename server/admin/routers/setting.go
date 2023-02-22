@@ -27,7 +27,7 @@ func init() {
 
 //websiteDetail 获取网站信息
 func websiteDetail(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingWebsiteService) {
+	response.DI(c, func(srv setting.ISettingWebsiteService) {
 		res, err := srv.Detail()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -35,7 +35,7 @@ func websiteDetail(c *gin.Context) {
 
 //websiteSave 保存网站信息
 func websiteSave(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingWebsiteService) {
+	response.DI(c, func(srv setting.ISettingWebsiteService) {
 		var wsReq req.SettingWebsiteReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &wsReq)) {
 			return
@@ -46,7 +46,7 @@ func websiteSave(c *gin.Context) {
 
 //copyrightDetail 获取备案信息
 func copyrightDetail(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingCopyrightService) {
+	response.DI(c, func(srv setting.ISettingCopyrightService) {
 		res, err := srv.Detail()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -54,7 +54,7 @@ func copyrightDetail(c *gin.Context) {
 
 //copyrightSave 保存备案信息
 func copyrightSave(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingCopyrightService) {
+	response.DI(c, func(srv setting.ISettingCopyrightService) {
 		var cReqs []req.SettingCopyrightItemReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSONArray(c, &cReqs)) {
 			return
@@ -65,7 +65,7 @@ func copyrightSave(c *gin.Context) {
 
 //protocolDetail 获取政策信息
 func protocolDetail(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingProtocolService) {
+	response.DI(c, func(srv setting.ISettingProtocolService) {
 		res, err := srv.Detail()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -73,7 +73,7 @@ func protocolDetail(c *gin.Context) {
 
 //protocolSave 保存政策信息
 func protocolSave(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingProtocolService) {
+	response.DI(c, func(srv setting.ISettingProtocolService) {
 		var pReq req.SettingProtocolReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &pReq)) {
 			return
@@ -84,7 +84,7 @@ func protocolSave(c *gin.Context) {
 
 //storageList 存储列表
 func storageList(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingStorageService) {
+	response.DI(c, func(srv setting.ISettingStorageService) {
 		res, err := srv.List()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -92,7 +92,7 @@ func storageList(c *gin.Context) {
 
 //storageDetail 存储详情
 func storageDetail(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingStorageService) {
+	response.DI(c, func(srv setting.ISettingStorageService) {
 		var detailReq req.SettingStorageDetailReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
 			return
@@ -104,7 +104,7 @@ func storageDetail(c *gin.Context) {
 
 //storageEdit 存储编辑
 func storageEdit(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingStorageService) {
+	response.DI(c, func(srv setting.ISettingStorageService) {
 		var editReq req.SettingStorageEditReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &editReq)) {
 			return
@@ -115,7 +115,7 @@ func storageEdit(c *gin.Context) {
 
 //storageChange 存储切换
 func storageChange(c *gin.Context) {
-	response.DI(c, func(srv *setting.SettingStorageService) {
+	response.DI(c, func(srv setting.ISettingStorageService) {
 		var changeReq req.SettingStorageChangeReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &changeReq)) {
 			return

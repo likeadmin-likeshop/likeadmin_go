@@ -18,16 +18,29 @@ import (
 	"time"
 )
 
+type ISystemAuthAdminService interface {
+	FindByUsername(username string) (admin system.SystemAuthAdmin, err error)
+	Self(adminId uint) (res resp.SystemAuthAdminSelfResp, e error)
+	List(page request.PageReq, listReq req.SystemAuthAdminListReq) (res response.PageResp, e error)
+	Detail(id uint) (res resp.SystemAuthAdminResp, e error)
+	Add(addReq req.SystemAuthAdminAddReq) (e error)
+	Edit(c *gin.Context, editReq req.SystemAuthAdminEditReq) (e error)
+	Update(c *gin.Context, updateReq req.SystemAuthAdminUpdateReq, adminId uint) (e error)
+	Del(c *gin.Context, id uint) (e error)
+	Disable(c *gin.Context, id uint) (e error)
+	CacheAdminUserByUid(id uint) (err error)
+}
+
 //NewSystemAuthAdminService 初始化
-func NewSystemAuthAdminService(db *gorm.DB, permSrv *SystemAuthPermService, roleSrv *SystemAuthRoleService) *SystemAuthAdminService {
+func NewSystemAuthAdminService(db *gorm.DB, permSrv ISystemAuthPermService, roleSrv ISystemAuthRoleService) ISystemAuthAdminService {
 	return &SystemAuthAdminService{db: db, permSrv: permSrv, roleSrv: roleSrv}
 }
 
 //SystemAuthAdminService 系统管理员服务实现类
 type SystemAuthAdminService struct {
 	db      *gorm.DB
-	permSrv *SystemAuthPermService
-	roleSrv *SystemAuthRoleService
+	permSrv ISystemAuthPermService
+	roleSrv ISystemAuthRoleService
 }
 
 //FindByUsername 根据账号查找管理员

@@ -9,8 +9,17 @@ import (
 	"likeadmin/model/system"
 )
 
+type ISystemAuthPostService interface {
+	All() (res []resp.SystemAuthPostResp, e error)
+	List(page request.PageReq, listReq req.SystemAuthPostListReq) (res response.PageResp, e error)
+	Detail(id uint) (res resp.SystemAuthPostResp, e error)
+	Add(addReq req.SystemAuthPostAddReq) (e error)
+	Edit(editReq req.SystemAuthPostEditReq) (e error)
+	Del(id uint) (e error)
+}
+
 //NewSystemAuthPostService 初始化
-func NewSystemAuthPostService(db *gorm.DB) *SystemAuthPostService {
+func NewSystemAuthPostService(db *gorm.DB) ISystemAuthPostService {
 	return &SystemAuthPostService{db: db}
 }
 

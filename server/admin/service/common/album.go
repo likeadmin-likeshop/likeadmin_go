@@ -13,8 +13,20 @@ import (
 	"time"
 )
 
+type IAlbumService interface {
+	AlbumList(page request.PageReq, listReq req.CommonAlbumListReq) (res response.PageResp, e error)
+	AlbumRename(id uint, name string) (e error)
+	AlbumMove(ids []uint, cid int) (e error)
+	AlbumAdd(addReq req.CommonAlbumAddReq) (res uint, e error)
+	AlbumDel(ids []uint) (e error)
+	CateList(listReq req.CommonCateListReq) (mapList []interface{}, e error)
+	CateAdd(addReq req.CommonCateAddReq) (e error)
+	CateRename(id uint, name string) (e error)
+	CateDel(id uint) (e error)
+}
+
 //NewAlbumService 初始化
-func NewAlbumService(db *gorm.DB) *AlbumService {
+func NewAlbumService(db *gorm.DB) IAlbumService {
 	return &AlbumService{db: db}
 }
 

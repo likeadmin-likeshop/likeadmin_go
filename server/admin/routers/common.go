@@ -32,7 +32,7 @@ func init() {
 
 //indexConsole 控制台
 func indexConsole(c *gin.Context) {
-	response.DI(c, func(srv *common.IndexService) {
+	response.DI(c, func(srv common.IIndexService) {
 		res, err := srv.Console()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -40,7 +40,7 @@ func indexConsole(c *gin.Context) {
 
 //indexConfig 公共配置
 func indexConfig(c *gin.Context) {
-	response.DI(c, func(srv *common.IndexService) {
+	response.DI(c, func(srv common.IIndexService) {
 		res, err := srv.Config()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -48,7 +48,7 @@ func indexConfig(c *gin.Context) {
 
 //uploadImage 上传图片
 func uploadImage(c *gin.Context) {
-	response.DI(c, func(srv *common.UploadService) {
+	response.DI(c, func(srv common.IUploadService) {
 		var uReq req.CommonUploadImageReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &uReq)) {
 			return
@@ -64,7 +64,7 @@ func uploadImage(c *gin.Context) {
 
 //uploadVideo 上传视频
 func uploadVideo(c *gin.Context) {
-	response.DI(c, func(srv *common.UploadService) {
+	response.DI(c, func(srv common.IUploadService) {
 		var uReq req.CommonUploadImageReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &uReq)) {
 			return
@@ -80,7 +80,7 @@ func uploadVideo(c *gin.Context) {
 
 //albumList 相册文件列表
 func albumList(c *gin.Context) {
-	response.DI(c, func(srv *common.AlbumService) {
+	response.DI(c, func(srv common.IAlbumService) {
 		var page request.PageReq
 		var listReq req.CommonAlbumListReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {
@@ -96,7 +96,7 @@ func albumList(c *gin.Context) {
 
 //albumRename 相册文件重命名
 func albumRename(c *gin.Context) {
-	response.DI(c, func(srv *common.AlbumService) {
+	response.DI(c, func(srv common.IAlbumService) {
 		var rnReq req.CommonAlbumRenameReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &rnReq)) {
 			return
@@ -107,7 +107,7 @@ func albumRename(c *gin.Context) {
 
 //albumMove 相册文件移动
 func albumMove(c *gin.Context) {
-	response.DI(c, func(srv *common.AlbumService) {
+	response.DI(c, func(srv common.IAlbumService) {
 		var mvReq req.CommonAlbumMoveReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &mvReq)) {
 			return
@@ -118,7 +118,7 @@ func albumMove(c *gin.Context) {
 
 //albumDel 相册文件删除
 func albumDel(c *gin.Context) {
-	response.DI(c, func(srv *common.AlbumService) {
+	response.DI(c, func(srv common.IAlbumService) {
 		var delReq req.CommonAlbumDelReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
 			return
@@ -129,7 +129,7 @@ func albumDel(c *gin.Context) {
 
 //cateList 类目列表
 func cateList(c *gin.Context) {
-	response.DI(c, func(srv *common.AlbumService) {
+	response.DI(c, func(srv common.IAlbumService) {
 		var listReq req.CommonCateListReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &listReq)) {
 			return
@@ -141,7 +141,7 @@ func cateList(c *gin.Context) {
 
 //cateAdd 类目新增
 func cateAdd(c *gin.Context) {
-	response.DI(c, func(srv *common.AlbumService) {
+	response.DI(c, func(srv common.IAlbumService) {
 		var addReq req.CommonCateAddReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &addReq)) {
 			return
@@ -152,7 +152,7 @@ func cateAdd(c *gin.Context) {
 
 //cateRename 类目命名
 func cateRename(c *gin.Context) {
-	response.DI(c, func(srv *common.AlbumService) {
+	response.DI(c, func(srv common.IAlbumService) {
 		var rnReq req.CommonCateRenameReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &rnReq)) {
 			return
@@ -163,7 +163,7 @@ func cateRename(c *gin.Context) {
 
 //cateDel 类目删除
 func cateDel(c *gin.Context) {
-	response.DI(c, func(srv *common.AlbumService) {
+	response.DI(c, func(srv common.IAlbumService) {
 		var delReq req.CommonCateDelReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
 			return

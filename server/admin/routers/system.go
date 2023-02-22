@@ -56,7 +56,7 @@ func init() {
 
 //login 登录系统
 func login(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemLoginService) {
+	response.DI(c, func(srv system.ISystemLoginService) {
 		var loginReq req.SystemLoginReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &loginReq)) {
 			return
@@ -68,7 +68,7 @@ func login(c *gin.Context) {
 
 //logout 登录退出
 func logout(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemLoginService) {
+	response.DI(c, func(srv system.ISystemLoginService) {
 		var logoutReq req.SystemLogoutReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyHeader(c, &logoutReq)) {
 			return
@@ -79,7 +79,7 @@ func logout(c *gin.Context) {
 
 //adminSelf 管理员信息
 func adminSelf(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthAdminService) {
+	response.DI(c, func(srv system.ISystemAuthAdminService) {
 		adminId := config.AdminConfig.GetAdminId(c)
 		res, err := srv.Self(adminId)
 		response.CheckAndRespWithData(c, res, err)
@@ -88,7 +88,7 @@ func adminSelf(c *gin.Context) {
 
 //adminList 管理员列表
 func adminList(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthAdminService) {
+	response.DI(c, func(srv system.ISystemAuthAdminService) {
 		var page request.PageReq
 		var listReq req.SystemAuthAdminListReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {
@@ -104,7 +104,7 @@ func adminList(c *gin.Context) {
 
 //adminDetail 管理员详细
 func adminDetail(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthAdminService) {
+	response.DI(c, func(srv system.ISystemAuthAdminService) {
 		var detailReq req.SystemAuthAdminDetailReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
 			return
@@ -116,7 +116,7 @@ func adminDetail(c *gin.Context) {
 
 //adminAdd 管理员新增
 func adminAdd(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthAdminService) {
+	response.DI(c, func(srv system.ISystemAuthAdminService) {
 		var addReq req.SystemAuthAdminAddReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &addReq)) {
 			return
@@ -127,7 +127,7 @@ func adminAdd(c *gin.Context) {
 
 //adminEdit 管理员编辑
 func adminEdit(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthAdminService) {
+	response.DI(c, func(srv system.ISystemAuthAdminService) {
 		var editReq req.SystemAuthAdminEditReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &editReq)) {
 			return
@@ -138,7 +138,7 @@ func adminEdit(c *gin.Context) {
 
 //adminUpInfo 管理员更新
 func adminUpInfo(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthAdminService) {
+	response.DI(c, func(srv system.ISystemAuthAdminService) {
 		var updateReq req.SystemAuthAdminUpdateReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &updateReq)) {
 			return
@@ -150,7 +150,7 @@ func adminUpInfo(c *gin.Context) {
 
 //adminDel 管理员删除
 func adminDel(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthAdminService) {
+	response.DI(c, func(srv system.ISystemAuthAdminService) {
 		var delReq req.SystemAuthAdminDelReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
 			return
@@ -161,7 +161,7 @@ func adminDel(c *gin.Context) {
 
 //adminDisable 管理员状态切换
 func adminDisable(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthAdminService) {
+	response.DI(c, func(srv system.ISystemAuthAdminService) {
 		var disableReq req.SystemAuthAdminDisableReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &disableReq)) {
 			return
@@ -172,7 +172,7 @@ func adminDisable(c *gin.Context) {
 
 //roleAll 角色所有
 func roleAll(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthRoleService) {
+	response.DI(c, func(srv system.ISystemAuthRoleService) {
 		res, err := srv.All()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -180,7 +180,7 @@ func roleAll(c *gin.Context) {
 
 //roleList 角色列表
 func roleList(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthRoleService) {
+	response.DI(c, func(srv system.ISystemAuthRoleService) {
 		var page request.PageReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {
 			return
@@ -192,7 +192,7 @@ func roleList(c *gin.Context) {
 
 //roleDetail 角色详情
 func roleDetail(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthRoleService) {
+	response.DI(c, func(srv system.ISystemAuthRoleService) {
 		var detailReq req.SystemAuthRoleDetailReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
 			return
@@ -204,7 +204,7 @@ func roleDetail(c *gin.Context) {
 
 //roleAdd 新增角色
 func roleAdd(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthRoleService) {
+	response.DI(c, func(srv system.ISystemAuthRoleService) {
 		var addReq req.SystemAuthRoleAddReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &addReq)) {
 			return
@@ -215,7 +215,7 @@ func roleAdd(c *gin.Context) {
 
 //roleEdit 编辑角色
 func roleEdit(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthRoleService) {
+	response.DI(c, func(srv system.ISystemAuthRoleService) {
 		var editReq req.SystemAuthRoleEditReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &editReq)) {
 			return
@@ -226,7 +226,7 @@ func roleEdit(c *gin.Context) {
 
 //roleDel 删除角色
 func roleDel(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthRoleService) {
+	response.DI(c, func(srv system.ISystemAuthRoleService) {
 		var delReq req.SystemAuthRoleDelReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
 			return
@@ -237,7 +237,7 @@ func roleDel(c *gin.Context) {
 
 //menuRoute 菜单路由
 func menuRoute(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthMenuService) {
+	response.DI(c, func(srv system.ISystemAuthMenuService) {
 		adminId := config.AdminConfig.GetAdminId(c)
 		res, err := srv.SelectMenuByRoleId(c, adminId)
 		response.CheckAndRespWithData(c, res, err)
@@ -246,7 +246,7 @@ func menuRoute(c *gin.Context) {
 
 //menuList 菜单列表
 func menuList(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthMenuService) {
+	response.DI(c, func(srv system.ISystemAuthMenuService) {
 		res, err := srv.List()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -254,7 +254,7 @@ func menuList(c *gin.Context) {
 
 //menuDetail 菜单详情
 func menuDetail(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthMenuService) {
+	response.DI(c, func(srv system.ISystemAuthMenuService) {
 		var detailReq req.SystemAuthMenuDetailReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
 			return
@@ -266,7 +266,7 @@ func menuDetail(c *gin.Context) {
 
 //menuAdd 新增菜单
 func menuAdd(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthMenuService) {
+	response.DI(c, func(srv system.ISystemAuthMenuService) {
 		var addReq req.SystemAuthMenuAddReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &addReq)) {
 			return
@@ -277,7 +277,7 @@ func menuAdd(c *gin.Context) {
 
 //menuEdit 编辑菜单
 func menuEdit(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthMenuService) {
+	response.DI(c, func(srv system.ISystemAuthMenuService) {
 		var editReq req.SystemAuthMenuEditReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &editReq)) {
 			return
@@ -288,7 +288,7 @@ func menuEdit(c *gin.Context) {
 
 //menuDel 删除菜单
 func menuDel(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthMenuService) {
+	response.DI(c, func(srv system.ISystemAuthMenuService) {
 		var delReq req.SystemAuthMenuDelReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
 			return
@@ -299,7 +299,7 @@ func menuDel(c *gin.Context) {
 
 //deptAll 部门所有
 func deptAll(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthDeptService) {
+	response.DI(c, func(srv system.ISystemAuthDeptService) {
 		res, err := srv.All()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -307,7 +307,7 @@ func deptAll(c *gin.Context) {
 
 //deptList 部门列表
 func deptList(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthDeptService) {
+	response.DI(c, func(srv system.ISystemAuthDeptService) {
 		var listReq req.SystemAuthDeptListReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &listReq)) {
 			return
@@ -319,7 +319,7 @@ func deptList(c *gin.Context) {
 
 //deptDetail 部门详情
 func deptDetail(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthDeptService) {
+	response.DI(c, func(srv system.ISystemAuthDeptService) {
 		var detailReq req.SystemAuthDeptDetailReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
 			return
@@ -331,7 +331,7 @@ func deptDetail(c *gin.Context) {
 
 //deptAdd 部门新增
 func deptAdd(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthDeptService) {
+	response.DI(c, func(srv system.ISystemAuthDeptService) {
 		var addReq req.SystemAuthDeptAddReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &addReq)) {
 			return
@@ -342,7 +342,7 @@ func deptAdd(c *gin.Context) {
 
 //deptEdit 部门编辑
 func deptEdit(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthDeptService) {
+	response.DI(c, func(srv system.ISystemAuthDeptService) {
 		var editReq req.SystemAuthDeptEditReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &editReq)) {
 			return
@@ -353,7 +353,7 @@ func deptEdit(c *gin.Context) {
 
 //deptDel 部门删除
 func deptDel(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthDeptService) {
+	response.DI(c, func(srv system.ISystemAuthDeptService) {
 		var delReq req.SystemAuthDeptDelReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &delReq)) {
 			return
@@ -364,7 +364,7 @@ func deptDel(c *gin.Context) {
 
 //postAll 岗位所有
 func postAll(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthPostService) {
+	response.DI(c, func(srv system.ISystemAuthPostService) {
 		res, err := srv.All()
 		response.CheckAndRespWithData(c, res, err)
 	})
@@ -372,7 +372,7 @@ func postAll(c *gin.Context) {
 
 //postList 岗位列表
 func postList(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthPostService) {
+	response.DI(c, func(srv system.ISystemAuthPostService) {
 		var page request.PageReq
 		var listReq req.SystemAuthPostListReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {
@@ -388,7 +388,7 @@ func postList(c *gin.Context) {
 
 //postDetail 岗位详情
 func postDetail(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthPostService) {
+	response.DI(c, func(srv system.ISystemAuthPostService) {
 		var detailReq req.SystemAuthPostDetailReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
 			return
@@ -400,7 +400,7 @@ func postDetail(c *gin.Context) {
 
 //postAdd 岗位新增
 func postAdd(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthPostService) {
+	response.DI(c, func(srv system.ISystemAuthPostService) {
 		var addReq req.SystemAuthPostAddReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &addReq)) {
 			return
@@ -411,7 +411,7 @@ func postAdd(c *gin.Context) {
 
 //postEdit 岗位编辑
 func postEdit(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthPostService) {
+	response.DI(c, func(srv system.ISystemAuthPostService) {
 		var editReq req.SystemAuthPostEditReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &editReq)) {
 			return
@@ -422,7 +422,7 @@ func postEdit(c *gin.Context) {
 
 //postDel 岗位删除
 func postDel(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemAuthPostService) {
+	response.DI(c, func(srv system.ISystemAuthPostService) {
 		var delReq req.SystemAuthPostDelReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyBody(c, &delReq)) {
 			return
@@ -433,7 +433,7 @@ func postDel(c *gin.Context) {
 
 //logOperate 操作日志
 func logOperate(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemLogsServer) {
+	response.DI(c, func(srv system.ISystemLogsServer) {
 		var page request.PageReq
 		var logReq req.SystemLogOperateReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {
@@ -449,7 +449,7 @@ func logOperate(c *gin.Context) {
 
 //logLogin 登录日志
 func logLogin(c *gin.Context) {
-	response.DI(c, func(srv *system.SystemLogsServer) {
+	response.DI(c, func(srv system.ISystemLogsServer) {
 		var page request.PageReq
 		var logReq req.SystemLogLoginReq
 		if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {

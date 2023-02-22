@@ -9,8 +9,13 @@ import (
 	"time"
 )
 
+type IIndexService interface {
+	Console() (res map[string]interface{}, e error)
+	Config() (res map[string]interface{}, e error)
+}
+
 //NewIndexService 初始化
-func NewIndexService(db *gorm.DB) *IndexService {
+func NewIndexService(db *gorm.DB) IIndexService {
 	return &IndexService{db: db}
 }
 

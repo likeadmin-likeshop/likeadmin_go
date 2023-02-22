@@ -7,8 +7,13 @@ import (
 	"likeadmin/util"
 )
 
+type ISettingWebsiteService interface {
+	Detail() (res map[string]string, e error)
+	Save(wsReq req.SettingWebsiteReq) (e error)
+}
+
 //NewSettingWebsiteService 初始化
-func NewSettingWebsiteService(db *gorm.DB) *SettingWebsiteService {
+func NewSettingWebsiteService(db *gorm.DB) ISettingWebsiteService {
 	return &SettingWebsiteService{db: db}
 }
 

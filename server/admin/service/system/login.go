@@ -16,15 +16,21 @@ import (
 	"time"
 )
 
+type ISystemLoginService interface {
+	Login(c *gin.Context, req *req.SystemLoginReq) (res resp.SystemLoginResp, e error)
+	Logout(req *req.SystemLogoutReq) (e error)
+	RecordLoginLog(c *gin.Context, adminId uint, username string, errStr string) (e error)
+}
+
 //NewSystemLoginService 初始化
-func NewSystemLoginService(db *gorm.DB, adminSrv *SystemAuthAdminService) *SystemLoginService {
+func NewSystemLoginService(db *gorm.DB, adminSrv ISystemAuthAdminService) ISystemLoginService {
 	return &SystemLoginService{db: db, adminSrv: adminSrv}
 }
 
 //SystemLoginService 系统登录服务实现类
 type SystemLoginService struct {
 	db       *gorm.DB
-	adminSrv *SystemAuthAdminService
+	adminSrv ISystemAuthAdminService
 }
 
 //Login 登录

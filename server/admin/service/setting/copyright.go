@@ -7,8 +7,13 @@ import (
 	"likeadmin/util"
 )
 
+type ISettingCopyrightService interface {
+	Detail() (res []map[string]interface{}, e error)
+	Save(cReqs []req.SettingCopyrightItemReq) (e error)
+}
+
 //NewSettingCopyrightService 初始化
-func NewSettingCopyrightService(db *gorm.DB) *SettingCopyrightService {
+func NewSettingCopyrightService(db *gorm.DB) ISettingCopyrightService {
 	return &SettingCopyrightService{db: db}
 }
 

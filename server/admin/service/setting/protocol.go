@@ -7,8 +7,13 @@ import (
 	"likeadmin/util"
 )
 
+type ISettingProtocolService interface {
+	Detail() (res map[string]interface{}, e error)
+	Save(pReq req.SettingProtocolReq) (e error)
+}
+
 //NewSettingProtocolService 初始化
-func NewSettingProtocolService(db *gorm.DB) *SettingProtocolService {
+func NewSettingProtocolService(db *gorm.DB) ISettingProtocolService {
 	return &SettingProtocolService{db: db}
 }
 

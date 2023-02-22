@@ -12,15 +12,24 @@ import (
 	"likeadmin/util"
 )
 
+type ISystemAuthMenuService interface {
+	SelectMenuByRoleId(c *gin.Context, roleId uint) (mapList []interface{}, e error)
+	List() (res []interface{}, e error)
+	Detail(id uint) (res resp.SystemAuthMenuResp, e error)
+	Add(addReq req.SystemAuthMenuAddReq) (e error)
+	Edit(editReq req.SystemAuthMenuEditReq) (e error)
+	Del(id uint) (e error)
+}
+
 //NewSystemAuthMenuService 初始化
-func NewSystemAuthMenuService(db *gorm.DB, permSrv *SystemAuthPermService) *SystemAuthMenuService {
+func NewSystemAuthMenuService(db *gorm.DB, permSrv ISystemAuthPermService) ISystemAuthMenuService {
 	return &SystemAuthMenuService{db: db, permSrv: permSrv}
 }
 
 //SystemAuthMenuService 系统菜单服务实现类
 type SystemAuthMenuService struct {
 	db      *gorm.DB
-	permSrv *SystemAuthPermService
+	permSrv ISystemAuthPermService
 }
 
 //SelectMenuByRoleId 根据角色ID获取菜单

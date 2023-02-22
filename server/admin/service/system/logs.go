@@ -11,8 +11,13 @@ import (
 	"likeadmin/model/system"
 )
 
+type ISystemLogsServer interface {
+	Operate(page request.PageReq, logReq req.SystemLogOperateReq) (res response.PageResp, e error)
+	Login(page request.PageReq, logReq req.SystemLogLoginReq) (res response.PageResp, e error)
+}
+
 //NewSystemLogsServer 初始化
-func NewSystemLogsServer(db *gorm.DB) *SystemLogsServer {
+func NewSystemLogsServer(db *gorm.DB) ISystemLogsServer {
 	return &SystemLogsServer{db: db}
 }
 

@@ -8,8 +8,13 @@ import (
 	"mime/multipart"
 )
 
+type IUploadService interface {
+	UploadImage(file *multipart.FileHeader, cid uint, aid uint) (res resp.CommonUploadFileResp, e error)
+	UploadVideo(file *multipart.FileHeader, cid uint, aid uint) (res resp.CommonUploadFileResp, e error)
+}
+
 //NewUploadService 初始化
-func NewUploadService(albSrv *AlbumService) *UploadService {
+func NewUploadService(albSrv *AlbumService) IUploadService {
 	return &UploadService{albSrv}
 }
 

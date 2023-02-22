@@ -8,8 +8,15 @@ import (
 	"likeadmin/util"
 )
 
+type ISettingStorageService interface {
+	List() ([]map[string]interface{}, error)
+	Detail(alias string) (res map[string]interface{}, e error)
+	Edit(editReq req.SettingStorageEditReq) (e error)
+	Change(alias string, status int) (e error)
+}
+
 //NewSettingStorageService 初始化
-func NewSettingStorageService(db *gorm.DB) *SettingStorageService {
+func NewSettingStorageService(db *gorm.DB) ISettingStorageService {
 	return &SettingStorageService{db: db}
 }
 

@@ -10,8 +10,16 @@ import (
 	"strings"
 )
 
+type ISystemAuthPermService interface {
+	SelectMenuIdsByRoleId(roleId uint) (menuIds []uint, e error)
+	CacheRoleMenusByRoleId(roleId uint) (e error)
+	BatchSaveByMenuIds(roleId uint, menuIds string, db *gorm.DB) (e error)
+	BatchDeleteByRoleId(roleId uint, db *gorm.DB) (e error)
+	BatchDeleteByMenuId(menuId uint) (e error)
+}
+
 //NewSystemAuthPermService 初始化
-func NewSystemAuthPermService(db *gorm.DB) *SystemAuthPermService {
+func NewSystemAuthPermService(db *gorm.DB) ISystemAuthPermService {
 	return &SystemAuthPermService{db: db}
 }
 

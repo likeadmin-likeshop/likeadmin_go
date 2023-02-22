@@ -9,8 +9,17 @@ import (
 	"likeadmin/util"
 )
 
+type ISystemAuthDeptService interface {
+	All() (res []resp.SystemAuthDeptResp, e error)
+	List(listReq req.SystemAuthDeptListReq) (mapList []interface{}, e error)
+	Detail(id uint) (res resp.SystemAuthDeptResp, e error)
+	Add(addReq req.SystemAuthDeptAddReq) (e error)
+	Edit(editReq req.SystemAuthDeptEditReq) (e error)
+	Del(id uint) (e error)
+}
+
 //NewSystemAuthDeptService 初始化
-func NewSystemAuthDeptService(db *gorm.DB) *SystemAuthDeptService {
+func NewSystemAuthDeptService(db *gorm.DB) ISystemAuthDeptService {
 	return &SystemAuthDeptService{db: db}
 }
 
