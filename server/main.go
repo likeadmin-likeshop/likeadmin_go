@@ -44,10 +44,14 @@ func initRouter() *gin.Engine {
 	router.NoRoute(response.NoRoute)
 	// 注册路由
 	group := router.Group("/api")
-	core.RegisterGroup(group, routers.CommonGroup, middleware.TokenAuth())
-	core.RegisterGroup(group, routers.MonitorGroup, middleware.TokenAuth())
-	core.RegisterGroup(group, routers.SettingGroup, middleware.TokenAuth())
-	core.RegisterGroup(group, routers.SystemGroup, middleware.TokenAuth())
+	//core.RegisterGroup(group, routers.CommonGroup, middleware.TokenAuth())
+	//core.RegisterGroup(group, routers.MonitorGroup, middleware.TokenAuth())
+	//core.RegisterGroup(group, routers.SettingGroup, middleware.TokenAuth())
+	//core.RegisterGroup(group, routers.SystemGroup, middleware.TokenAuth())
+
+	for i := 0; i < len(routers.InitRouters); i++ {
+		core.RegisterGroup(group, routers.InitRouters[i])
+	}
 	return router
 }
 

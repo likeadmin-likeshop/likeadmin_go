@@ -2,78 +2,42 @@ package core
 
 import (
 	"github.com/gin-gonic/gin"
-	"net/http"
+	"go.uber.org/dig"
+	"log"
 )
 
-type routerBase struct {
-	method      string
-	path        string
-	handler     gin.HandlerFunc
+type GroupBase struct {
+	basePath    string
+	initHandle  interface{}
+	regHandle   func(rg *gin.RouterGroup, group *GroupBase) error
 	middlewares []gin.HandlerFunc
 }
 
-type groupBase struct {
-	basePath  string
-	routerMap map[string]routerBase
-}
-
 // Group creates a new router group
-func Group(relativePath string) *groupBase {
-	return &groupBase{
-		basePath:  relativePath,
-		routerMap: make(map[string]routerBase),
+func Group(relativePath string, initHandle interface{}, regHandle func(rg *gin.RouterGroup, group *GroupBase) error, middlewares ...gin.HandlerFunc) *GroupBase {
+	return &GroupBase{
+		basePath:    relativePath,
+		initHandle:  initHandle,
+		regHandle:   regHandle,
+		middlewares: middlewares,
 	}
 }
 
-//RegisterGroup registers all handle to gin
-func RegisterGroup(rg *gin.RouterGroup, group *groupBase, middlewares ...gin.HandlerFunc) {
+//RegisterGroup registers all handle of group to gin
+func RegisterGroup(rg *gin.RouterGroup, group *GroupBase) {
 	r := rg.Group(group.basePath)
-	if len(middlewares) > 0 {
-		r.Use(middlewares...)
+	if len(group.middlewares) > 0 {
+		r.Use(group.middlewares...)
 	}
-	for _, item := range group.routerMap {
-		var handlers []gin.HandlerFunc
-		if item.middlewares != nil {
-			handlers = item.middlewares
-		}
-		handlers = append(handlers, item.handler)
-		r.Handle(item.method, item.path, handlers...)
+	if err := ProvideForDI(group.initHandle); err != nil {
+		log.Fatalln(err)
+	}
+	if err := group.regHandle(r, group); err != nil {
+		log.Fatalln(err)
 	}
 }
 
-//AddHandle registers a new request handle
-func (group *groupBase) AddHandle(httpMethod, relativePath string, handler gin.HandlerFunc, middlewares []gin.HandlerFunc) *groupBase {
-	group.routerMap[relativePath] = routerBase{
-		method: httpMethod, path: relativePath, handler: handler, middlewares: middlewares}
-	return group
-}
-
-// AddPOST is a shortcut for router.AddHandle("POST", path, handle).
-func (group *groupBase) AddPOST(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodPost, relativePath, handler, middlewares)
-	return group
-}
-
-// AddGET is a shortcut for router.AddHandle("GET", path, handle).
-func (group *groupBase) AddGET(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodGet, relativePath, handler, middlewares)
-	return group
-}
-
-// AddDELETE is a shortcut for router.AddHandle("DELETE", path, handle).
-func (group *groupBase) AddDELETE(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodDelete, relativePath, handler, middlewares)
-	return group
-}
-
-// AddPATCH is a shortcut for router.AddHandle("PATCH", path, handle).
-func (group *groupBase) AddPATCH(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodPatch, relativePath, handler, middlewares)
-	return group
-}
-
-// AddPUT is a shortcut for router.AddHandle("PUT", path, handle).
-func (group *groupBase) AddPUT(relativePath string, handler gin.HandlerFunc, middlewares ...gin.HandlerFunc) *groupBase {
-	group.AddHandle(http.MethodPut, relativePath, handler, middlewares)
-	return group
+//Reg registers handle by DI
+func (group GroupBase) Reg(function interface{}, opts ...dig.InvokeOption) error {
+	return DI(function, opts...)
 }

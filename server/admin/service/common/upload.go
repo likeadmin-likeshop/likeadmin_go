@@ -14,13 +14,13 @@ type IUploadService interface {
 }
 
 //NewUploadService 初始化
-func NewUploadService(albSrv *AlbumService) IUploadService {
+func NewUploadService(albSrv IAlbumService) IUploadService {
 	return &UploadService{albSrv}
 }
 
 //UploadService 上传服务实现类
 type UploadService struct {
-	albSrv *AlbumService
+	albSrv IAlbumService
 }
 
 //UploadImage 上传图片

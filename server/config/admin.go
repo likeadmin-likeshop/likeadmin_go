@@ -64,21 +64,33 @@ type adminConfig struct {
 }
 
 func (cnf adminConfig) GetAdminId(c *gin.Context) uint {
-	adminId, _ := c.Get(cnf.ReqAdminIdKey)
+	adminId, ok := c.Get(cnf.ReqAdminIdKey)
+	if !ok {
+		return 0
+	}
 	return adminId.(uint)
 }
 
 func (cnf adminConfig) GetRoleId(c *gin.Context) string {
-	roleId, _ := c.Get(cnf.ReqRoleIdKey)
+	roleId, ok := c.Get(cnf.ReqRoleIdKey)
+	if !ok {
+		return ""
+	}
 	return roleId.(string)
 }
 
 func (cnf adminConfig) GetUsername(c *gin.Context) string {
-	username, _ := c.Get(cnf.ReqUsernameKey)
+	username, ok := c.Get(cnf.ReqUsernameKey)
+	if !ok {
+		return ""
+	}
 	return username.(string)
 }
 
 func (cnf adminConfig) GetNickname(c *gin.Context) string {
-	nickname, _ := c.Get(cnf.ReqNicknameKey)
+	nickname, ok := c.Get(cnf.ReqNicknameKey)
+	if !ok {
+		return ""
+	}
 	return nickname.(string)
 }

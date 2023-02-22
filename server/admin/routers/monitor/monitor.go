@@ -1,4 +1,4 @@
-package routers
+package monitor
 
 import (
 	"github.com/gin-gonic/gin"
@@ -9,16 +9,23 @@ import (
 	"strings"
 )
 
-var MonitorGroup = core.Group("/monitor")
+var MonitorGroup = core.Group("/monitor", newMonitorHandler, regMonitor, middleware.TokenAuth())
 
-func init() {
-	group := MonitorGroup
-	group.AddGET("/cache", cache, middleware.RecordLog("缓存监控"))
-	group.AddGET("/server", server, middleware.RecordLog("服务监控"))
+func newMonitorHandler() *monitorHandler {
+	return &monitorHandler{}
 }
 
+func regMonitor(rg *gin.RouterGroup, group *core.GroupBase) error {
+	return group.Reg(func(handle *monitorHandler) {
+		rg.GET("/cache", middleware.RecordLog("缓存监控"), handle.cache)
+		rg.GET("/server", middleware.RecordLog("服务监控"), handle.server)
+	})
+}
+
+type monitorHandler struct{}
+
 //cache 缓存监控
-func cache(c *gin.Context) {
+func (mh monitorHandler) cache(c *gin.Context) {
 	cmdStatsMap := util.RedisUtil.Info("commandstats")
 	var stats []map[string]string
 	for k, v := range cmdStatsMap {
@@ -35,7 +42,7 @@ func cache(c *gin.Context) {
 }
 
 //server 服务监控
-func server(c *gin.Context) {
+func (mh monitorHandler) server(c *gin.Context) {
 	response.OkWithData(c, map[string]interface{}{
 		"cpu":  util.ServerUtil.GetCpuInfo(),
 		"mem":  util.ServerUtil.GetMemInfo(),
