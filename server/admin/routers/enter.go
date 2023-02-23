@@ -17,6 +17,7 @@ var InitRouters = []*core.GroupBase{
 	monitor.MonitorGroup,
 	// setting
 	setting.CopyrightGroup,
+	setting.DictTypeGroup,
 	setting.ProtocolGroup,
 	setting.StorageGroup,
 	setting.WebsiteGroup,

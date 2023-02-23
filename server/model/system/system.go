@@ -24,7 +24,7 @@ type SystemAuthAdmin struct {
 	Sort          uint16 `gorm:"not null;default:0;comment:'排序编号'"`
 	IsMultipoint  uint8  `gorm:"not null;default:0;comment:'多端登录: 0=否, 1=是''"`
 	IsDisable     uint8  `gorm:"not null;default:0;comment:'是否禁用: 0=否, 1=是'"`
-	IsDelete      uint8  `gorm:"not null;default:0;comment:'是否删除: [0=否, 1=是]'"`
+	IsDelete      uint8  `gorm:"not null;default:0;comment:'是否删除: 0=否, 1=是'"`
 	LastLoginIp   string `gorm:"not null;default:'';comment:'最后登录IP'"`
 	LastLoginTime int64  `gorm:"not null;default:0;comment:'最后登录时间'"`
 	CreateTime    int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`

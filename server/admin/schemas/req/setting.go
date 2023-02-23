@@ -49,3 +49,23 @@ type SettingStorageChangeReq struct {
 	Alias  string `form:"alias" binding:"required,oneof=local qiniu qcloud aliyun"` // 别名: [local,qiniu,qcloud,aliyun]
 	Status int    `form:"status" binding:"oneof=0 1"`                               // 状态: 0/1
 }
+
+//SettingDictTypeListReq 字典类型新增参数
+type SettingDictTypeListReq struct {
+	DictName   string `form:"dictName" binding:"max=200"`                   // 字典名称
+	DictType   string `form:"dictType" binding:"max=200"`                   // 字典类型
+	DictStatus int8   `form:"dictStatus,default=-1" binding:"oneof=-1 0 1"` // 字典状态: 0/1
+}
+
+//SettingDictTypeDetailReq 字典类型详情参数
+type SettingDictTypeDetailReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}
+
+//SettingDictTypeAddReq 字典类型新增参数
+type SettingDictTypeAddReq struct {
+	DictName   string `form:"dictName" binding:"required,max=200"`     // 字典名称
+	DictType   string `form:"dictType" binding:"required,max=200"`     // 字典类型
+	DictRemark string `form:"dictRemark" binding:"max=200"`            // 字典备注
+	DictStatus int8   `form:"dictStatus" binding:"required,oneof=0 1"` // 字典状态: 0/1
+}

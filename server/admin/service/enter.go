@@ -13,6 +13,7 @@ var InitFunctions = []interface{}{
 	common.NewUploadService,
 	// setting
 	setting.NewSettingCopyrightService,
+	setting.NewSettingDictTypeService,
 	setting.NewSettingProtocolService,
 	setting.NewSettingStorageService,
 	setting.NewSettingWebsiteService,
