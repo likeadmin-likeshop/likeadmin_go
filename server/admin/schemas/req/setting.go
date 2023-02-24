@@ -69,3 +69,17 @@ type SettingDictTypeAddReq struct {
 	DictRemark string `form:"dictRemark" binding:"max=200"`            // 字典备注
 	DictStatus int8   `form:"dictStatus" binding:"required,oneof=0 1"` // 字典状态: 0/1
 }
+
+//SettingDictTypeEditReq 字典类型编辑参数
+type SettingDictTypeEditReq struct {
+	ID         uint   `form:"id" binding:"required,gt=0"`              // 主键
+	DictName   string `form:"dictName" binding:"required,max=200"`     // 字典名称
+	DictType   string `form:"dictType" binding:"required,max=200"`     // 字典类型
+	DictRemark string `form:"dictRemark" binding:"max=200"`            // 字典备注
+	DictStatus int8   `form:"dictStatus" binding:"required,oneof=0 1"` // 字典状态: 0/1
+}
+
+//SettingDictTypeDelReq 字典类型删除参数
+type SettingDictTypeDelReq struct {
+	Ids []uint `form:"ids" binding:"required"` // 主键列表
+}

@@ -23,6 +23,8 @@ func regDictType(rg *gin.RouterGroup, group *core.GroupBase) error {
 		rg.GET("/dict/type/list", handle.list)
 		rg.GET("/dict/type/detail", handle.detail)
 		rg.POST("/dict/type/add", handle.add)
+		rg.POST("/dict/type/edit", handle.edit)
+		rg.POST("/dict/type/del", handle.del)
 	})
 }
 
@@ -67,4 +69,22 @@ func (dth dictTypeHandler) add(c *gin.Context) {
 		return
 	}
 	response.CheckAndResp(c, dth.srv.Add(addReq))
+}
+
+//edit 字典类型编辑
+func (dth dictTypeHandler) edit(c *gin.Context) {
+	var editReq req.SettingDictTypeEditReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &editReq)) {
+		return
+	}
+	response.CheckAndResp(c, dth.srv.Edit(editReq))
+}
+
+//del 字典类型删除
+func (dth dictTypeHandler) del(c *gin.Context) {
+	var delReq req.SettingDictTypeDelReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
+		return
+	}
+	response.CheckAndResp(c, dth.srv.Del(delReq))
 }
