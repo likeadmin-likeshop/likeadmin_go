@@ -155,7 +155,11 @@ func IsFailWithResp(c *gin.Context, err error) bool {
 	switch v := err.(type) {
 	// 自定义类型
 	case RespType:
-		Fail(c, v)
+		data := v.Data()
+		if data == nil {
+			data = []string{}
+		}
+		FailWithData(c, v, data)
 	// 其他类型
 	default:
 		Fail(c, SystemError)
