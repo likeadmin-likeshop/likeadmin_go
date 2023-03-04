@@ -7,6 +7,7 @@ import (
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/model/setting"
+	"time"
 )
 
 type ISettingDictTypeService interface {
@@ -127,6 +128,7 @@ func (dtSrv settingDictTypeService) Edit(editReq req.SettingDictTypeEditReq) (e 
 
 //Del 字典类型删除
 func (dtSrv settingDictTypeService) Del(delReq req.SettingDictTypeDelReq) (e error) {
-	err := dtSrv.db.Model(&setting.DictType{}).Where("id IN ?", delReq.Ids).Update("is_delete", 1).Error
+	err := dtSrv.db.Model(&setting.DictType{}).Where("id IN ?", delReq.Ids).Updates(
+		setting.DictType{IsDelete: 1, DeleteTime: time.Now().Unix()}).Error
 	return response.CheckErr(err, "Del Update err")
 }
