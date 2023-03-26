@@ -2,11 +2,13 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	"likeadmin/admin/routers"
-	"likeadmin/admin/service"
+	adminRouters "likeadmin/admin/routers"
+	admin "likeadmin/admin/service"
 	"likeadmin/config"
 	"likeadmin/core"
 	"likeadmin/core/response"
+	genRouters "likeadmin/generator/routers"
+	gen "likeadmin/generator/service"
 	"likeadmin/middleware"
 	"log"
 	"net/http"
@@ -16,7 +18,8 @@ import (
 
 //initDI 初始化DI
 func initDI() {
-	regFunctions := service.InitFunctions
+	regFunctions := admin.InitFunctions
+	regFunctions = append(regFunctions, gen.InitFunctions...)
 	regFunctions = append(regFunctions, core.GetDB)
 	for i := 0; i < len(regFunctions); i++ {
 		if err := core.ProvideForDI(regFunctions[i]); err != nil {
@@ -49,8 +52,10 @@ func initRouter() *gin.Engine {
 	//core.RegisterGroup(group, routers.SettingGroup, middleware.TokenAuth())
 	//core.RegisterGroup(group, routers.SystemGroup, middleware.TokenAuth())
 
-	for i := 0; i < len(routers.InitRouters); i++ {
-		core.RegisterGroup(group, routers.InitRouters[i])
+	routers := adminRouters.InitRouters[:]
+	routers = append(routers, genRouters.InitRouters...)
+	for i := 0; i < len(routers); i++ {
+		core.RegisterGroup(group, routers[i])
 	}
 	return router
 }

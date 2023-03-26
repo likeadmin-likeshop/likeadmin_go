@@ -10,6 +10,7 @@ const TimeFormat = "2006-01-02 15:04:05"
 
 //TsTime 自定义时间格式
 type TsTime int64
+type OnlyRespTsTime time.Time
 
 ////TsDate 自定义日期格式
 //type TsDate int64
@@ -43,5 +44,10 @@ func (tst *TsTime) UnmarshalJSON(bs []byte) error {
 
 func (tst TsTime) MarshalJSON() ([]byte, error) {
 	tt := time.Unix(int64(tst), 0).Format(TimeFormat)
+	return json.Marshal(tt)
+}
+
+func (otst OnlyRespTsTime) MarshalJSON() ([]byte, error) {
+	tt := time.Time(otst).Format(TimeFormat)
 	return json.Marshal(tt)
 }
