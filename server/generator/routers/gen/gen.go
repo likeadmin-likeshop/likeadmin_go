@@ -20,6 +20,7 @@ func newGenHandler(srv gen.IGenerateService) *genHandler {
 func regGen(rg *gin.RouterGroup, group *core.GroupBase) error {
 	return group.Reg(func(handle *genHandler) {
 		rg.GET("/db", handle.dbTables)
+		rg.GET("/list", handle.List)
 	})
 }
 
@@ -38,5 +39,19 @@ func (gh genHandler) dbTables(c *gin.Context) {
 		return
 	}
 	res, err := gh.srv.DbTables(page, tbReq)
+	response.CheckAndRespWithData(c, res, err)
+}
+
+//List 生成列表
+func (gh genHandler) List(c *gin.Context) {
+	var page request.PageReq
+	var listReq req.ListTableReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {
+		return
+	}
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &listReq)) {
+		return
+	}
+	res, err := gh.srv.List(page, listReq)
 	response.CheckAndRespWithData(c, res, err)
 }
