@@ -21,6 +21,7 @@ func regGen(rg *gin.RouterGroup, group *core.GroupBase) error {
 	return group.Reg(func(handle *genHandler) {
 		rg.GET("/db", handle.dbTables)
 		rg.GET("/list", handle.List)
+		rg.GET("/detail", handle.Detail)
 	})
 }
 
@@ -53,5 +54,15 @@ func (gh genHandler) List(c *gin.Context) {
 		return
 	}
 	res, err := gh.srv.List(page, listReq)
+	response.CheckAndRespWithData(c, res, err)
+}
+
+//Detail 生成详情
+func (gh genHandler) Detail(c *gin.Context) {
+	var detailReq req.DetailTableReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
+		return
+	}
+	res, err := gh.srv.Detail(detailReq.ID)
 	response.CheckAndRespWithData(c, res, err)
 }

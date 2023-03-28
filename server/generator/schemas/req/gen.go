@@ -15,3 +15,8 @@ type ListTableReq struct {
 	StartTime    time.Time `form:"startTime" time_format:"2006-01-02"` // 开始时间
 	EndTime      time.Time `form:"endTime" time_format:"2006-01-02"`   // 结束时间
 }
+
+//DetailTableReq 生成详情参数
+type DetailTableReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}

@@ -21,3 +21,28 @@ type GenTable struct {
 	CreateTime   int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
 	UpdateTime   int64  `gorm:"autoUpdateTime;not null;comment:'更新时间'"`
 }
+
+//GenTableColumn 代码生成表列实体
+type GenTableColumn struct {
+	ID            uint   `gorm:"primarykey;comment:'列主键'"`
+	TableID       uint   `gorm:"not null;default:0;comment:'表外键'"`
+	ColumnName    string `gorm:"not null;default:'';comment:'列名称'"`
+	ColumnComment string `gorm:"not null;default:'';comment:'列描述'"`
+	ColumnLength  string `gorm:"not null;default:0;comment:'列长度'"`
+	ColumnType    string `gorm:"not null;default:'';comment:'列类型'"`
+	JavaType      string `gorm:"not null;default:'';comment:'类型'"`
+	JavaField     string `gorm:"not null;default:'';comment:'字段名'"`
+	IsPk          string `gorm:"not null;default:'0';comment:'是否主键: [1=是, 0=否]'"`
+	IsIncrement   string `gorm:"not null;default:'0';comment:'是否自增: [1=是, 0=否]'"`
+	IsRequired    string `gorm:"not null;default:'0';comment:'是否必填: [1=是, 0=否]'"`
+	IsInsert      string `gorm:"not null;default:'0';comment:'是否为插入字段: [1=是, 0=否]'"`
+	IsEdit        string `gorm:"not null;default:'0';comment:'是否编辑字段: [1=是, 0=否]'"`
+	IsList        string `gorm:"not null;default:'0';comment:'是否列表字段: [1=是, 0=否]'"`
+	IsQuery       string `gorm:"not null;default:'0';comment:'是否查询字段: [1=是, 0=否]'"`
+	QueryType     string `gorm:"not null;default:'0';comment:'查询方式: [等于、不等于、大于、小于、范围]'"`
+	HtmlType      string `gorm:"not null;default:'0';comment:'显示类型: [文本框、文本域、下拉框、复选框、单选框、日期控件]'"`
+	DictType      string `gorm:"not null;default:'';comment:'字典类型'"`
+	Sort          int    `gorm:"not null;default:0;comment:'排序编号'"`
+	CreateTime    int64  `gorm:"autoCreateTime;not null;comment:'创建时间'"`
+	UpdateTime    int64  `gorm:"autoUpdateTime;not null;comment:'更新时间'"`
+}

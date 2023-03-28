@@ -13,7 +13,7 @@ import (
 type IGenerateService interface {
 	DbTables(page request.PageReq, req req.DbTablesReq) (res response.PageResp, e error)
 	List(page request.PageReq, listReq req.ListTableReq) (res response.PageResp, e error)
-	//Detail
+	Detail(id uint) (res resp.GenTableDetailResp, e error)
 	//ImportTable
 	//SyncTable
 	//EditTable
@@ -96,4 +96,32 @@ func (genSrv generateService) List(page request.PageReq, listReq req.ListTableRe
 		Count:    count,
 		Lists:    genResp,
 	}, nil
+}
+
+//Detail 生成详情
+func (genSrv generateService) Detail(id uint) (res resp.GenTableDetailResp, e error) {
+	var genTb gen.GenTable
+	err := genSrv.db.Where("id = ?", id).Limit(1).First(&genTb).Error
+	if e = response.CheckErrDBNotRecord(err, "查询的数据不存在!"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "Detail Find err"); e != nil {
+		return
+	}
+	var columns []gen.GenTableColumn
+	err = genSrv.db.Where("table_id = ?", id).Order("sort").Find(&columns).Error
+	if e = response.CheckErr(err, "Detail Find err"); e != nil {
+		return
+	}
+	var base resp.GenTableBaseResp
+	response.Copy(&base, genTb)
+	var gen resp.GenTableGenResp
+	response.Copy(&gen, genTb)
+	var colResp []resp.GenColumnResp
+	response.Copy(&colResp, columns)
+	return resp.GenTableDetailResp{
+		Base:    base,
+		Gen:     gen,
+		Columns: colResp,
+	}, e
 }
