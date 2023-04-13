@@ -20,3 +20,13 @@ type ListTableReq struct {
 type DetailTableReq struct {
 	ID uint `form:"id" binding:"required,gt=0"` // 主键
 }
+
+//ImportTableReq 导入表结构参数
+type ImportTableReq struct {
+	Tables string `form:"tables" binding:"required"` // 导入的表, 用","分隔
+}
+
+//DelTableReq 删除表结构参数
+type DelTableReq struct {
+	Ids []uint `form:"ids" binding:"required"` // 主键
+}

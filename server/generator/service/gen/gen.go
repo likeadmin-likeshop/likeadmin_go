@@ -14,10 +14,10 @@ type IGenerateService interface {
 	DbTables(page request.PageReq, req req.DbTablesReq) (res response.PageResp, e error)
 	List(page request.PageReq, listReq req.ListTableReq) (res response.PageResp, e error)
 	Detail(id uint) (res resp.GenTableDetailResp, e error)
-	//ImportTable
+	ImportTable(tableNames []string) (e error)
+	DelTable(ids []uint) (e error)
 	//SyncTable
 	//EditTable
-	//DelTable
 	//PreviewCode
 	//DownloadCode
 	//GenCode
@@ -47,7 +47,7 @@ func (genSrv generateService) DbTables(page request.PageReq, dbReq req.DbTablesR
 		return
 	}
 	// 数据
-	var tbResp []resp.DbTablesResp
+	var tbResp []resp.DbTableResp
 	err = tbModel.Limit(limit).Offset(offset).Find(&tbResp).Error
 	if e = response.CheckErr(err, "DbTables Find err"); e != nil {
 		return
@@ -124,4 +124,62 @@ func (genSrv generateService) Detail(id uint) (res resp.GenTableDetailResp, e er
 		Gen:     gen,
 		Columns: colResp,
 	}, e
+}
+
+//ImportTable 导入表结构
+func (genSrv generateService) ImportTable(tableNames []string) (e error) {
+	var dbTbs []resp.DbTableResp
+	err := generator.GenUtil.GetDbTablesQueryByNames(genSrv.db, tableNames).Find(&dbTbs).Error
+	if e = response.CheckErr(err, "ImportTable Find tables err"); e != nil {
+		return
+	}
+	var tables []gen.GenTable
+	response.Copy(&tables, dbTbs)
+	if len(tables) == 0 {
+		e = response.AssertArgumentError.Make("表不存在!")
+		return
+	}
+	err = genSrv.db.Transaction(func(tx *gorm.DB) error {
+		for i := 0; i < len(tables); i++ {
+			//生成表信息
+			genTable := generator.GenUtil.InitTable(tables[i])
+			txErr := tx.Create(&genTable).Error
+			if te := response.CheckErr(txErr, "ImportTable Create table err"); te != nil {
+				return te
+			}
+			// 生成列信息
+			var columns []gen.GenTableColumn
+			txErr = generator.GenUtil.GetDbTableColumnsQueryByName(genSrv.db, tables[i].TableName).Find(&columns).Error
+			if te := response.CheckErr(txErr, "ImportTable Find columns err"); te != nil {
+				return te
+			}
+			for j := 0; j < len(columns); j++ {
+				column := generator.GenUtil.InitColumn(genTable.ID, columns[j])
+				txErr = tx.Create(&column).Error
+				if te := response.CheckErr(txErr, "ImportTable Create column err"); te != nil {
+					return te
+				}
+			}
+		}
+		return nil
+	})
+	e = response.CheckErr(err, "ImportTable Transaction err")
+	return nil
+}
+
+//DelTable 删除表结构
+func (genSrv generateService) DelTable(ids []uint) (e error) {
+	err := genSrv.db.Transaction(func(tx *gorm.DB) error {
+		txErr := tx.Delete(&gen.GenTable{}, "id in ?", ids).Error
+		if te := response.CheckErr(txErr, "DelTable Delete GenTable err"); te != nil {
+			return te
+		}
+		txErr = tx.Delete(&gen.GenTableColumn{}, "table_id in ?", ids).Error
+		if te := response.CheckErr(txErr, "DelTable Delete GenTableColumn err"); te != nil {
+			return te
+		}
+		return nil
+	})
+	e = response.CheckErr(err, "DelTable Transaction err")
+	return
 }

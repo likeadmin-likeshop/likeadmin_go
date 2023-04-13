@@ -9,6 +9,7 @@ import (
 	"likeadmin/generator/service/gen"
 	"likeadmin/middleware"
 	"likeadmin/util"
+	"strings"
 )
 
 var GenGroup = core.Group("/gen", newGenHandler, regGen, middleware.TokenAuth())
@@ -20,8 +21,10 @@ func newGenHandler(srv gen.IGenerateService) *genHandler {
 func regGen(rg *gin.RouterGroup, group *core.GroupBase) error {
 	return group.Reg(func(handle *genHandler) {
 		rg.GET("/db", handle.dbTables)
-		rg.GET("/list", handle.List)
-		rg.GET("/detail", handle.Detail)
+		rg.GET("/list", handle.list)
+		rg.GET("/detail", handle.detail)
+		rg.POST("/importTable", handle.importTable)
+		rg.POST("/delTable", handle.delTable)
 	})
 }
 
@@ -44,7 +47,7 @@ func (gh genHandler) dbTables(c *gin.Context) {
 }
 
 //List 生成列表
-func (gh genHandler) List(c *gin.Context) {
+func (gh genHandler) list(c *gin.Context) {
 	var page request.PageReq
 	var listReq req.ListTableReq
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &page)) {
@@ -58,11 +61,31 @@ func (gh genHandler) List(c *gin.Context) {
 }
 
 //Detail 生成详情
-func (gh genHandler) Detail(c *gin.Context) {
+func (gh genHandler) detail(c *gin.Context) {
 	var detailReq req.DetailTableReq
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
 		return
 	}
 	res, err := gh.srv.Detail(detailReq.ID)
 	response.CheckAndRespWithData(c, res, err)
+}
+
+//ImportTable 导入表结构
+func (gh genHandler) importTable(c *gin.Context) {
+	var importReq req.ImportTableReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &importReq)) {
+		return
+	}
+	err := gh.srv.ImportTable(strings.Split(importReq.Tables, ","))
+	response.CheckAndResp(c, err)
+}
+
+//DelTable 删除表结构
+func (gh genHandler) delTable(c *gin.Context) {
+	var delReq req.DelTableReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {
+		return
+	}
+	err := gh.srv.DelTable(delReq.Ids)
+	response.CheckAndResp(c, err)
 }
