@@ -24,6 +24,8 @@ func regGen(rg *gin.RouterGroup, group *core.GroupBase) error {
 		rg.GET("/list", handle.list)
 		rg.GET("/detail", handle.detail)
 		rg.POST("/importTable", handle.importTable)
+		rg.POST("/syncTable", handle.syncTable)
+		rg.POST("/editTable", handle.editTable)
 		rg.POST("/delTable", handle.delTable)
 	})
 }
@@ -46,7 +48,7 @@ func (gh genHandler) dbTables(c *gin.Context) {
 	response.CheckAndRespWithData(c, res, err)
 }
 
-//List 生成列表
+//list 生成列表
 func (gh genHandler) list(c *gin.Context) {
 	var page request.PageReq
 	var listReq req.ListTableReq
@@ -60,7 +62,7 @@ func (gh genHandler) list(c *gin.Context) {
 	response.CheckAndRespWithData(c, res, err)
 }
 
-//Detail 生成详情
+//detail 生成详情
 func (gh genHandler) detail(c *gin.Context) {
 	var detailReq req.DetailTableReq
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &detailReq)) {
@@ -70,7 +72,7 @@ func (gh genHandler) detail(c *gin.Context) {
 	response.CheckAndRespWithData(c, res, err)
 }
 
-//ImportTable 导入表结构
+//importTable 导入表结构
 func (gh genHandler) importTable(c *gin.Context) {
 	var importReq req.ImportTableReq
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &importReq)) {
@@ -80,7 +82,27 @@ func (gh genHandler) importTable(c *gin.Context) {
 	response.CheckAndResp(c, err)
 }
 
-//DelTable 删除表结构
+//syncTable 同步表结构
+func (gh genHandler) syncTable(c *gin.Context) {
+	var syncReq req.SyncTableReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &syncReq)) {
+		return
+	}
+	err := gh.srv.SyncTable(syncReq.ID)
+	response.CheckAndResp(c, err)
+}
+
+//editTable 编辑表结构
+func (gh genHandler) editTable(c *gin.Context) {
+	var editReq req.EditTableReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &editReq)) {
+		return
+	}
+	err := gh.srv.EditTable(editReq)
+	response.CheckAndResp(c, err)
+}
+
+//delTable 删除表结构
 func (gh genHandler) delTable(c *gin.Context) {
 	var delReq req.DelTableReq
 	if response.IsFailWithResp(c, util.VerifyUtil.VerifyJSON(c, &delReq)) {

@@ -29,7 +29,7 @@ type GenTableBaseResp struct {
 	TableComment string      `json:"tableComment" structs:"tableComment"` // 表的描述
 	EntityName   string      `json:"entityName" structs:"entityName"`     // 实体名称
 	AuthorName   string      `json:"authorName" structs:"authorName"`     // 作者名称
-	Remark       string      `json:"remark" structs:"remark"`             // 备注信息
+	Remarks      string      `json:"remarks" structs:"remarks"`           // 备注信息
 	CreateTime   core.TsTime `json:"createTime" structs:"createTime"`     // 创建时间
 	UpdateTime   core.TsTime `json:"updateTime" structs:"updateTime"`     // 更新时间
 }
@@ -71,7 +71,7 @@ type GenColumnResp struct {
 
 //GenTableDetailResp 生成表详情返回信息
 type GenTableDetailResp struct {
-	Base    GenTableBaseResp `json:"base" structs:"base"`       // 基本信息
-	Gen     GenTableGenResp  `json:"gen" structs:"gen"`         // 生成信息
-	Columns []GenColumnResp  `json:"columns" structs:"columns"` // 字段列表
+	Base   GenTableBaseResp `json:"base" structs:"base"`     // 基本信息
+	Gen    GenTableGenResp  `json:"gen" structs:"gen"`       // 生成信息
+	Column []GenColumnResp  `json:"column" structs:"column"` // 字段列表
 }

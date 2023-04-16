@@ -2,12 +2,15 @@ package gen
 
 import (
 	"gorm.io/gorm"
+	"likeadmin/config"
 	"likeadmin/core/request"
 	"likeadmin/core/response"
 	"likeadmin/generator"
 	"likeadmin/generator/schemas/req"
 	"likeadmin/generator/schemas/resp"
 	"likeadmin/model/gen"
+	"likeadmin/util"
+	"strings"
 )
 
 type IGenerateService interface {
@@ -15,9 +18,9 @@ type IGenerateService interface {
 	List(page request.PageReq, listReq req.ListTableReq) (res response.PageResp, e error)
 	Detail(id uint) (res resp.GenTableDetailResp, e error)
 	ImportTable(tableNames []string) (e error)
+	SyncTable(id uint) (e error)
+	EditTable(editReq req.EditTableReq) (e error)
 	DelTable(ids []uint) (e error)
-	//SyncTable
-	//EditTable
 	//PreviewCode
 	//DownloadCode
 	//GenCode
@@ -120,9 +123,9 @@ func (genSrv generateService) Detail(id uint) (res resp.GenTableDetailResp, e er
 	var colResp []resp.GenColumnResp
 	response.Copy(&colResp, columns)
 	return resp.GenTableDetailResp{
-		Base:    base,
-		Gen:     gen,
-		Columns: colResp,
+		Base:   base,
+		Gen:    gen,
+		Column: colResp,
 	}, e
 }
 
@@ -165,6 +168,130 @@ func (genSrv generateService) ImportTable(tableNames []string) (e error) {
 	})
 	e = response.CheckErr(err, "ImportTable Transaction err")
 	return nil
+}
+
+//SyncTable 同步表结构
+func (genSrv generateService) SyncTable(id uint) (e error) {
+	//旧数据
+	var genTable gen.GenTable
+	err := genSrv.db.Where("id = ?", id).Limit(1).First(&genTable).Error
+	if e = response.CheckErrDBNotRecord(err, "生成数据不存在！"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "SyncTable First err"); e != nil {
+		return
+	}
+	var genTableCols []gen.GenTableColumn
+	err = genSrv.db.Where("table_id = ?", id).Order("sort").Find(&genTableCols).Error
+	if e = response.CheckErr(err, "SyncTable Find err"); e != nil {
+		return
+	}
+	if len(genTableCols) <= 0 {
+		e = response.AssertArgumentError.Make("旧数据异常！")
+		return
+	}
+	prevColMap := make(map[string]gen.GenTableColumn)
+	for i := 0; i < len(genTableCols); i++ {
+		prevColMap[genTableCols[i].ColumnName] = genTableCols[i]
+	}
+	//新数据
+	var columns []gen.GenTableColumn
+	err = generator.GenUtil.GetDbTableColumnsQueryByName(genSrv.db, genTable.TableName).Find(&columns).Error
+	if e = response.CheckErr(err, "SyncTable Find new err"); e != nil {
+		return
+	}
+	if len(columns) <= 0 {
+		e = response.AssertArgumentError.Make("同步结构失败,原表结构不存在！")
+		return
+	}
+	//事务处理
+	err = genSrv.db.Transaction(func(tx *gorm.DB) error {
+		//处理新增和更新
+		for i := 0; i < len(columns); i++ {
+			col := generator.GenUtil.InitColumn(id, columns[i])
+			if prevCol, ok := prevColMap[columns[i].ColumnName]; ok {
+				//更新
+				col.ID = prevCol.ID
+				if col.IsList == 0 {
+					col.DictType = prevCol.DictType
+					col.QueryType = prevCol.QueryType
+				}
+				if prevCol.IsRequired == 1 && prevCol.IsPk == 0 && prevCol.IsInsert == 1 || prevCol.IsEdit == 1 {
+					col.HtmlType = prevCol.HtmlType
+					col.IsRequired = prevCol.IsRequired
+				}
+				txErr := tx.Save(&col).Error
+				if te := response.CheckErr(txErr, "SyncTable Save err"); te != nil {
+					return te
+				}
+			} else {
+				//新增
+				txErr := tx.Create(&col).Error
+				if te := response.CheckErr(txErr, "SyncTable Create err"); te != nil {
+					return te
+				}
+			}
+		}
+		//处理删除
+		colNames := make([]string, len(columns))
+		for i := 0; i < len(columns); i++ {
+			colNames[i] = columns[i].ColumnName
+		}
+		delColIds := make([]uint, 0)
+		for _, prevCol := range prevColMap {
+			if !util.ToolsUtil.Contains(colNames, prevCol.ColumnName) {
+				delColIds = append(delColIds, prevCol.ID)
+			}
+		}
+		txErr := tx.Delete(&gen.GenTableColumn{}, "id in ?", delColIds).Error
+		if te := response.CheckErr(txErr, "SyncTable Delete err"); te != nil {
+			return te
+		}
+		return nil
+	})
+	e = response.CheckErr(err, "SyncTable Transaction err")
+	return nil
+}
+
+//EditTable 编辑表结构
+func (genSrv generateService) EditTable(editReq req.EditTableReq) (e error) {
+	if editReq.GenTpl == generator.GenConstants.TplTree {
+		if editReq.TreePrimary == "" {
+			e = response.AssertArgumentError.Make("树主ID不能为空！")
+			return
+		}
+		if editReq.TreeParent == "" {
+			e = response.AssertArgumentError.Make("树父ID不能为空！")
+			return
+		}
+	}
+	var genTable gen.GenTable
+	err := genSrv.db.Where("id = ?", editReq.ID).Limit(1).First(&genTable).Error
+	if e = response.CheckErrDBNotRecord(err, "数据已丢失！"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "EditTable First err"); e != nil {
+		return
+	}
+	response.Copy(&genTable, editReq)
+	err = genSrv.db.Transaction(func(tx *gorm.DB) error {
+		genTable.SubTableName = strings.Replace(editReq.SubTableName, config.Config.DbTablePrefix, "", 1)
+		txErr := tx.Save(&genTable).Error
+		if te := response.CheckErr(txErr, "EditTable Save GenTable err"); te != nil {
+			return te
+		}
+		for i := 0; i < len(editReq.Columns); i++ {
+			var col gen.GenTableColumn
+			response.Copy(&col, editReq.Columns[i])
+			txErr = tx.Save(&col).Error
+			if te := response.CheckErr(txErr, "EditTable Save GenTableColumn err"); te != nil {
+				return te
+			}
+		}
+		return nil
+	})
+	e = response.CheckErr(err, "EditTable Transaction err")
+	return
 }
 
 //DelTable 删除表结构
