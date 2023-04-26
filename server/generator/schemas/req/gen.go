@@ -71,3 +71,8 @@ type EditTableReq struct {
 type DelTableReq struct {
 	Ids []uint `form:"ids" binding:"required"` // 主键
 }
+
+//PreviewCodeReq 预览代码参数
+type PreviewCodeReq struct {
+	ID uint `form:"id" binding:"required,gt=0"` // 主键
+}

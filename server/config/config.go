@@ -4,6 +4,8 @@ import (
 	"flag"
 	"github.com/spf13/viper"
 	"log"
+	"path"
+	"runtime"
 	"strconv"
 )
 
@@ -11,6 +13,7 @@ var Config = loadConfig(".")
 
 //envConfig 环境配置
 type envConfig struct {
+	RootPath               string   // 项目根目录
 	GinMode                string   `mapstructure:"GIN_MODE"`        // gin运行模式
 	PublicUrl              string   `mapstructure:"PUBLIC_URL"`      // 对外发布的Url
 	ServerPort             int      `mapstructure:"SERVER_PORT"`     // 服务运行端口
@@ -34,23 +37,27 @@ type envConfig struct {
 	UploadVideoSize        int64    // 上传视频限制
 	UploadImageExt         []string // 上传图片扩展
 	UploadVideoExt         []string // 上传视频扩展
-
 }
 
 //loadConfig 加载配置
-func loadConfig(path string) envConfig {
+func loadConfig(envPath string) envConfig {
 	var cfgPath string
-	flag.StringVar(&cfgPath, "c", "", "config file path.")
+	flag.StringVar(&cfgPath, "c", "", "config file envPath.")
 	flag.Parse()
 	if cfgPath == "" {
-		viper.AddConfigPath(path)
+		viper.AddConfigPath(envPath)
 		viper.SetConfigFile(".env")
 	} else {
 		viper.SetConfigFile(cfgPath)
 	}
 	viper.AutomaticEnv()
+	var runPath string
+	if _, filename, _, ok := runtime.Caller(0); ok {
+		runPath = path.Dir(path.Dir(filename))
+	}
 	config := envConfig{
-		GinMode: "debug",
+		RootPath: runPath,
+		GinMode:  "debug",
 		// 服务运行端口
 		ServerPort: 8000,
 		// 禁止修改操作 (演示功能,限制POST请求)

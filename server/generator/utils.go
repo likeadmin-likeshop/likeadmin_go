@@ -88,14 +88,8 @@ func (gu genUtil) InitColumn(tableId uint, column gen.GenTableColumn) gen.GenTab
 		IsPk:          column.IsPk,
 		IsIncrement:   column.IsIncrement,
 		IsRequired:    column.IsRequired,
-		//IsInsert:      "1",
-		//IsEdit:        "1",
-		//IsList:        "1",
-		//IsQuery:       "1",
-		//QueryType:     "EQ",
-		//HtmlType:      "input",
-		CreateTime: time.Now().Unix(),
-		UpdateTime: time.Now().Unix(),
+		CreateTime:    time.Now().Unix(),
+		UpdateTime:    time.Now().Unix(),
 	}
 	if util.ToolsUtil.Contains(append(SqlConstants.ColumnTypeStr, SqlConstants.ColumnTypeText...), columnType) {
 		//文本域组
@@ -207,11 +201,12 @@ func (gu genUtil) GetColumnLength(columnType string) int {
 }
 
 //GetTablePriCol 获取主键列名称
-func (gu genUtil) GetTablePriCol(columns []gen.GenTableColumn) string {
+func (gu genUtil) GetTablePriCol(columns []gen.GenTableColumn) (res gen.GenTableColumn) {
 	for _, col := range columns {
 		if col.IsPk == 1 {
-			return col.ColumnName
+			res = col
+			return
 		}
 	}
-	return ""
+	return
 }

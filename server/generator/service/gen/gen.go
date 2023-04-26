@@ -21,7 +21,7 @@ type IGenerateService interface {
 	SyncTable(id uint) (e error)
 	EditTable(editReq req.EditTableReq) (e error)
 	DelTable(ids []uint) (e error)
-	//PreviewCode
+	PreviewCode(id uint) (res map[string]string, e error)
 	//DownloadCode
 	//GenCode
 	//GenZipCode
@@ -308,5 +308,73 @@ func (genSrv generateService) DelTable(ids []uint) (e error) {
 		return nil
 	})
 	e = response.CheckErr(err, "DelTable Transaction err")
+	return
+}
+
+//getSubTableInfo 根据主表获取子表主键和列信息
+func (genSrv generateService) getSubTableInfo(genTable gen.GenTable) (pkCol gen.GenTableColumn, cols []gen.GenTableColumn, e error) {
+	if genTable.SubTableName == "" || genTable.SubTableFk == "" {
+		return
+	}
+	var table gen.GenTable
+	err := genSrv.db.Where("table_name = ?", genTable.SubTableName).Limit(1).First(&table).Error
+	if e = response.CheckErrDBNotRecord(err, "子表记录丢失！"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "getSubTableInfo First err"); e != nil {
+		return
+	}
+	err = generator.GenUtil.GetDbTableColumnsQueryByName(genSrv.db, genTable.SubTableName).Find(&cols).Error
+	if e = response.CheckErr(err, "getSubTableInfo Find err"); e != nil {
+		return
+	}
+	pkCol = generator.GenUtil.InitColumn(table.ID, generator.GenUtil.GetTablePriCol(cols))
+	return
+}
+
+//renderCodeByTable 根据主表和模板文件渲染模板代码
+func (genSrv generateService) renderCodeByTable(genTable gen.GenTable) (res map[string]string, e error) {
+	var columns []gen.GenTableColumn
+	err := genSrv.db.Where("table_id = ?", genTable.ID).Order("sort").Find(&columns).Error
+	if e = response.CheckErr(err, "renderCodeByTable Find err"); e != nil {
+		return
+	}
+	//获取子表信息
+	pkCol, cols, err := genSrv.getSubTableInfo(genTable)
+	if e = response.CheckErr(err, "renderCodeByTable getSubTableInfo err"); e != nil {
+		return
+	}
+	//获取模板变量信息
+	vars := generator.TemplateUtil.PrepareVars(genTable, columns, pkCol, cols)
+	//生成模板内容
+	res = make(map[string]string)
+	for _, tplPath := range generator.TemplateUtil.GetTemplatePaths(genTable.GenTpl) {
+		res[tplPath], err = generator.TemplateUtil.Render(tplPath, vars)
+		if e = response.CheckErr(err, "renderCodeByTable Render err"); e != nil {
+			return
+		}
+	}
+	return
+}
+
+//PreviewCode 预览代码
+func (genSrv generateService) PreviewCode(id uint) (res map[string]string, e error) {
+	var genTable gen.GenTable
+	err := genSrv.db.Where("id = ?", id).Limit(1).First(&genTable).Error
+	if e = response.CheckErrDBNotRecord(err, "记录丢失！"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "PreviewCode First err"); e != nil {
+		return
+	}
+	//获取模板内容
+	tplCodeMap, err := genSrv.renderCodeByTable(genTable)
+	if e = response.CheckErr(err, "PreviewCode renderCodeByTable err"); e != nil {
+		return
+	}
+	res = make(map[string]string)
+	for tplPath, tplCode := range tplCodeMap {
+		res[strings.ReplaceAll(tplPath, ".tpl", "")] = tplCode
+	}
 	return
 }

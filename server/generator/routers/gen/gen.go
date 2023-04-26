@@ -27,6 +27,7 @@ func regGen(rg *gin.RouterGroup, group *core.GroupBase) error {
 		rg.POST("/syncTable", handle.syncTable)
 		rg.POST("/editTable", handle.editTable)
 		rg.POST("/delTable", handle.delTable)
+		rg.GET("/previewCode", handle.previewCode)
 	})
 }
 
@@ -110,4 +111,14 @@ func (gh genHandler) delTable(c *gin.Context) {
 	}
 	err := gh.srv.DelTable(delReq.Ids)
 	response.CheckAndResp(c, err)
+}
+
+//previewCode 预览代码
+func (gh genHandler) previewCode(c *gin.Context) {
+	var previewReq req.PreviewCodeReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &previewReq)) {
+		return
+	}
+	res, err := gh.srv.PreviewCode(previewReq.ID)
+	response.CheckAndRespWithData(c, res, err)
 }
