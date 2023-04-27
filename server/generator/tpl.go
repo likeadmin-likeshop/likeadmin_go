@@ -2,10 +2,13 @@ package generator
 
 import (
 	"bytes"
+	"fmt"
+	"io/ioutil"
 	"likeadmin/config"
 	"likeadmin/core/response"
 	"likeadmin/model/gen"
 	"likeadmin/util"
+	"os"
 	"path"
 	"text/template"
 )
@@ -18,6 +21,7 @@ var TemplateUtil = templateUtil{
 		}),
 }
 
+//sub 模板-减函数
 func sub(a, b int) int {
 	return a - b
 }
@@ -162,4 +166,50 @@ func (tu templateUtil) Render(tplPath string, tplVars TplVars) (res string, e er
 		return "", e
 	}
 	return buf.String(), nil
+}
+
+//GetGenPath 获取生成路径
+func (tu templateUtil) GetGenPath(table gen.GenTable) string {
+	if table.GenPath == "/" {
+		//return path.Join(config.Config.RootPath, config.GenConfig.GenRootPath)
+		return config.GenConfig.GenRootPath
+	}
+	return table.GenPath
+}
+
+//GetFilePaths 获取生成文件相对路径
+func (tu templateUtil) GetFilePaths(tplCodeMap map[string]string, moduleName string) map[string]string {
+	//模板文件对应的输出文件
+	fmtMap := map[string]string{
+		"vue/api.ts.tpl":         "vue/%s/api.ts",
+		"vue/edit.vue.tpl":       "vue/%s/edit.vue",
+		"vue/index.vue.tpl":      "vue/%s/index.vue",
+		"vue/index-tree.vue.tpl": "vue/%s/index-tree.vue",
+	}
+	filePath := make(map[string]string)
+	for tplPath, tplCode := range tplCodeMap {
+		file := fmt.Sprintf(fmtMap[tplPath], moduleName)
+		filePath[file] = tplCode
+	}
+	return filePath
+}
+
+//GenCodeFiles 生成代码文件
+func (tu templateUtil) GenCodeFiles(tplCodeMap map[string]string, moduleName string, basePath string) error {
+	filePaths := tu.GetFilePaths(tplCodeMap, moduleName)
+	for file, tplCode := range filePaths {
+		filePath := path.Join(basePath, file)
+		dir := path.Dir(filePath)
+		if !util.ToolsUtil.IsFileExist(dir) {
+			err := os.MkdirAll(dir, 0755)
+			if err != nil {
+				return response.CheckErr(err, "TemplateUtil.GenCodeFiles MkdirAll err")
+			}
+		}
+		err := ioutil.WriteFile(filePath, []byte(tplCode), 0644)
+		if err != nil {
+			return response.CheckErr(err, "TemplateUtil.GenCodeFiles WriteFile err")
+		}
+	}
+	return nil
 }

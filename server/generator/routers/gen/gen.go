@@ -28,6 +28,7 @@ func regGen(rg *gin.RouterGroup, group *core.GroupBase) error {
 		rg.POST("/editTable", handle.editTable)
 		rg.POST("/delTable", handle.delTable)
 		rg.GET("/previewCode", handle.previewCode)
+		rg.GET("/genCode", handle.genCode)
 	})
 }
 
@@ -121,4 +122,19 @@ func (gh genHandler) previewCode(c *gin.Context) {
 	}
 	res, err := gh.srv.PreviewCode(previewReq.ID)
 	response.CheckAndRespWithData(c, res, err)
+}
+
+//genCode 生成代码
+func (gh genHandler) genCode(c *gin.Context) {
+	var genReq req.GenCodeReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &genReq)) {
+		return
+	}
+	for _, table := range strings.Split(genReq.Tables, ",") {
+		err := gh.srv.GenCode(table)
+		if response.IsFailWithResp(c, err) {
+			return
+		}
+	}
+	response.Ok(c)
 }

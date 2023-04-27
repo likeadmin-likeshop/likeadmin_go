@@ -11,7 +11,7 @@ var GenConfig = genConfig{
 	// 是否去除表前缀
 	IsRemoveTablePrefix: true,
 	// 生成代码根路径
-	GenRootPath: "target",
+	GenRootPath: "/tmp/target",
 }
 
 type genConfig struct {

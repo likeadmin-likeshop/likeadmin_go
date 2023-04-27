@@ -22,9 +22,9 @@ type IGenerateService interface {
 	EditTable(editReq req.EditTableReq) (e error)
 	DelTable(ids []uint) (e error)
 	PreviewCode(id uint) (res map[string]string, e error)
-	//DownloadCode
-	//GenCode
+	GenCode(tableName string) (e error)
 	//GenZipCode
+	//DownloadCode
 }
 
 //NewGenerateService 初始化
@@ -375,6 +375,31 @@ func (genSrv generateService) PreviewCode(id uint) (res map[string]string, e err
 	res = make(map[string]string)
 	for tplPath, tplCode := range tplCodeMap {
 		res[strings.ReplaceAll(tplPath, ".tpl", "")] = tplCode
+	}
+	return
+}
+
+//GenCode 生成代码 (自定义路径)
+func (genSrv generateService) GenCode(tableName string) (e error) {
+	var genTable gen.GenTable
+	err := genSrv.db.Where("table_name = ?", tableName).Order("id desc").Limit(1).First(&genTable).Error
+	if e = response.CheckErrDBNotRecord(err, "记录丢失！"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "GenCode First err"); e != nil {
+		return
+	}
+	//获取模板内容
+	tplCodeMap, err := genSrv.renderCodeByTable(genTable)
+	if e = response.CheckErr(err, "GenCode renderCodeByTable err"); e != nil {
+		return
+	}
+	//获取生成根路径
+	basePath := generator.TemplateUtil.GetGenPath(genTable)
+	//生成代码文件
+	err = generator.TemplateUtil.GenCodeFiles(tplCodeMap, genTable.ModuleName, basePath)
+	if e = response.CheckErr(err, "GenCode GenCodeFiles err"); e != nil {
+		return
 	}
 	return
 }

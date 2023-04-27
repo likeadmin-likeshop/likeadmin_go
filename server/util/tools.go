@@ -8,6 +8,7 @@ import (
 	"likeadmin/config"
 	"math"
 	"math/rand"
+	"os"
 	"reflect"
 	"strconv"
 	"strings"
@@ -89,4 +90,10 @@ func (tu toolsUtil) ObjToJson(data interface{}) (res string, err error) {
 	}
 	res = string(b)
 	return res, nil
+}
+
+//IsFileExist 判断文件或目录是否存在
+func (tu toolsUtil) IsFileExist(path string) bool {
+	_, err := os.Stat(path)
+	return err == nil || os.IsExist(err)
 }

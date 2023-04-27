@@ -76,3 +76,8 @@ type DelTableReq struct {
 type PreviewCodeReq struct {
 	ID uint `form:"id" binding:"required,gt=0"` // 主键
 }
+
+//GenCodeReq 生成代码参数
+type GenCodeReq struct {
+	Tables string `form:"tables" binding:"required"` // 生成的表, 用","分隔
+}
