@@ -81,3 +81,8 @@ type PreviewCodeReq struct {
 type GenCodeReq struct {
 	Tables string `form:"tables" binding:"required"` // 生成的表, 用","分隔
 }
+
+//DownloadReq 下载代码参数
+type DownloadReq struct {
+	Tables string `form:"tables" binding:"required"` // 下载的表, 用","分隔
+}

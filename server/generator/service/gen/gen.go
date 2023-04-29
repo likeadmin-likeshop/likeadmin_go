@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"archive/zip"
+	"bytes"
 	"gorm.io/gorm"
 	"likeadmin/config"
 	"likeadmin/core/request"
@@ -23,8 +25,7 @@ type IGenerateService interface {
 	DelTable(ids []uint) (e error)
 	PreviewCode(id uint) (res map[string]string, e error)
 	GenCode(tableName string) (e error)
-	//GenZipCode
-	//DownloadCode
+	DownloadCode(tableNames []string) ([]byte, error)
 }
 
 //NewGenerateService 初始化
@@ -402,4 +403,44 @@ func (genSrv generateService) GenCode(tableName string) (e error) {
 		return
 	}
 	return
+}
+
+//genZipCode 生成代码 (压缩包下载)
+func (genSrv generateService) genZipCode(zipWriter *zip.Writer, tableName string) (e error) {
+	var genTable gen.GenTable
+	err := genSrv.db.Where("table_name = ?", tableName).Order("id desc").Limit(1).First(&genTable).Error
+	if e = response.CheckErrDBNotRecord(err, "记录丢失！"); e != nil {
+		return
+	}
+	if e = response.CheckErr(err, "genZipCode First err"); e != nil {
+		return
+	}
+	//获取模板内容
+	tplCodeMap, err := genSrv.renderCodeByTable(genTable)
+	if e = response.CheckErr(err, "genZipCode renderCodeByTable err"); e != nil {
+		return
+	}
+	//压缩文件
+	err = generator.TemplateUtil.GenZip(zipWriter, tplCodeMap, genTable.ModuleName)
+	if e = response.CheckErr(err, "genZipCode GenZip err"); e != nil {
+		return
+	}
+	return
+}
+
+//DownloadCode 下载代码
+func (genSrv generateService) DownloadCode(tableNames []string) ([]byte, error) {
+	buf := new(bytes.Buffer)
+	zipWriter := zip.NewWriter(buf)
+	for _, tableName := range tableNames {
+		err := genSrv.genZipCode(zipWriter, tableName)
+		if err != nil {
+			return nil, response.CheckErr(err, "DownloadCode genZipCode for %s err", tableName)
+		}
+	}
+	err := zipWriter.Close()
+	if err != nil {
+		return nil, response.CheckErr(err, "DownloadCode zipWriter.Close err")
+	}
+	return buf.Bytes(), nil
 }

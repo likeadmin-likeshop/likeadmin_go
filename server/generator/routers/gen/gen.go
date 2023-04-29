@@ -9,6 +9,7 @@ import (
 	"likeadmin/generator/service/gen"
 	"likeadmin/middleware"
 	"likeadmin/util"
+	"net/http"
 	"strings"
 )
 
@@ -29,6 +30,7 @@ func regGen(rg *gin.RouterGroup, group *core.GroupBase) error {
 		rg.POST("/delTable", handle.delTable)
 		rg.GET("/previewCode", handle.previewCode)
 		rg.GET("/genCode", handle.genCode)
+		rg.GET("/downloadCode", handle.downloadCode)
 	})
 }
 
@@ -137,4 +139,20 @@ func (gh genHandler) genCode(c *gin.Context) {
 		}
 	}
 	response.Ok(c)
+}
+
+//downloadCode 下载代码
+func (gh genHandler) downloadCode(c *gin.Context) {
+	var downloadReq req.DownloadReq
+	if response.IsFailWithResp(c, util.VerifyUtil.VerifyQuery(c, &downloadReq)) {
+		return
+	}
+	zipBytes, err := gh.srv.DownloadCode(strings.Split(downloadReq.Tables, ","))
+	if response.IsFailWithResp(c, err) {
+		return
+	}
+	contentType := "application/zip"
+	c.Header("Content-Type", contentType)
+	c.Header("Content-Disposition", "attachment; filename=likeadmin-gen.zip")
+	c.Data(http.StatusOK, contentType, zipBytes)
 }

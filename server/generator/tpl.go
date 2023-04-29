@@ -1,8 +1,10 @@
 package generator
 
 import (
+	"archive/zip"
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"likeadmin/config"
 	"likeadmin/core/response"
@@ -24,6 +26,12 @@ var TemplateUtil = templateUtil{
 //sub 模板-减函数
 func sub(a, b int) int {
 	return a - b
+}
+
+//zFile 待加入zip的文件
+type zFile struct {
+	Name string
+	Body string
 }
 
 //TplVars 模板变量
@@ -209,6 +217,41 @@ func (tu templateUtil) GenCodeFiles(tplCodeMap map[string]string, moduleName str
 		err := ioutil.WriteFile(filePath, []byte(tplCode), 0644)
 		if err != nil {
 			return response.CheckErr(err, "TemplateUtil.GenCodeFiles WriteFile err")
+		}
+	}
+	return nil
+}
+
+func addFileToZip(zipWriter *zip.Writer, file zFile) error {
+	header := &zip.FileHeader{
+		Name:   file.Name,
+		Method: zip.Deflate,
+	}
+	writer, err := zipWriter.CreateHeader(header)
+	if err != nil {
+		return response.CheckErr(err, "TemplateUtil.addFileToZip CreateHeader err")
+	}
+	_, err = io.WriteString(writer, file.Body)
+	if err != nil {
+		return response.CheckErr(err, "TemplateUtil.addFileToZip WriteString err")
+	}
+	return nil
+}
+
+//GenZip 生成代码压缩包
+func (tu templateUtil) GenZip(zipWriter *zip.Writer, tplCodeMap map[string]string, moduleName string) error {
+	filePaths := tu.GetFilePaths(tplCodeMap, moduleName)
+	files := make([]zFile, 0)
+	for file, tplCode := range filePaths {
+		files = append(files, zFile{
+			Name: file,
+			Body: tplCode,
+		})
+	}
+	for _, file := range files {
+		err := addFileToZip(zipWriter, file)
+		if err != nil {
+			return response.CheckErr(err, "TemplateUtil.GenZip zipFiles err")
 		}
 	}
 	return nil
