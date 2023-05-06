@@ -102,9 +102,9 @@ func (gu genUtil) InitColumn(tableId uint, column gen.GenTableColumn) gen.GenTab
 		//日期字段
 		col.JavaType = GoConstants.TypeDate
 		col.HtmlType = HtmlConstants.HtmlDatetime
-	} else if util.ToolsUtil.Contains(SqlConstants.ColumnTimeName, columnType) {
+	} else if util.ToolsUtil.Contains(SqlConstants.ColumnTimeName, col.ColumnName) {
 		//时间字段
-		col.JavaType = GoConstants.TypeInt
+		col.JavaType = GoConstants.TypeDate
 		col.HtmlType = HtmlConstants.HtmlDatetime
 	} else if util.ToolsUtil.Contains(SqlConstants.ColumnTypeNumber, columnType) {
 		//数字字段
