@@ -3,20 +3,10 @@
         <el-card class="!border-none" shadow="never">
             <el-form ref="formRef" class="mb-[-16px]" :model="queryParams" inline>
                 <el-form-item label="字典名称">
-                    <el-input
-                        class="w-[280px]"
-                        v-model="queryParams.dictName"
-                        clearable
-                        @keyup.enter="resetPage"
-                    />
+                    <el-input class="w-[280px]" v-model="queryParams.dictName" clearable @keyup.enter="resetPage" />
                 </el-form-item>
                 <el-form-item label="字典类型">
-                    <el-input
-                        class="w-[280px]"
-                        v-model="queryParams.dictType"
-                        clearable
-                        @keyup.enter="resetPage"
-                    />
+                    <el-input class="w-[280px]" v-model="queryParams.dictType" clearable @keyup.enter="resetPage" />
                 </el-form-item>
                 <el-form-item label="状态">
                     <el-select class="w-[280px]" v-model="queryParams.dictStatus">
@@ -39,12 +29,8 @@
                     </template>
                     新增
                 </el-button>
-                <el-button
-                    v-perms="['setting:dict:type:list']"
-                    :disabled="!selectData.length"
-                    type="danger"
-                    @click="handleDelete(selectData)"
-                >
+                <el-button v-perms="['setting:dict:type:list']" :disabled="!selectData.length" type="danger"
+                    @click="handleDelete(selectData)">
                     <template #icon>
                         <icon name="el-icon-Delete" />
                     </template>
@@ -53,11 +39,7 @@
             </div>
             <div class="mt-4" v-loading="pager.loading">
                 <div>
-                    <el-table
-                        :data="pager.lists"
-                        size="large"
-                        @selection-change="handleSelectionChange"
-                    >
+                    <el-table :data="pager.lists" size="large" @selection-change="handleSelectionChange">
                         <el-table-column type="selection" width="55" />
                         <el-table-column label="ID" prop="id" />
                         <el-table-column label="字典名称" prop="dictName" min-width="120" />
@@ -68,40 +50,26 @@
                                 <el-tag v-else type="danger">停用</el-tag>
                             </template>
                         </el-table-column>
-                        <el-table-column
-                            label="备注"
-                            prop="dictRemark"
-                            show-tooltip-when-overflow
-                        />
+                        <el-table-column label="备注" prop="dictRemark" show-tooltip-when-overflow />
                         <el-table-column label="创建时间" prop="createTime" min-width="180" />
                         <el-table-column label="操作" width="190" fixed="right">
                             <template #default="{ row }">
-                                <el-button
-                                    v-perms="['setting:dict:type:edit']"
-                                    link
-                                    type="primary"
-                                    @click="handleEdit(row)"
-                                >
+                                <el-button v-perms="['setting:dict:type:edit']" link type="primary"
+                                    @click="handleEdit(row)">
                                     编辑
                                 </el-button>
                                 <el-button v-perms="['setting:dict:data:list']" type="primary" link>
-                                    <router-link
-                                        :to="{
-                                            path: getRoutePath('setting:dict:data:list'),
-                                            query: {
-                                                type: row.dictType
-                                            }
-                                        }"
-                                    >
+                                    <router-link :to="{
+                                        path: getRoutePath('setting:dict:data:list'),
+                                        query: {
+                                            type: row.dictType
+                                        }
+                                    }">
                                         数据管理
                                     </router-link>
                                 </el-button>
-                                <el-button
-                                    v-perms="['setting:dict:type:del']"
-                                    link
-                                    type="danger"
-                                    @click="handleDelete([row.id])"
-                                >
+                                <el-button v-perms="['setting:dict:type:del']" link type="danger"
+                                    @click="handleDelete([row.id])">
                                     删除
                                 </el-button>
                             </template>
@@ -128,7 +96,7 @@ const showEdit = ref(false)
 const queryParams = reactive({
     dictName: '',
     dictType: '',
-    dictStatus: ''
+    dictStatus: 1
 })
 
 const { pager, getLists, resetPage, resetParams } = usePaging({

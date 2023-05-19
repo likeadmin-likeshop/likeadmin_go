@@ -20,11 +20,7 @@
                             <a :href="workbenchData.version.channel.website" target="_blank">
                                 <el-button type="success" size="small">官网</el-button>
                             </a>
-                            <a
-                                class="ml-3"
-                                :href="workbenchData.version.channel.gitee"
-                                target="_blank"
-                            >
+                            <a class="ml-3" href="https://gitee.com/likeadmin/likeadmin_go" target="_blank">
                                 <el-button type="danger" size="small">Gitee</el-button>
                             </a>
                         </div>
@@ -79,11 +75,8 @@
                     <span>常用功能</span>
                 </template>
                 <div class="flex flex-wrap">
-                    <div
-                        v-for="item in workbenchData.menu"
-                        class="md:w-[12.5%] w-1/4 flex flex-col items-center"
-                        :key="item"
-                    >
+                    <div v-for="item in workbenchData.menu" class="md:w-[12.5%] w-1/4 flex flex-col items-center"
+                        :key="item">
                         <router-link :to="item.url" class="mb-3 flex flex-col items-center">
                             <img width="40" height="40" :src="item.image" />
                             <div class="mt-2">{{ item.name }}</div>
@@ -98,11 +91,7 @@
                     <span>访问量趋势图</span>
                 </template>
                 <div>
-                    <v-charts
-                        style="height: 350px"
-                        :option="workbenchData.visitorOption"
-                        :autoresize="true"
-                    />
+                    <v-charts style="height: 350px" :option="workbenchData.visitorOption" :autoresize="true" />
                 </div>
             </el-card>
             <el-card class="!border-none mb-4" shadow="never">
@@ -111,12 +100,9 @@
                 </template>
                 <div>
                     <div v-for="(item, index) in workbenchData.support" :key="index">
-                        <div
-                            class="flex items-center pb-10 pt-10"
-                            :class="{
-                                'border-b border-br': index == 0
-                            }"
-                        >
+                        <div class="flex items-center pb-10 pt-10" :class="{
+                            'border-b border-br': index == 0
+                        }">
                             <img width="120" height="120" class="flex-none" :src="item.image" />
                             <div class="ml-2">
                                 <div>{{ item.title }}</div>
