@@ -6,9 +6,12 @@
 <br>
 <h4 align="center">鸣谢小伙伴<a href="https://gitee.com/geeknonerd">geeknonerd</a>参与开发<h4> 
 <div align="center">
-  <img  width="80%"  src="https://md.likeshop.cn/server/index.php?s=/api/attachment/visitFile&sign=9cf02b831e49d6a411bafbc4d79f51d4" /><br>
+
+![](https://md.likeshop.cn/server/index.php?s=/api/attachment/visitFile&sign=b24b2ca77cf50d28aeb085003eaa7063)
+
 </div>
  <br>
+
 
 
 
@@ -18,6 +21,7 @@
 账号：admin 密码：123456
 ### 开发文档
 地址：[https://doc.likeadmin.cn/go](https://www.likeadmin.cn "https://doc.likeadmin.cn/go")
+
 
 
 
@@ -32,6 +36,7 @@
 
 
 
+
 ### 🐙 后端架构方面
 1.服务端使用Go开发，性能有突破性的提升。<br>
 2.使用Gin框架，高性能、简单易用、文档齐全、支持支持Redis等。
@@ -40,6 +45,10 @@
 1.使用最流性的前后端分离方案typescript、vue3、vite开发，保持了代码的简洁、一致和规范。<br>
 2.后台界面使用element-plus UI框架，简单精美的后台界面，丰富的组件库，方便快速开发，满足各种后台交互。
 <br>
+####  🛠️ 代码生成器
+一键生成前后端业务代码，大大提示开发效率。
+![](https://md.likeshop.cn/server/index.php?s=/api/attachment/visitFile&sign=b3b47da5d3752d38f025e1bd8038d231)
+
 
 
 
