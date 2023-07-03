@@ -1,3 +1,4 @@
+<a href="https://gitee.likeshop.cn/giteemddai">![gitee头图 java.png](https://resource.likeshop.cn/gitee/mddai.png)</a><br>
  <h1 align="center">likeadmin通用管理后台（Go）</h1>
 <h4 align="center">🚀快速开发、✅后台多端自适应</h4> 
 <p align="center">
